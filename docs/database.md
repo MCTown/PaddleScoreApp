@@ -30,19 +30,29 @@
 | 列名 | id | name | time |
 |----|----|------|------|
 
+SQL:
+
+```sql
+CREATE TABLE competitions_long_distant (
+    id INT PRIMARY KEY,
+    name VARCHAR(255),
+    time DATETIME
+);
+```
+
 长距离比赛只有一场，所以只有一张表
 
 > 以下为多张表
 
 ### <gruop>_<competition_type>_competitions_prone_paddle 表
 
-| 列名 | id | name | time |
-|----|----|------|------|
+| 列名 | id | name | time | group |
+|----|----|------|------|-------|
 
 ### <gruop>_<competition_type>_competitions_sprint 表
 
-| 列名 | id | name | time |
-|----|----|------|------|
+| 列名 | id | name | time | group |
+|----|----|------|------|-------|
 
 例：若人数分配如下：
 
@@ -68,55 +78,83 @@
 
 那么将有以下表：
 
-- U9_first_competitions_prone_paddle
-- U9_1/2_competitions_prone_paddle
-- U9_final_competitions_prone_paddle
-- U9_first_competitions_sprint
-- U9_1/2_competitions_sprint
-- U9_final_competitions_sprint
+- U9_first_competitions_prone_paddle_male
+- U9_first_competitions_prone_paddle_female
+- U9_1/2_competitions_prone_paddle_male
+- U9_1/2_competitions_prone_paddle_female
+- U9_final_competitions_prone_paddle_male
+- U9_final_competitions_prone_paddle_female
+- U9_first_competitions_sprint_male
+- U9_first_competitions_sprint_female
+- U9_1/2_competitions_sprint_male
+- U9_1/2_competitions_sprint_female
+- U9_final_competitions_sprint_male
+- U9_final_competitions_sprint_female
 
 ---
 
-- U12_first_competitions_prone_paddle
-- U12_final_competitions_prone_paddle
-- U12_first_competitions_sprint
-- U12_final_competitions_sprint
+- U12_first_competitions_prone_paddle_male
+- U12_first_competitions_prone_paddle_female
+- U12_final_competitions_prone_paddle_male
+- U12_final_competitions_prone_paddle_female
+- U12_first_competitions_sprint_male
+- U12_first_competitions_sprint_female
+- U12_final_competitions_sprint_male
+- U12_final_competitions_sprint_female
 
 ---
 
-- U15_first_competitions_prone_paddle
-- U15_final_competitions_prone_paddle
-- U15_first_competitions_sprint
-- U15_final_competitions_sprint
+- U15_first_competitions_prone_paddle_male
+- U15_first_competitions_prone_paddle_female
+- U15_final_competitions_prone_paddle_male
+- U15_final_competitions_prone_paddle_female
+- U15_first_competitions_sprint_male
+- U15_first_competitions_sprint_female
+- U15_final_competitions_sprint_male
+- U15_final_competitions_sprint_female
 
 ---
 
-- U18_first_competitions_prone_paddle
-- U18_final_competitions_prone_paddle
-- U18_first_competitions_sprint
-- U18_final_competitions_sprint
+- U18_first_competitions_prone_paddle_male
+- U18_first_competitions_prone_paddle_female
+- U18_final_competitions_prone_paddle_male
+- U18_final_competitions_prone_paddle_female
+- U18_first_competitions_sprint_male
+- U18_first_competitions_sprint_female
+- U18_final_competitions_sprint_male
+- U18_final_competitions_sprint_female
 
 ---
 
-- gaoxiao_first_competitions_sprint
-- gaoxiao_1/4_competitions_sprint
-- gaoxiao_1/2_competitions_sprint
-- gaoxiao_final_competitions_sprint
+- gaoxiao_first_competitions_sprint_male
+- gaoxiao_first_competitions_sprint_female
+- gaoxiao_1/4_competitions_sprint_male
+- gaoxiao_1/4_competitions_sprint_female
+- gaoxiao_1/2_competitions_sprint_male
+- gaoxiao_1/2_competitions_sprint_female
+- gaoxiao_final_competitions_sprint_male
+- gaoxiao_final_competitions_sprint_female
 
 ---
 
-- gongkai_first_competitions_sprint
-- gongkai_final_competitions_sprint
+- gongkai_first_competitions_sprint_male
+- gongkai_first_competitions_sprint_female
+- gongkai_final_competitions_sprint_male
+- gongkai_final_competitions_sprint_female
 
 ---
 
-- dashi_first_competitions_sprint
-- dashi_final_competitions_sprint
+- dashi_first_competitions_sprint_male
+- dashi_first_competitions_sprint_female
+- dashi_final_competitions_sprint_male
+- dashi_final_competitions_sprint_female
 
 ---
 
-- kahuna_first_competitions_sprint
-- kahuna_final_competitions_sprint
+- kahuna_first_competitions_sprint_male
+- kahuna_first_competitions_sprint_female
+- kahuna_final_competitions_sprint_male
+- kahuna_final_competitions_sprint_female
 
 ---
 
