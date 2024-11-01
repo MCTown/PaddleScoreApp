@@ -3,7 +3,7 @@
 数据库统一命名采用下划线规则
 数据库为以下结构：
 
-## <match_name>.db
+## <event_name>.db
 
 > 用于存储比赛数据，比赛事件名字将作为数据库名，例如2024春季比赛.db
 
@@ -11,12 +11,23 @@
 
 [//]: # (todo 问题：初赛积分如何计算？)
 
-| 列名   | id      | name    | team    | group  | long_distant_score | prone_paddle_score | sprint_score |
-|------|---------|---------|---------|--------|--------------------|--------------------|--------------|
-| 数据类型 | VARCHAR | VARCHAR | VARCHAR | STRING | INT                | INT                | INT          |
+| 列名   | id      | name    | team    | division | long_distant_score | prone_paddle_score | sprint_score |
+|------|---------|---------|---------|----------|--------------------|--------------------|--------------|
+| 数据类型 | VARCHAR | VARCHAR | VARCHAR | STRING   | INT                | INT                | INT          |
 
 ---
 
+```SQL
+CREATE TABLE athletes (
+    id INT PRIMARY KEY,
+    name VARCHAR(255),
+    team VARCHAR(255),
+    division VARCHAR(255),
+    long_distant_score INT,
+    prone_paddle_score INT,
+    sprint_score INT
+);
+```
 > 接下来三张表分别记录三次比赛的成绩，分别为：
 >
 > 1. 6000米长距离赛（青少年3000米）
