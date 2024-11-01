@@ -28,6 +28,7 @@ CREATE TABLE athletes (
     sprint_score INT
 );
 ```
+
 > 接下来三张表分别记录三次比赛的成绩，分别为：
 >
 > 1. 6000米长距离赛（青少年3000米）
@@ -47,7 +48,7 @@ SQL:
 CREATE TABLE competitions_long_distant (
     id INT PRIMARY KEY,
     name VARCHAR(255),
-    time DATETIME
+    time VARCHAR(255)
 );
 ```
 
@@ -55,118 +56,96 @@ CREATE TABLE competitions_long_distant (
 
 > 以下为多张表
 
-### <gruop>_<competition_type>_competitions_prone_paddle 表
+### <division>_躺板_<schedule> 表
 
-| 列名 | id | name | time | group |
-|----|----|------|------|-------|
+| 列名 | id | name | time | _group |
+|----|----|------|------|--------|
 
-### <gruop>_<competition_type>_competitions_sprint 表
+### <division>_竞速_<schedule> 表
 
-| 列名 | id | name | time | group |
-|----|----|------|------|-------|
+| 列名 | id | name | time | _group |
+|----|----|------|------|--------|
+
+共有以下组别：
+flutter:
+查询到的division：[U12组男子, U12组女子, U15组男子, U15组女子, U18组男子, U18组女子, U9组男子, U9组女子, 充气板组男子, 充气板组女子, 大师组男子, 大众组男子, 大师组女子, 公开组女子, 大众组女子, 高校甲组男子, 高校甲组女子, 高校乙组男子, 高校乙组女子, 公开组男子, 卡胡纳组男子, 卡胡纳组女子]
 
 例：若人数分配如下：
 
-- U9 : 100人
-- U12: 50人
-- U15: 30人
-- U18: 20人
-- 高校: 155人
-- 公开: 23人
-- 大师: 31人
-- 卡胡纳: 20人
+- U12组男子：45
+- U12组女子：38
+- U15组男子：60
+- U15组女子：54
+- U18组男子：70
+- U18组女子：22
+- U9组男子：30
+- U9组女子：29
+- 充气板组男子：65
+- 充气板组女子：18
+- 大师组男子：12
+- 大众组男子：50
+- 大师组女子：10
+- 公开组女子：33
+- 大众组女子：48
+- 高校甲组男子：41
+- 高校甲组女子：37
+- 高校乙组男子：25
+- 高校乙组女子：27
+- 公开组男子：155
+- 卡胡纳组男子：21
+- 卡胡纳组女子：19
 
 赛程为：
 
-- U9: 初赛 -> 1/2决赛 -> 决赛
-- U12: 初赛 -> 决赛
-- U15: 初赛 -> 决赛
-- U18: 初赛 -> 决赛
-- 高校: 初赛 -> 1/4决赛 -> 1/2决赛 -> 决赛
-- 公开: 初赛 -> 决赛
-- 大师: 初赛 -> 决赛
-- 卡胡纳: 初赛 -> 决赛
+- U12组男子： 初赛 -> 决赛
+- U12组女子： 初赛 -> 决赛
+- U15组男子： 初赛 -> 决赛
+- U15组女子： 初赛 -> 决赛
+- U18组男子： 初赛 -> 1/2决赛 -> 决赛
+- U18组女子： 初赛 -> 决赛
+- U9组男子： 初赛 -> 决赛
+- U9组女子： 初赛 -> 决赛
+- 充气板组男子： 初赛 -> 1/2决赛 -> 决赛
+- 充气板组女子： 初赛 -> 决赛
+- 大师组男子： 初赛 -> 决赛
+- 大众组男子： 初赛 -> 决赛
+- 大师组女子： 初赛 -> 决赛
+- 公开组女子： 初赛 -> 决赛
+- 大众组女子： 初赛 -> 决赛
+- 高校甲组男子： 初赛 -> 决赛
+- 高校甲组女子： 初赛 -> 决赛
+- 高校乙组男子： 初赛 -> 决赛
+- 高校乙组女子： 初赛 -> 决赛
+- 公开组男子： 初赛 -> 1/4 决赛 -> 1/2决赛 -> 决赛
+- 卡胡纳组男子： 初赛 -> 决赛
+- 卡胡纳组女子： 初赛 -> 决赛
 
 那么将有以下表：
 
-- U9_first_competitions_prone_paddle_male
-- U9_first_competitions_prone_paddle_female
-- U9_1/2_competitions_prone_paddle_male
-- U9_1/2_competitions_prone_paddle_female
-- U9_final_competitions_prone_paddle_male
-- U9_final_competitions_prone_paddle_female
-- U9_first_competitions_sprint_male
-- U9_first_competitions_sprint_female
-- U9_1/2_competitions_sprint_male
-- U9_1/2_competitions_sprint_female
-- U9_final_competitions_sprint_male
-- U9_final_competitions_sprint_female
-
 ---
-
-- U12_first_competitions_prone_paddle_male
-- U12_first_competitions_prone_paddle_female
-- U12_final_competitions_prone_paddle_male
-- U12_final_competitions_prone_paddle_female
-- U12_first_competitions_sprint_male
-- U12_first_competitions_sprint_female
-- U12_final_competitions_sprint_male
-- U12_final_competitions_sprint_female
-
----
-
-- U15_first_competitions_prone_paddle_male
-- U15_first_competitions_prone_paddle_female
-- U15_final_competitions_prone_paddle_male
-- U15_final_competitions_prone_paddle_female
-- U15_first_competitions_sprint_male
-- U15_first_competitions_sprint_female
-- U15_final_competitions_sprint_male
-- U15_final_competitions_sprint_female
-
----
-
-- U18_first_competitions_prone_paddle_male
-- U18_first_competitions_prone_paddle_female
-- U18_final_competitions_prone_paddle_male
-- U18_final_competitions_prone_paddle_female
-- U18_first_competitions_sprint_male
-- U18_first_competitions_sprint_female
-- U18_final_competitions_sprint_male
-- U18_final_competitions_sprint_female
-
----
-
-- gaoxiao_first_competitions_sprint_male
-- gaoxiao_first_competitions_sprint_female
-- gaoxiao_1/4_competitions_sprint_male
-- gaoxiao_1/4_competitions_sprint_female
-- gaoxiao_1/2_competitions_sprint_male
-- gaoxiao_1/2_competitions_sprint_female
-- gaoxiao_final_competitions_sprint_male
-- gaoxiao_final_competitions_sprint_female
-
----
-
-- gongkai_first_competitions_sprint_male
-- gongkai_first_competitions_sprint_female
-- gongkai_final_competitions_sprint_male
-- gongkai_final_competitions_sprint_female
-
----
-
-- dashi_first_competitions_sprint_male
-- dashi_first_competitions_sprint_female
-- dashi_final_competitions_sprint_male
-- dashi_final_competitions_sprint_female
-
----
-
-- kahuna_first_competitions_sprint_male
-- kahuna_first_competitions_sprint_female
-- kahuna_final_competitions_sprint_male
-- kahuna_final_competitions_sprint_female
-
+- U12组男子_躺板_初赛
+- U12组男子_躺板_决赛
+- U12组女子_躺板_初赛
+- U12组女子_躺板_决赛
+- U15组男子_躺板_初赛
+- U15组男子_躺板_决赛
+- U15组女子_躺板_初赛
+- ...
 ---
 
 每一场比赛都对应一个表
+
+## 统一翻译规定：
+
+- 比赛（例2024年春季比赛）： event
+- 运动员（例张三）： athlete
+- 队伍（例北京队）： team
+- 分组（例U9男子组）： division
+- 赛程（1/4决赛）： schedule
+- 项目（例6000米长距离赛）： competitions
+- 长距离赛（例6000米长距离赛）： long_distant
+- 趴板划水赛（例200米趴板划水赛）： prone_paddle
+- 竞速赛（例200米竞速赛）： sprint
+- 初赛： preliminary
+- 决赛： final
+- 分组（根据长距离赛的分组）： _group
