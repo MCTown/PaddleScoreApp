@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:paddle_score_app/page_widgets/race_page.dart';
 import 'package:provider/provider.dart';
 import '/page_widgets/home_page_content.dart';
+import 'page_widgets/createRacePage.dart';
 void main() {
   runApp(
     ChangeNotifierProvider(
@@ -65,44 +65,54 @@ class _MyHomePageState extends State<MyHomePage> {
       case 1:
         page = Placeholder() as Widget;
         break;
+      case 2:
+        page = CreateRacePage();
       default:
-        page = RacePage(raceName: appState.races[size-selectedIndex+1])as Widget;
+        page = RacePage(raceName: appState.races[size-selectedIndex+2])as Widget;
         break;
     }
     return LayoutBuilder(
       builder: (context,constraints){
+        var navigationWidth = constraints.maxWidth*0.13;
         return Scaffold(
           body:Row(
             children: [
               AnimatedContainer(
                   duration: Duration(milliseconds: 200),
-                  width: isRailExtended ? 200 : 50,
+                  width: isRailExtended ? navigationWidth : 50,
                   padding:EdgeInsets.only(top:16.0,right: 6),
                   child:Stack(
                     children: [
                       if(isRailExtended)
                         SafeArea(child:
-                        NavigationRail(
-                          extended: constraints.maxWidth>=700,
-                          selectedIndex:selectedIndex,
-                          onDestinationSelected:(value){
-                            navigateToPage(value);
-                          },
-                          destinations:[
-                            const NavigationRailDestination(
-                              icon:Icon(Icons.home),
-                              label:Text('首页'),
-                            ),
-                            const NavigationRailDestination(
-                              icon:Icon(Icons.settings),
-                              label:Text('设置'),
-                            ),
-                            for(var i = appState.races.length-1; i >=0; i--)
-                                NavigationRailDestination(
-                                  icon: Icon(Icons.start),
-                                  label: Text(appState.races[i]),
-                                )
-                          ],
+                        Padding(
+                          padding: const EdgeInsets.only(top: 27),
+                          child: NavigationRail(
+                            extended: constraints.maxWidth>=700,
+                            selectedIndex:selectedIndex,
+                            onDestinationSelected:(value){
+                              navigateToPage(value);
+                            },
+                            destinations:[
+                              const NavigationRailDestination(
+                                icon:Icon(Icons.home),
+                                label:Text('首页'),
+                              ),
+                              const NavigationRailDestination(
+                                icon:Icon(Icons.settings),
+                                label:Text('管事赛事'),
+                              ),
+                              const NavigationRailDestination(
+                                  icon:Icon(Icons.add),
+                                  label: Text('创建赛事')
+                              ),
+                              for(var i = appState.races.length-1; i >=0; i--)
+                                  NavigationRailDestination(
+                                    icon: Icon(Icons.start),
+                                    label: Text(appState.races[i]),
+                                  )
+                            ],
+                          ),
                         ),
                         ),
                       Positioned(

@@ -24,24 +24,6 @@ class HomePageContent extends StatelessWidget{
                   decoration: InputDecoration(hintText: '请输入赛事名称'),
                 ),
                 const SizedBox(height:16),
-                ElevatedButton(
-                  onPressed:()async{
-                    final result = await FilePicker.platform.pickFiles(
-                      type:FileType.custom,
-                      allowedExtensions: ['xlsx','xls'],
-                    );
-                    if(result!=null){
-                      final file = result.files.first;
-                      if(file!=null && file.path!=null) {
-                        final filePath = file.path;
-                        print('选中的文件路径：$filePath');
-                      }
-                    }else{
-                      print('用户未选择文件');
-                    }
-                  },
-                  child: const Text('上传参赛人员名单'),
-                ),
               ],
             ),
             actions:[
@@ -75,19 +57,6 @@ class HomePageContent extends StatelessWidget{
                 mainAxisSize:MainAxisSize.min,
                 children:[
                   Text('请创建或查看赛事，目前已创建$counts', style:const TextStyle(fontSize:16),),
-                  const SizedBox(height:16),
-                  ElevatedButton(
-                    style:ButtonStyle(
-                        minimumSize: WidgetStateProperty.all(const Size(200, 50)),
-                        side:WidgetStateProperty.all(
-                            BorderSide(color:Colors.grey.shade400,width:1)
-                        )
-                    ),
-                    onPressed:(){
-                      showAddRaceDialog();
-                    },
-                    child:const Text('创建赛事',style:TextStyle(fontSize:16)),
-                  )
                 ],
               ),
             ),

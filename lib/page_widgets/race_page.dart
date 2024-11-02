@@ -28,88 +28,97 @@ class _RaceCard extends State<RaceCard>{
         title = '团体竞赛';
         break;
     }
-    return SizedBox(
-      width:900,
-      height:200,
-      child:InkWell(
-        onTap:(){
-          print('点击了$title');
-        },
-        onHover:(hovering){
-          isHovering = hovering;
-          (context as Element).markNeedsBuild();
-        },
-        child:Stack(
-          alignment: Alignment.center,
-          children:[
-            AnimatedContainer(
-              duration:const Duration(milliseconds: 200),
-              curve:Curves.easeInOut,
-              decoration:BoxDecoration(
-                borderRadius:BorderRadius.circular(12),
-                boxShadow: isHovering
-                ?[
-                  BoxShadow(
-                    color:Colors.grey.withOpacity(0.5),
-                    blurRadius: 10,
-                    spreadRadius: 5,
-                  ),
-                ]:[
-                  const BoxShadow(
-                    color:Colors.transparent,
-                    blurRadius: 0,
-                    spreadRadius: 0,
-                  ),
-                ],
-              ),
-              child:Card(
-                elevation:0,
-                // shadowColor: isHovering ? Colors.purple:Colors.grey,
-                shape:RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                // color:Colors.white.withOpacity(isHovering?0.8:1.0),
-                child:Padding(
-                  padding:const EdgeInsets.all(16.0),
-                  child:AnimatedOpacity(
-                      opacity: isHovering?0.0:1.0,
-                      duration: const Duration(milliseconds:200),
-                      child:Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children:[
-                        Expanded(
-                          child:Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment:CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children:[
-                                Text(title,style:const TextStyle(
-                                    fontSize:40)),
-                              ],
-                            ),
-                          ),
+    return LayoutBuilder(
+      builder:(BuildContext,BoxConstraints constraints) {
+        double cardWidth = constraints.maxWidth*0.8;
+        return SizedBox(
+          width: cardWidth,
+          height: 200,
+          child: InkWell(
+              onTap: () {
+                print('点击了$title');
+              },
+              onHover: (hovering) {
+                setState(() {
+                  isHovering = hovering;
+                });
+              },
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeInOut,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: isHovering
+                          ? [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          blurRadius: 10,
+                          spreadRadius: 5,
+                        ),
+                      ] : [
+                        const BoxShadow(
+                          color: Colors.transparent,
+                          blurRadius: 0,
+                          spreadRadius: 0,
                         ),
                       ],
                     ),
+                    child: Card(
+                      elevation: isHovering ? 10 : 4,
+                      shadowColor: isHovering ? Colors.grey:Colors.grey,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      // color:Colors.white.withOpacity(isHovering?0.8:1.0),
+                      child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: AnimatedOpacity(
+                            opacity: isHovering ? 0.0 : 1.0,
+                            duration: const Duration(milliseconds: 200),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Center(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment
+                                          .center,
+                                      mainAxisAlignment: MainAxisAlignment
+                                          .center,
+                                      children: [
+                                        Text(title, style: const TextStyle(
+                                            fontSize: 40)),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                      ),
+                    ),
+                  ),
+                  AnimatedOpacity(
+                      opacity: isHovering ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 200),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('查看详情', style: TextStyle(
+                              fontSize: 36, color: Colors.purple)),
+                          Icon(Icons.arrow_forward_ios, color: Colors.purple),
+                        ],
+                      )
                   )
-                ),
-              ),
-            ),
-            AnimatedOpacity(
-                opacity: isHovering?1.0:0.0,
-                duration: const Duration(milliseconds: 200),
-                child:const Row(
-                  mainAxisSize:MainAxisSize.min,
-                  children: [
-                    Text('查看详情',style:TextStyle(fontSize: 36,color:Colors.purple)),
-                    Icon(Icons.arrow_forward_ios,color:Colors.purple),
-                  ],
-                )
-            )
-          ],
-        )
-      ),
+                ],
+              )
+          ),
+        );
+      }
     );
   }
 }
@@ -131,7 +140,7 @@ class RacePage extends StatelessWidget{
             RaceCard(rt:RaceType.longRace),
             Divider(
               thickness:3,
-              endIndent: 800,
+              endIndent: 1000,
               indent: 0,
             ),
             RaceCard(rt:RaceType.shortRace),
