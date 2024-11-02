@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:paddle_score_app/page_widgets/race_page.dart';
 import 'package:provider/provider.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '/page_widgets/home_page_content.dart';
 import 'page_widgets/createRacePage.dart';
 void main() {
+  sqfliteFfiInit();
+  databaseFactory = databaseFactoryFfi;
   runApp(
     ChangeNotifierProvider(
       create: (context)=>MyAppState(),

@@ -38,7 +38,7 @@ dependencies:
   sqflite: any
   sqflite_common_ffi: any
   file_picker: any
-  excel: any
+  excel:  any
 dev_dependencies:
   flutter_test:
     sdk: flutter
