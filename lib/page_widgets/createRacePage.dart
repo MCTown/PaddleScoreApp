@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 import '../main.dart';
+import '../utils/ExcelAnalysis.dart';
+import 'dart:io';
 
 class CreateRacePage extends StatefulWidget{
   const CreateRacePage({Key? key}) : super(key: key);
@@ -58,6 +60,8 @@ class _CreateRacePage extends State<CreateRacePage>{
         appState3.addRace(raceName);
       }
       if(_selectedFile!=null && raceName.isNotEmpty) {
+        List<int> bytes = _selectedFile!.bytes!;
+        loadExcelFileToAthleteDatabase(raceName,bytes);
         appState3.addRace(_raceNameController.text);
         showDialog(
           context: context,
