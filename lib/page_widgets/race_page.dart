@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 enum RaceType{
   longRace,
-  shortRace,
+  shortRace1,
+  shortRace2,
   teamRace,
   personalScore,
 }
@@ -20,10 +21,13 @@ class _RaceCard extends State<RaceCard>{
     String title;
     switch(rt){
       case RaceType.longRace:
-        title = '长距离竞赛';
+        title = '6000米长距离赛（青少年3000米）';
         break;
-      case RaceType.shortRace:
-        title = '短距离竞赛';
+      case RaceType.shortRace1:
+        title = '200米趴板划水赛（仅限青少年）';
+        break;
+      case RaceType.shortRace2:
+        title = '200米竞速赛';
         break;
       case RaceType.teamRace:
         title = '团体竞赛';
@@ -34,10 +38,10 @@ class _RaceCard extends State<RaceCard>{
     }
     return LayoutBuilder(
       builder:(BuildContext,BoxConstraints constraints) {
-        double cardWidth = constraints.maxWidth*0.8;
+        double cardWidth = constraints.maxWidth*0.7 ;
         return SizedBox(
           width: cardWidth,
-          height: 200,
+          height: 100,
           child: InkWell(
               onTap: () {
                 print('点击了$title');
@@ -59,8 +63,8 @@ class _RaceCard extends State<RaceCard>{
                           ? [
                         BoxShadow(
                           color: Colors.grey.withOpacity(0.5),
-                          blurRadius: 10,
-                          spreadRadius: 5,
+                          blurRadius: 12,
+                          spreadRadius:12,
                         ),
                       ] : [
                         const BoxShadow(
@@ -83,22 +87,14 @@ class _RaceCard extends State<RaceCard>{
                             opacity: isHovering ? 0.0 : 1.0,
                             duration: const Duration(milliseconds: 200),
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment: MainAxisAlignment.start,
                               children: [
                                 Expanded(
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment: CrossAxisAlignment
-                                          .center,
-                                      mainAxisAlignment: MainAxisAlignment
-                                          .center,
-                                      children: [
-                                        Text(title, style: const TextStyle(
-                                            fontSize: 40)),
-                                      ],
-                                    ),
-                                  ),
+                                  child:FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(title, style: const TextStyle(
+                                        fontSize: 24, color: Colors.black)),
+                                  )
                                 ),
                               ],
                             ),
@@ -112,8 +108,11 @@ class _RaceCard extends State<RaceCard>{
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text('查看详情', style: TextStyle(
-                              fontSize: 36, color: Colors.purple)),
+                          FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text('查看详情', style: TextStyle(
+                                  fontSize: 16, color: Colors.purple))
+                          ),
                           Icon(Icons.arrow_forward_ios, color: Colors.purple),
                         ],
                       )
@@ -142,18 +141,10 @@ class RacePage extends StatelessWidget{
           mainAxisSize: MainAxisSize.min,
           children:[
             RaceCard(rt:RaceType.longRace),
-            Divider(
-              thickness:3,
-              endIndent: 1000,
-              indent: 0,
-            ),
-            RaceCard(rt:RaceType.shortRace),
-            Divider(
-              thickness:3,
-              endIndent: 0,
-              indent: 800,
-            ),
+            RaceCard(rt:RaceType.shortRace1),
+            RaceCard(rt:RaceType.shortRace2),
             RaceCard(rt:RaceType.teamRace),
+            RaceCard(rt:RaceType.personalScore),
           ]
         )
       )

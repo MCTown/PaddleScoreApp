@@ -78,6 +78,8 @@ class _CreateRacePage extends State<CreateRacePage>{
                   onPressed: () {
                     //跳转到赛事页面
                     Navigator.of(context).pop();
+                    appState3.setSelectRace(raceName);
+                    Navigator.pushNamed(context, '/race/$raceName');
                   },
                   child: const Text('跳转到赛事页面'),
                 ),
