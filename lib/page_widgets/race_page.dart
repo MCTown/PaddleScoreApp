@@ -3,6 +3,7 @@ enum RaceType{
   longRace,
   shortRace,
   teamRace,
+  personalScore,
 }
 class RaceCard extends StatefulWidget{
   final RaceType rt;
@@ -26,6 +27,9 @@ class _RaceCard extends State<RaceCard>{
         break;
       case RaceType.teamRace:
         title = '团体竞赛';
+        break;
+      case RaceType.personalScore:
+        title  = '个人积分';
         break;
     }
     return LayoutBuilder(

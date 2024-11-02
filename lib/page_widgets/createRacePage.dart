@@ -37,29 +37,29 @@ class _CreateRacePage extends State<CreateRacePage>{
     if (_formKey.currentState!.validate()){
       String raceName = _raceNameController.text;
       //处理Excel文件
-      if(appState3.races.contains(raceName)){
-        showDialog(
-          context: context,
-          builder: (BuildContext context){
-            return AlertDialog(
-              title:const Text('赛事创建失败'),
-              content:const Text('赛事名称已存在,请输入不同的赛事名称'),
-              actions:[
-                TextButton(
-                  onPressed: (){
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('确认'),
-                ),
-              ],
-            );
-          },
-        );
-        return;
-      }else{
-        appState3.addRace(raceName);
-      }
       if(_selectedFile!=null && raceName.isNotEmpty) {
+        if(appState3.races.contains(raceName)){
+          showDialog(
+            context: context,
+            builder: (BuildContext context){
+              return AlertDialog(
+                title:const Text('赛事创建失败'),
+                content:const Text('赛事名称已存在,请输入不同的赛事名称'),
+                actions:[
+                  TextButton(
+                    onPressed: (){
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('确认'),
+                  ),
+                ],
+              );
+            },
+          );
+          return;
+        }else{
+          appState3.addRace(raceName);
+        }
         List<int> bytes = _selectedFile!.bytes!;
         loadExcelFileToAthleteDatabase(raceName,bytes);
         appState3.addRace(_raceNameController.text);
