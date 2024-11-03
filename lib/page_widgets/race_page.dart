@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'longDistanceRace_page.dart';
 enum RaceType{
   longRace,
   shortRace1,
@@ -6,13 +9,15 @@ enum RaceType{
   teamRace,
   personalScore,
 }
+class RaceCardState extends ChangeNotifier{
+  String raceEventName = '';
+}
 class RaceCard extends StatefulWidget{
   final RaceType rt;
   const RaceCard({super.key,required this.rt});
   @override
   State<RaceCard> createState()=>_RaceCard();
 }
-
 class _RaceCard extends State<RaceCard>{
   bool isHovering = false;
   @override
@@ -37,14 +42,60 @@ class _RaceCard extends State<RaceCard>{
         break;
     }
     return LayoutBuilder(
-      builder:(BuildContext,BoxConstraints constraints) {
+      builder:(BuildContext context,BoxConstraints constraints) {
+        var raceCardState_ = context.watch<RaceCardState>();
+        String raceName = raceCardState_.raceEventName;
         double cardWidth = constraints.maxWidth*0.7 ;
         return SizedBox(
           width: cardWidth,
           height: 100,
           child: InkWell(
               onTap: () {
+                final raceBar = '$raceName/$title';
                 print('点击了$title');
+                switch(rt){
+                 case RaceType.longRace:
+                   Navigator.push(
+                     context,
+                     MaterialPageRoute(
+                       builder:(context)=>longDistanceRacePage(raceBar:raceBar),
+                     ),
+                   );
+                   break;
+                  case RaceType.shortRace1:
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:(context)=>longDistanceRacePage(raceBar:raceBar),
+                      ),
+                    );
+                    break;
+                    case RaceType.shortRace2:
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:(context)=>longDistanceRacePage(raceBar:raceBar),
+                      ),
+                    );
+                    break;
+                    case RaceType.teamRace:
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:(context)=>longDistanceRacePage(raceBar:raceBar),
+                      ),
+                    );
+                    break;
+                    case RaceType.personalScore:
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:(context)=>longDistanceRacePage(raceBar:raceBar),
+                      ),
+                    );
+                    break;
+                }
+
               },
               onHover: (hovering) {
                 setState(() {
@@ -125,12 +176,13 @@ class _RaceCard extends State<RaceCard>{
     );
   }
 }
-
 class RacePage extends StatelessWidget{
   final String raceName;
   const RacePage({super.key,required this.raceName});
   @override
   Widget build(BuildContext context){
+    var raceCardState = context.watch<RaceCardState>();
+    raceCardState.raceEventName = raceName;
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primaryContainer,
       appBar:AppBar(

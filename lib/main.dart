@@ -31,7 +31,12 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home:MyHomePage(),
+      home:MultiProvider(providers: [
+        ChangeNotifierProvider(create: (context)=>MyAppState()),
+        ChangeNotifierProvider(create: (context)=>RaceCardState()),
+      ],
+      child:MyHomePage(),
+      ),
       routes:{
         '/home':(context)=>MyHomePage(),
         '/create':(context)=>CreateRacePage(),
