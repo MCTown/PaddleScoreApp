@@ -37,7 +37,7 @@ class DatabaseManager {
   // 插入长距离的具体实现在读取Excel的时已经完成
   static Future<void> initLongDistantTable(Database db) async {
     await db.execute('''
-        CREATE TABLE competitions_long_distant (
+        CREATE TABLE '长距离比赛' (
           id INT PRIMARY KEY,
           name VARCHAR(255),
           time VARCHAR(255)
