@@ -37,8 +37,7 @@ Future<void> loadExcelFileToAthleteDatabase(
       print("id不合法，跳过");
       continue;
     }
-    print(
-        "第$i行数据：${row[0]?.value ?? ''} ${row[1]?.value ?? ''} ${row[2]?.value ?? ''} ${row[3]?.value ?? ''}");
+    // print("第$i行数据：${row[0]?.value ?? ''} ${row[1]?.value ?? ''} ${row[2]?.value ?? ''} ${row[3]?.value ?? ''}");
     await db.insert(
       'athletes',
       {
@@ -52,7 +51,7 @@ Future<void> loadExcelFileToAthleteDatabase(
       },
     );
     // 先处理长距离的表
-    await db.insert("competitions_long_distant", {
+    await db.insert("长距离比赛", {
       "id": row[1]!.value.toString(),
       "name": row[2]!.value.toString(),
       "time": "0"
@@ -78,8 +77,7 @@ Future<void> initScoreTable(Database db) async {
   List<String> divisions =
       divisions_raw.map((row) => row['division'] as String).toList();
   print('查询到的division：$divisions');
-
-  List<String> competitions = ['长距离', '躺板', '竞速'];
+  List<String> competitions = ['躺板', '竞速'];
   // print('查询到的competition：$competitions');
   for (var competition in competitions) {
     for (var division in divisions) {
@@ -121,7 +119,8 @@ Future<void> generateScoreTable(Database db, List<Map<String, Object?>> athlete,
         CREATE TABLE '${division}_${schedule}_$competition' (
           id INT PRIMARY KEY,
           name VARCHAR(255),
-          time VARCHAR(255)
+          time VARCHAR(255),
+          _group INT
         );
       ''');
   // 生成比赛表
