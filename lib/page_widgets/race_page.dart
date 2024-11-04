@@ -58,7 +58,7 @@ class _RaceCard extends State<RaceCard>{
                    Navigator.push(
                      context,
                      MaterialPageRoute(
-                       builder:(context)=>longDistanceRacePage(raceBar:raceBar),
+                       builder:(context)=>LongDistanceRacePage(raceBar:raceBar, raceEventName:raceName),
                      ),
                    );
                    break;
@@ -66,7 +66,7 @@ class _RaceCard extends State<RaceCard>{
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder:(context)=>longDistanceRacePage(raceBar:raceBar),
+                        builder:(context)=>LongDistanceRacePage(raceBar:raceBar, raceEventName:raceName),
                       ),
                     );
                     break;
@@ -74,7 +74,7 @@ class _RaceCard extends State<RaceCard>{
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder:(context)=>longDistanceRacePage(raceBar:raceBar),
+                        builder:(context)=>LongDistanceRacePage(raceBar:raceBar, raceEventName:raceName),
                       ),
                     );
                     break;
@@ -82,7 +82,7 @@ class _RaceCard extends State<RaceCard>{
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder:(context)=>longDistanceRacePage(raceBar:raceBar),
+                        builder:(context)=>LongDistanceRacePage(raceBar:raceBar, raceEventName:raceName),
                       ),
                     );
                     break;
@@ -90,7 +90,7 @@ class _RaceCard extends State<RaceCard>{
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder:(context)=>longDistanceRacePage(raceBar:raceBar),
+                        builder:(context)=>LongDistanceRacePage(raceBar:raceBar, raceEventName:raceName),
                       ),
                     );
                     break;
