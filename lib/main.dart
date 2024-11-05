@@ -1,9 +1,17 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:paddle_score_app/page_widgets/race_page.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '/page_widgets/home_page_content.dart';
 import 'page_widgets/createRacePage.dart';
+import 'package:path/path.dart' as p;
+
 void main() {
+  sqfliteFfiInit();
+  databaseFactory = databaseFactoryFfi;
   runApp(
     ChangeNotifierProvider(
       create: (context)=>MyAppState(),
@@ -17,14 +25,26 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    print("Learning widget built");
     return MaterialApp(
       title: 'PaddleScore demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home:MyHomePage(),
+      home:MultiProvider(providers: [
+        ChangeNotifierProvider(create: (context)=>MyAppState()),
+        ChangeNotifierProvider(create: (context)=>RaceCardState()),
+      ],
+      child:MyHomePage(),
+      ),
+      routes:{
+        '/home':(context)=>MyHomePage(),
+        '/create':(context)=>CreateRacePage(),
+        '//race/:raceName':(context) {
+          final raceName = ModalRoute.of(context)!.settings.arguments as String;
+          return RacePage(raceName: raceName);
+        }
+      },
     );
   }
 }
@@ -36,6 +56,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class MyAppState extends ChangeNotifier {
+
+  String selectedRace = '';
+  String get raceName => selectedRace;
   List<String> races = [];
   int createCount = 0;
   void addRace(String raceName) {
@@ -43,7 +66,17 @@ class MyAppState extends ChangeNotifier {
     createCount++;
     notifyListeners();
   }
-
+  void setSelectRace(String raceName){
+    selectedRace = raceName;
+    notifyListeners();
+  }
+  Future<void> loadRaceNames() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final files_path = p.join(directory.path,'PaddleScoreData');
+    final entities = await Directory(files_path).listSync();
+    races = entities.where((entity) => entity is File && p.extension(entity.path)=='.db').map((entity)=>p.basenameWithoutExtension(entity.path)).toList();
+    notifyListeners();
+  }
 }
 
 class _MyHomePageState extends State<MyHomePage> {
@@ -57,6 +90,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context){
     var appState = context.watch<MyAppState>();
+    appState.loadRaceNames();
     Widget page;
     int size = appState.races.length;
     switch(selectedIndex){
@@ -107,10 +141,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                   icon:Icon(Icons.add),
                                   label: Text('创建赛事')
                               ),
-                              for(var i = appState.races.length-1; i >=0; i--)
+                              for(var race in appState.races.reversed)
                                   NavigationRailDestination(
                                     icon: Icon(Icons.start),
-                                    label: Text(appState.races[i]),
+                                    label: Text(race),
                                   )
                             ],
                           ),
