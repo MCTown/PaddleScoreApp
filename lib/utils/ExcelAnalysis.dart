@@ -22,11 +22,11 @@ Future<void> loadExcelFileToAthleteDatabase(
   //   var bytes = File(result.paths.first as String).readAsBytesSync();
   Database db = await DatabaseManager.getDatabase(dbName);
   var excel = Excel.decodeBytes(xlsxFileBytes);
-  print("可用的table：${excel.tables}");
+  // print("可用的table：${excel.tables}");
   var table_selected = excel.tables.keys.first;
-  print("选中的table：$table_selected");
+  // print("选中的table：$table_selected");
   var table = excel.tables[table_selected]!;
-  print("表格的行数：${table.maxRows}");
+  // print("表格的行数：${table.maxRows}");
   // 从第二行开始读取数据
   for (int i = 1; i < table.maxRows; i++) {
     var row = table.row(i);
