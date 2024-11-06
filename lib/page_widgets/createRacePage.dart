@@ -1,9 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 import '../main.dart';
 import '../utils/ExcelAnalysis.dart';
-import 'dart:io';
 
 class CreateRacePage extends StatefulWidget{
   const CreateRacePage({Key? key}) : super(key: key);
@@ -14,17 +15,22 @@ class CreateRacePage extends StatefulWidget{
 class _CreateRacePage extends State<CreateRacePage>{
   final _formKey = GlobalKey<FormState>();
   final _raceNameController = TextEditingController();
-  PlatformFile? _selectedFile;
+  FilePickerResult? _selectedFile;
+  List<int> bytes = [];
 
   Future<void> _pickExcelFile() async{
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['xlsx'],
+        withData: true,
+        allowMultiple: false,
       );
       if (result != null) {
         setState(() {
-          _selectedFile = result.files.first;
+          _selectedFile = result;
+          bytes = File(result.paths.first!).readAsBytesSync();
+          // print(_selectedFile);
         });
       }
     } catch(e){
@@ -37,31 +43,29 @@ class _CreateRacePage extends State<CreateRacePage>{
     if (_formKey.currentState!.validate()){
       String raceName = _raceNameController.text;
       //处理Excel文件
-      if(appState3.races.contains(raceName)){
-        showDialog(
-          context: context,
-          builder: (BuildContext context){
-            return AlertDialog(
-              title:const Text('赛事创建失败'),
-              content:const Text('赛事名称已存在,请输入不同的赛事名称'),
-              actions:[
-                TextButton(
-                  onPressed: (){
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('确认'),
-                ),
-              ],
-            );
-          },
-        );
-        return;
-      }else{
-        appState3.addRace(raceName);
-      }
       if(_selectedFile!=null && raceName.isNotEmpty) {
-        List<int> bytes = _selectedFile!.bytes!;
-        loadExcelFileToAthleteDatabase(raceName,bytes);
+        if(appState3.races.contains(raceName)){
+          showDialog(
+            context: context,
+            builder: (BuildContext context){
+              return AlertDialog(
+                title:const Text('赛事创建失败'),
+                content:const Text('赛事名称已存在,请输入不同的赛事名称'),
+                actions:[
+                  TextButton(
+                    onPressed: (){
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('确认'),
+                  ),
+                ],
+              );
+            },
+          );
+          return;
+        }else{
+          loadExcelFileToAthleteDatabase(raceName,bytes);
+        }
         appState3.addRace(_raceNameController.text);
         showDialog(
           context: context,
@@ -74,6 +78,8 @@ class _CreateRacePage extends State<CreateRacePage>{
                   onPressed: () {
                     //跳转到赛事页面
                     Navigator.of(context).pop();
+                    appState3.setSelectRace(raceName);
+                    Navigator.pushNamed(context, '/race/$raceName');
                   },
                   child: const Text('跳转到赛事页面'),
                 ),
@@ -185,7 +191,7 @@ class _CreateRacePage extends State<CreateRacePage>{
                         alignment: Alignment.centerLeft,
                         child:Padding(
                           padding:const EdgeInsets.only(top:8.0),
-                          child: Text('已选择文件：${_selectedFile!.name}',
+                          child: Text('已选择文件：${_selectedFile!.files.first.name}',
                             style: const TextStyle(fontSize: 18),),
                         ),
                       ),
