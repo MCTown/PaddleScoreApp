@@ -1,9 +1,8 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:excel/excel.dart';
 import 'package:paddle_score_app/utils/DatabaseManager.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:paddle_score_app/utils/GlobalFunction.dart';
 import 'package:sqflite/sqflite.dart';
 
 Future<List<int>?> generateLongDistanceScoreExcel(String dbName) async {
@@ -14,21 +13,7 @@ Future<List<int>?> generateLongDistanceScoreExcel(String dbName) async {
       await db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'");
   List<String> tableNames = tables.map((row) => row['name'] as String).toList();
   print(tableNames);
-  var divisions = [];
-  for (var tableName in tableNames) {
-    try {
-      tableName = tableName.split('_')[0];
-    } catch (e) {
-      print("表名不符合规范");
-      continue;
-    }
-    if (!divisions.contains(tableName)) {
-      divisions.add(tableName);
-    }
-  }
-  divisions.remove('athletes');
-  divisions.remove('长距离比赛');
-  print(divisions);
+  var divisions = await getDivisions(dbName);
   // 生成Excel，生成n个sheet，每一个sheet代表一个组别
   // 生成表头
   var excel = Excel.createExcel();
@@ -125,22 +110,22 @@ Future<List<int>?> generateLongDistanceScoreExcel(String dbName) async {
       var rowIndex = overviewSheet.maxRows;
       overviewSheet
           .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: rowIndex))
-          .value = FormulaCellValue('${division}!A${i + 3}');
+          .value = FormulaCellValue('$division!A${i + 3}');
       overviewSheet
           .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: rowIndex))
-          .value = FormulaCellValue('${division}!B${i + 3}');
+          .value = FormulaCellValue('$division!B${i + 3}');
       overviewSheet
           .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: rowIndex))
-          .value = FormulaCellValue('${division}!C${i + 3}');
+          .value = FormulaCellValue('$division!C${i + 3}');
       overviewSheet
           .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: rowIndex))
-          .value = FormulaCellValue('${division}!D${i + 3}');
+          .value = FormulaCellValue('$division!D${i + 3}');
       overviewSheet
           .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: rowIndex))
-          .value = TextCellValue('$division');
+          .value = TextCellValue(division);
       overviewSheet
           .cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: rowIndex))
-          .value = FormulaCellValue('${division}!E${i + 3}');
+          .value = FormulaCellValue('$division!E${i + 3}');
     }
   }
   var fileBytes = excel.encode();
@@ -153,5 +138,17 @@ String randomTimeGenerator() {
   int hour = random.nextInt(24);
   int minute = random.nextInt(60);
   int second = random.nextInt(60);
-  return '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}.${second.toString().padLeft(2, '0')}';
+  // 0.1的概率为DNS
+  if (random.nextInt(10) == 0) {
+    return 'DNS';
+  }
+  // 0.05的概率为DNF
+  if (random.nextInt(20) == 0) {
+    return 'DNF';
+  }
+  // 0.005的概率为DSQ
+  if (random.nextInt(500) == 0) {
+    return 'DSQ';
+  }
+  return '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}:${second.toString().padLeft(2, '0')}';
 }

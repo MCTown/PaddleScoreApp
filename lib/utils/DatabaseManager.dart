@@ -24,7 +24,6 @@ class DatabaseManager {
     name VARCHAR(255),
     team VARCHAR(255),
     division VARCHAR(255),
-    sex VARCHAR(10),
     long_distant_score INT,
     prone_paddle_score INT,
     sprint_score INT
@@ -43,5 +42,12 @@ class DatabaseManager {
           time VARCHAR(255)
 );
       ''');
+  }
+
+  // 获取所有数据表的表名
+  static Future<List<String>> getTableNames(Database db) {
+    return db
+        .rawQuery("SELECT name FROM sqlite_master WHERE type='table'")
+        .then((tables) => tables.map((row) => row['name'] as String).toList());
   }
 }
