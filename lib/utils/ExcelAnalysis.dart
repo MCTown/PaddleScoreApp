@@ -1,9 +1,4 @@
-import 'dart:ffi';
-import 'dart:io';
-
 import 'package:excel/excel.dart';
-import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'DatabaseManager.dart';
@@ -67,20 +62,24 @@ Future<void> loadExcelFileToAthleteDatabase(
 // }
 
 // 由以下实体的排列组合生成表
-// 1. 组别 2. 比赛进度（预赛、决赛）3. 项目（长距离、躺板、竞速）4. 性别
+// 1. 组别 2. 比赛进度（预赛、决赛）3. 项目（长距离、趴板、竞速）4. 性别
 // 确定生成函数
 Future<void> initScoreTable(Database db) async {
   // 查询athlete表中有哪些division
-  var divisions_raw = await db.rawQuery('''
+  var divisionsRaw = await db.rawQuery('''
     SELECT DISTINCT division FROM athletes
   ''');
   List<String> divisions =
-      divisions_raw.map((row) => row['division'] as String).toList();
+      divisionsRaw.map((row) => row['division'] as String).toList();
   print('查询到的division：$divisions');
-  List<String> competitions = ['躺板', '竞速'];
+  List<String> competitions = ['趴板', '竞速'];
   // print('查询到的competition：$competitions');
   for (var competition in competitions) {
     for (var division in divisions) {
+      // 如果分组为非青少年（没有U），且比赛为趴板，则跳过
+      if (!RegExp(r'U\d+').hasMatch(division) && competition == '趴板') {
+        continue;
+      }
       // 先查询满足这三项的运动员数量
       var athletes = (await db.rawQuery('''
           SELECT * FROM athletes
@@ -94,7 +93,9 @@ Future<void> initScoreTable(Database db) async {
       }
       print("比赛项目：$division $competition 共有$athleteCount名运动员");
       // 生成比赛表
-      if (athleteCount <= 64) {
+      if (athleteCount <= 16) {
+        await generateScoreTable(db, athletes, division, "决赛", competition);
+      } else if (athleteCount <= 64) {
         await generateScoreTable(db, athletes, division, "初赛", competition);
         await generateScoreTable(db, athletes, division, "决赛", competition);
       } else if (athleteCount <= 128) {
@@ -107,7 +108,8 @@ Future<void> initScoreTable(Database db) async {
         await generateScoreTable(db, athletes, division, "1/2决赛", competition);
         await generateScoreTable(db, athletes, division, "决赛", competition);
       } else {
-        print("运动员数量超过256，无法生成比赛表");
+        throw Exception("运动员数量超过256，无法生成比赛表");
+        // print("运动员数量超过256，无法生成比赛表");
       }
     }
   }
@@ -120,7 +122,8 @@ Future<void> generateScoreTable(Database db, List<Map<String, Object?>> athlete,
           id INT PRIMARY KEY,
           name VARCHAR(255),
           time VARCHAR(255),
-          _group INT
+          _group INT,
+          start_position INT,
         );
       ''');
   // 生成比赛表
