@@ -6,21 +6,12 @@ import 'DatabaseManager.dart';
 // 传入数据库对象，让用户选择一个excel文件，然后将excel文件中的数据导入到数据库中
 Future<void> loadExcelFileToAthleteDatabase(
     String dbName, List<int> xlsxFileBytes) async {
-  // FilePickerResult? result = await FilePicker.platform.pickFiles(
-  //   type: FileType.custom,
-  //   allowedExtensions: ['xlsx'],
-  //   withData: true,
-  //   allowMultiple: false, // Ensure single file selection
-  // );
-  // if (result != null) {
-  //   print("文件已选择${result.paths.first as String}");
-  //   var bytes = File(result.paths.first as String).readAsBytesSync();
   Database db = await DatabaseManager.getDatabase(dbName);
   var excel = Excel.decodeBytes(xlsxFileBytes);
   // print("可用的table：${excel.tables}");
-  var table_selected = excel.tables.keys.first;
+  var tableSelected = excel.tables.keys.first;
   // print("选中的table：$table_selected");
-  var table = excel.tables[table_selected]!;
+  var table = excel.tables[tableSelected]!;
   // print("表格的行数：${table.maxRows}");
   // 从第二行开始读取数据
   for (int i = 1; i < table.maxRows; i++) {
@@ -51,15 +42,10 @@ Future<void> loadExcelFileToAthleteDatabase(
       "name": row[2]!.value.toString(),
       "time": "0"
     });
-    // print("运动员录入完成");
   }
   await initScoreTable(db);
   return;
 }
-// else {
-//   print("用户未选择文件，退出");
-//   return;
-// }
 
 // 由以下实体的排列组合生成表
 // 1. 组别 2. 比赛进度（预赛、决赛）3. 项目（长距离、趴板、竞速）4. 性别
@@ -100,7 +86,7 @@ Future<void> initScoreTable(Database db) async {
         await generateScoreTable(db, athletes, division, "决赛", competition);
       } else if (athleteCount <= 128) {
         await generateScoreTable(db, athletes, division, "初赛", competition);
-        await generateScoreTable(db, athletes, division, "1/4决赛", competition);
+        await generateScoreTable(db, athletes, division, "1/2决赛", competition);
         await generateScoreTable(db, athletes, division, "决赛", competition);
       } else if (athleteCount <= 256) {
         await generateScoreTable(db, athletes, division, "初赛", competition);
@@ -115,22 +101,55 @@ Future<void> initScoreTable(Database db) async {
   }
 }
 
-Future<void> generateScoreTable(Database db, List<Map<String, Object?>> athlete,
+Future<void> generateScoreTable(Database db, List<Map<String, Object?>> athletes,
     String division, String schedule, String competition) async {
   await db.execute('''
         CREATE TABLE '${division}_${schedule}_$competition' (
           id INT PRIMARY KEY,
           name VARCHAR(255),
           time VARCHAR(255),
+          long_distant_time VARCHAR(255),
           _group INT,
-          start_position INT,
+          start_position INT
         );
       ''');
   // 生成比赛表
-  for (var i = 0; i < athlete.length; i++) {
-    await db.execute('''
-        INSERT INTO '${division}_${schedule}_$competition' (id, name, time)
-        VALUES (${athlete[i]['id']}, '${athlete[i]['name']}', '0');
-      ''');
+  // 如果是非初赛，则不插入信息
+  // 如果是决赛且运动员数量不足16人，则插入信息
+  if (schedule == "决赛" && athletes.length <= 16) {
+    for (var athlete in athletes) {
+      await db.insert(
+        '${division}_${schedule}_$competition',
+        {
+          'id': athlete['id'],
+          'name': athlete['name'],
+          'time': '0',
+          'long_distant_time': '0',
+          '_group': 0,
+          'start_position': 0,
+        },
+      );
+    }
+  }
+  if (schedule == "初赛") {
+    // 生成分组
+    var group = <String, int>{};
+    for (var i = 0; i < athletes.length; i++) {
+      group[athletes[i]['id'].toString()] = i ~/ 16;
+    }
+    // 插入信息
+    for (var athlete in athletes) {
+      await db.insert(
+        '${division}_${schedule}_$competition',
+        {
+          'id': athlete['id'],
+          'name': athlete['name'],
+          'time': '0',
+          'long_distant_time': '0',
+          '_group': group[athlete['id'].toString()],
+          'start_position': 0,
+        },
+      );
+    }
   }
 }

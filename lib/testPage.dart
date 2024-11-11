@@ -1,4 +1,8 @@
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import 'package:paddle_score_app/utils/ExcelGeneration.dart';
+import 'package:paddle_score_app/utils/ScoreAnalysis.dart';
+
 import '/utils/GlobalFunction.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -7,8 +11,8 @@ import 'package:sqflite/sqflite.dart';
 import 'utils/DatabaseManager.dart';
 import 'utils/ExcelAnalysis.dart';
 
-class MatchList extends StatelessWidget {
-  const MatchList({super.key});
+class TestPage extends StatelessWidget {
+  const TestPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +20,7 @@ class MatchList extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('title'),
+        title: const Text('标题'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -30,96 +34,130 @@ class MatchList extends StatelessWidget {
         children: <Widget>[
           ListTile(
             leading: const Icon(Icons.map),
-            title: const Text('Map'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const TestNavigator()),
+            title: const Text('初始化数据库'),
+            onTap: () async {
+              String dbName = "athlete";
+              File xlsxFile = File("/home/apricityx/Desktop/参赛信息-_汉丰湖.xlsx");
+
+              // 显示加载对话框
+              showDialog(
+                context: context,
+                barrierDismissible: false, // 点击外部不可关闭
+                builder: (BuildContext context) {
+                  return const AlertDialog(
+                    content: Row(
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(width: 20),
+                        Text("加载中..."),
+                      ],
+                    ),
+                  );
+                },
               );
-              print(2); // 点击列表项时输出2
+
+              // 执行加载操作
+              try {
+                await loadExcelFileToAthleteDatabase(
+                    dbName, xlsxFile.readAsBytesSync());
+              } catch (e) {
+                print(e);
+              }
+
+              // 关闭对话框
+              Navigator.of(context).pop();
             },
           ),
           ListTile(
             leading: const Icon(Icons.photo_album),
-            title: const Text('Album'),
-            onTap: () {
-              print(2); // 点击列表项时输出2
+            title: const Text('下载成绩表'),
+            onTap: () async {
+              String dbName = "athlete";
+              // File xlsxFile = File("/run/media/apricityx/Data2/Resources/参赛信息-_汉丰湖.xlsx");
+              // 显示加载对话框
+              showDialog(
+                context: context,
+                barrierDismissible: false, // 点击外部不可关闭
+                builder: (BuildContext context) {
+                  return const AlertDialog(
+                    content: Row(
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(width: 20),
+                        Text("加载中..."),
+                      ],
+                    ),
+                  );
+                },
+              );
+              List<int>? excelFileBytes =
+                  await generateLongDistanceScoreExcel(dbName);
+              if (excelFileBytes == null) {
+                throw Exception("生成 Excel 文件失败");
+              }
+              // String? filePath = await FilePicker.platform.saveFile(
+              //   dialogTitle: '保存 Excel 文件',
+              //   fileName: '长距离成绩单.xlsx',
+              // );
+              var filePath =
+                  "/run/media/apricityx/Data1/Desktop/长距离成绩单.xlsx"; // -todo
+              // 创建文件并写入字节数据
+              File file = File(filePath);
+              await file.writeAsBytes(excelFileBytes);
+
+              print('文件已保存到: $filePath');
+              // 关闭对话框
+              Navigator.of(context).pop();
             },
           ),
           ListTile(
             leading: const Icon(Icons.phone),
-            title: const Text('Phone'),
-            onTap: () {
-              print(2); // 点击列表项时输出2
+            title: const Text('导入长距离成绩'),
+            onTap: () async {
+              File exampleFile = File("/home/apricityx/Desktop/长距离成绩单.xlsx");
+              await importLongDistanceScore(
+                  'athlete', exampleFile.readAsBytesSync());
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.abc),
+            title: const Text('导入通用成绩表'),
+            onTap: () async {
+              String dbName = "athlete";
+              String path = "/home/apricityx/Desktop/U18组男子通用测试.xlsx";
+              // 显示加载对话框
+              showDialog(
+                context: context,
+                barrierDismissible: false, // 点击外部不可关闭
+                builder: (BuildContext context) {
+                  return const AlertDialog(
+                    content: Row(
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(width: 20),
+                        Text("加载中..."),
+                      ],
+                    ),
+                  );
+                },
+              );
+              try {
+                List<int>? exampleFile = await generateGenericExcel("U18组男子", CType.pronePaddle,
+                    SType.firstRound, WType.static, dbName);
+                File file = File(path);
+                await file.writeAsBytes(exampleFile!);
+
+                print('文件已保存到: $path');
+              } catch (e) {
+                print(e);
+              }
+
+              // 关闭对话框
+              Navigator.of(context).pop();
             },
           ),
         ],
       ),
     );
-  }
-}
-
-class TestNavigator extends StatelessWidget {
-  const TestNavigator({super.key});
-
-  Future<void> createFile(String fileName) async {
-    print('tryCreateFile');
-    final path = await getFilePath(fileName);
-    print(path);
-    final file = File(path);
-    await file.writeAsString("MESSAGE");
-  }
-
-  Future<Database> initDatabase(String fileName) async {
-    // 获取数据库路径
-    String path = await getFilePath(fileName);
-    // 打开数据库，如果不存在则创建
-    return await openDatabase(
-      path,
-      onCreate: (db, version) {
-        // 创建表
-        return db.execute(
-          'CREATE TABLE items(id INTEGER PRIMARY KEY, name TEXT)',
-        );
-      },
-      version: 1,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    String event = '2024';
-    return FutureBuilder<Database>(
-        future: DatabaseManager.getDatabase(event), // 获取数据库的 Future
-        builder: (BuildContext context, AsyncSnapshot<Database> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            // 数据库正在加载时的占位符
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
-          } else if (snapshot.hasError) {
-            // 处理错误情况
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else {
-            // 数据库加载成功，使用 snapshot.data
-            Database db = snapshot.data!;
-            return Scaffold(
-              appBar: AppBar(
-                title: const Text('TestNavigator'),
-              ),
-              // TODO: Test code
-              body: Center(
-                  child: Column(children: <Widget>[
-                ElevatedButton(
-                  onPressed: () async {
-                    await loadExcelFileToAthleteDatabase(db);
-                  },
-                  child: const Text('Pick and Read Excel File'),
-                ),
-              ])),
-            );
-          }
-        });
   }
 }

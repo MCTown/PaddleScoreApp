@@ -35,7 +35,7 @@ Future<List<int>?> generateLongDistanceScoreExcel(String dbName) async {
   );
   for (int i = 0; i < overviewHeaders.length; i++) {
     overviewSheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 3))
-      ..value = TextCellValue('${overviewHeaders[i]}')
+      ..value = TextCellValue(overviewHeaders[i])
       ..cellStyle = CellStyle(
         bold: true,
         horizontalAlign: HorizontalAlign.Center,
@@ -151,4 +151,73 @@ String randomTimeGenerator() {
     return 'DSQ';
   }
   return '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}:${second.toString().padLeft(2, '0')}';
+}
+
+// 生成趴板和竞速的Excel
+// 四个参数分别为组别、比赛进度、项目、水域类型、数据库名
+Future<List<int>?> generateGenericExcel(
+    String division, CType c, SType s, WType w, String dbName) async {
+  print('生成$division${cTypeTranslate(c)}${sTypeTranslate(s)}的Excel');
+  var excel = Excel.createExcel();
+  var tableName = "${division}_${sTypeTranslate(s)}_${cTypeTranslate(c)}";
+  Database db = await DatabaseManager.getDatabase(dbName);
+  var a = await db.query(tableName, columns: ['id']);
+  var athletesNum = a.length;
+  // 生成Excel
+  int groupNum = (athletesNum / 16).ceil();
+  if (groupNum == 0) {
+    throw Exception("该比赛尚未进行！");
+  }
+  for (var i = 0; i < groupNum; i++) {
+    // 查询_group == i的运动员
+    print('正在录入第${i + 1}组');
+    var athletes = await db.query(tableName,
+        columns: ['id', 'name', 'long_distant_time'],
+        where: '_group = ?',
+        whereArgs: [i + 1]);
+    print('查询$tableName,查询到的运动员：$athletes');
+    List<String> headers = ['编号', '姓名', '成绩', '长距离比赛成绩', '出发赛道', '备注'];
+    var sheet =
+        excel['$division${cTypeTranslate(c)}${sTypeTranslate(s)}${i + 1}'];
+    // 设置标题
+    sheet.merge(CellIndex.indexByString('A1'), CellIndex.indexByString('D1'),
+        customValue: TextCellValue(
+            '$division${cTypeTranslate(c)}${sTypeTranslate(s)}${i + 1}'));
+    // 添加header
+    for (int i = 0; i < headers.length; i++) {
+      sheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 1))
+        ..value = TextCellValue(headers[i])
+        ..cellStyle = CellStyle(
+          bold: true,
+          horizontalAlign: HorizontalAlign.Center,
+        );
+    }
+    // 录入运动员
+    var index = 2;
+    for (var athlete in athletes) {
+      print('正在录入${athlete['name']}');
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: index))
+          .value = TextCellValue('${athlete['id']}');
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: index))
+          .value = TextCellValue('${athlete['name']}');
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: index))
+          .value = TextCellValue('');
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: index))
+          .value = TextCellValue('${athlete['long_distant_time']}');
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: index))
+          .value = TextCellValue('');
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: index))
+          .value = TextCellValue('');
+      ++index;
+    }
+    // 删除sheet1
+    excel.delete('Sheet1');
+  }
+  return excel.encode();
 }

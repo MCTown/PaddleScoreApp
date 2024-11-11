@@ -6,7 +6,8 @@ import 'package:sqflite/sqflite.dart';
 
 import 'DatabaseManager.dart';
 
-Future<void> importLongDistanceScore(String dbName, List<int> fileBinary) async {
+Future<void> importLongDistanceScore(
+    String dbName, List<int> fileBinary) async {
   String tableName = "长距离比赛";
   Database db = await DatabaseManager.getDatabase(dbName);
   var excel = Excel.decodeBytes(fileBinary);
@@ -20,6 +21,9 @@ Future<void> importLongDistanceScore(String dbName, List<int> fileBinary) async 
     if (sheet == null) {
       throw Exception("表格中没有$division");
     } else {
+      //todo reconsider
+      // 要实现的是从表格里读取所有运动员的长距离数据，并进行分组
+      // 分别录入到长距离成绩表，与所有初赛成绩表中
       // 读取成绩并打印 读取格式为{编号:时间}
       Map<String, String> scores = {};
       var maxRows = sheet.maxRows;
@@ -35,6 +39,15 @@ Future<void> importLongDistanceScore(String dbName, List<int> fileBinary) async 
         // 录入长距离数据库
         db.update(tableName, {"time": time}, where: "id = ?", whereArgs: [id]);
         scores[id] = timeAnalysis(time);
+        // 录入到初赛数据库
+        var tables = await DatabaseManager.getTableNames(db);
+        for (var t in ['${division}_初赛_趴板', '${division}_初赛_竞速']) {
+          if (!tables.contains(t)) {
+            continue;
+          }
+          db.update(t, {"long_distant_time": time},
+              where: "id = ?", whereArgs: [id]);
+        }
       }
       // 将id按时间排序
       scores = Map.fromEntries(scores.entries.toList()
@@ -57,6 +70,17 @@ Future<void> importLongDistanceScore(String dbName, List<int> fileBinary) async 
   print("All good");
 }
 
+// 导入除了长距离以外的成绩
+importGenericScore(String division, CType c, SType s, String dbName) async {
+  var competitionType = cTypeTranslate(c);
+  var scheduleType = sTypeTranslate(s);
+  // print("尝试导入$competitionType $scheduleType 的比赛成绩");
+  var tableName = "${division}_${scheduleType}_$competitionType";
+  print("尝试导入$tableName");
+  Database db = await DatabaseManager.getDatabase(dbName);
+}
+
+// 将[hh,mm,ss]格式的时间转换为秒
 String timeAnalysis(String time) {
   // 将时间转换为秒
   if (time == "DNS" || time == 'DNF' || time == 'DSQ') {
@@ -66,7 +90,7 @@ String timeAnalysis(String time) {
   }
   List<String> timeList = time.split(":");
   if (timeList.length == 2) {
-    return (int.parse(timeList[0]) * 60 + int.parse(timeList[1])).toString();
+    return (timeList[0] * 60 + timeList[1]).toString();
   } else if (timeList.length == 3) {
     return (int.parse(timeList[0]) * 3600 +
             int.parse(timeList[1]) * 60 +
@@ -79,11 +103,6 @@ String timeAnalysis(String time) {
 
 Map<dynamic, dynamic> getGroup(Map<String, String> sortedScores) {
   // 传入按时间递增排序的成绩表，越小越好
-  // 返回:
-  // {
-  //"G1": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
-  //"G2": ["11", "12", "13", "14", "15", "16", "17", "18", "19", "20"],
-  // }
   // print("对$sortedScores进行分组");
   // 蛇形分组
   int personNum = sortedScores.length;
@@ -115,6 +134,6 @@ Map<dynamic, dynamic> getGroup(Map<String, String> sortedScores) {
       }
     }
   }
-  // print(result);
+  print(result);
   return result;
 }
