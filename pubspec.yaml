@@ -38,7 +38,9 @@ dependencies:
   sqflite: any
   sqflite_common_ffi: any
   file_picker: any
-  excel: any
+  excel:  any
+  syncfusion_flutter_datagrid: ^21.2.4
+#  sticky_headers_table: ^0.0.9
 dev_dependencies:
   flutter_test:
     sdk: flutter
