@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:excel/excel.dart';
 import 'package:paddle_score_app/utils/DatabaseManager.dart';
 import 'package:paddle_score_app/utils/ExcelAnalysis.dart';
@@ -18,9 +20,17 @@ class DataHelper {
     var table = excel.tables[tableSelected]!;
     // print("表格的行数：${table.maxRows}");
     // 从第二行开始读取数据
+    // 将表格中的数据按照长距离的成绩排序
+    //todo 重写
     for (int i = 1; i < table.maxRows; i++) {
       var row = table.row(i);
       // 将数据插入到数据库中
+      // 如果组别中在黑名单里则跳过
+      var blackList = divisionBlackList;
+      if (blackList.contains(row[0]?.value.toString())) {
+        print("黑名单中的组别，跳过");
+        continue;
+      }
       // 如果id中含有非数字则跳过
       if (row[1]?.value == null ||
           !RegExp(r'^\d+$').hasMatch(row[1]!.value.toString())) {
@@ -35,7 +45,6 @@ class DataHelper {
           'name': row[2]!.value.toString(),
           'team': row[3]!.value.toString(),
           'division': row[0]!.value.toString(),
-          'long_distant_score': '0',
           'prone_paddle_score': '0',
           'sprint_score': '0',
         },
@@ -44,7 +53,8 @@ class DataHelper {
       await db.insert("长距离比赛", {
         "id": row[1]!.value.toString(),
         "name": row[2]!.value.toString(),
-        "time": "0"
+        "time": "0",
+        'long_distant_rank': '0'
       });
     }
     await initScoreTable(db);
@@ -223,15 +233,7 @@ class DataHelper {
           db.update(tableName, {"time": time},
               where: "id = ?", whereArgs: [id]);
           scores[id] = timeAnalysis(time);
-          // 录入到初赛数据库
-          var tables = await DatabaseManager.getTableNames(db);
-          for (var t in ['${division}_初赛_趴板', '${division}_初赛_竞速']) {
-            if (!tables.contains(t)) {
-              continue;
-            }
-            db.update(t, {"long_distant_time": time},
-                where: "id = ?", whereArgs: [id]);
-          }
+          // todo 删除初赛数据库中关于长距离的部分
         }
         // 将id按时间排序
         scores = Map.fromEntries(scores.entries.toList()
@@ -251,7 +253,27 @@ class DataHelper {
         }
       }
     }
-    print("All good");
+    print("Import finished, sort starting...");
+    // 计算并排序长距离成绩单
+    var athletes = await db.query("长距离比赛", columns: ['id', 'time']);
+    List<Map<String, dynamic>> sortedAthletes = [];
+    // 将所有athletes的time转换为s
+    athletes.map((athlete) {
+      print("athlete: $athlete ${athlete['time']}");
+      sortedAthletes.add({
+        "id": athlete['id'],
+        "time": timeAnalysis(athlete['time'].toString())
+      });
+    }).toList();
+    // 按照time排序
+    sortedAthletes
+        .sort((a, b) => int.parse(a['time']).compareTo(int.parse(b['time'])));
+    // 将排序后的数据录入到数据库中
+    for (int i = 0; i < sortedAthletes.length; i++) {
+      db.update("长距离比赛", {"long_distant_rank": i + 1},
+          where: "id = ?", whereArgs: [sortedAthletes[i]['id']]);
+    }
+    print("All done :D");
   }
 
   // 生成趴板和竞速的Excel
@@ -272,11 +294,16 @@ class DataHelper {
     for (var i = 0; i < groupNum; i++) {
       // 查询_group == i的运动员
       print('正在录入第${i + 1}组');
-      var athletes = await db.query(tableName,
-          columns: ['id', 'name', 'long_distant_time'],
-          where: '_group = ?',
-          whereArgs: [i + 1]);
-      print('查询$tableName,查询到的运动员：$athletes');
+      var athletes = await db.rawQuery(
+          'SELECT $tableName.name,$tableName.id, $tableName._group, "长距离比赛".long_distant_rank FROM $tableName LEFT JOIN "长距离比赛" ON "长距离比赛".id = $tableName.id WHERE $tableName._group = ${i + 1}');
+      // print('查询$tableName,查询到的运动员：$athletes');
+      // 将运动员按long_distant_rank排序
+      var sortedAthletes = List.from(athletes);
+      sortedAthletes.sort((a, b) =>
+          int.parse(a['long_distant_rank'].toString())
+              .compareTo(int.parse(b['long_distant_rank'].toString())));
+      print(sortedAthletes);
+      return null;
       List<String> headers = ['编号', '姓名', '成绩', '长距离比赛成绩', '出发赛道', '备注'];
       var sheet =
           excel['$division${cTypeTranslate(c)}${sTypeTranslate(s)}${i + 1}'];
@@ -308,7 +335,7 @@ class DataHelper {
             .value = TextCellValue('');
         sheet
             .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: index))
-            .value = TextCellValue('${athlete['long_distant_time']}');
+            .value = TextCellValue('${athlete['long_distant_rank']}'); // todo
         sheet
             .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: index))
             .value = TextCellValue('');

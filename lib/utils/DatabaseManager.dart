@@ -39,7 +39,8 @@ class DatabaseManager {
         CREATE TABLE '长距离比赛' (
           id INT PRIMARY KEY,
           name VARCHAR(255),
-          time VARCHAR(255)
+          time VARCHAR(255),
+          long_distant_rank INT
 );
       ''');
   }

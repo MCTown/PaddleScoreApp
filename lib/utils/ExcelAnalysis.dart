@@ -63,7 +63,6 @@ Future<void> generateScoreTable(Database db, List<Map<String, Object?>> athletes
           id INT PRIMARY KEY,
           name VARCHAR(255),
           time VARCHAR(255),
-          long_distant_time VARCHAR(255),
           _group INT,
           start_position INT
         );
@@ -79,7 +78,6 @@ Future<void> generateScoreTable(Database db, List<Map<String, Object?>> athletes
           'id': athlete['id'],
           'name': athlete['name'],
           'time': '0',
-          'long_distant_time': '0',
           '_group': 0,
           'start_position': 0,
         },
@@ -100,7 +98,6 @@ Future<void> generateScoreTable(Database db, List<Map<String, Object?>> athletes
           'id': athlete['id'],
           'name': athlete['name'],
           'time': '0',
-          'long_distant_time': '0',
           '_group': group[athlete['id'].toString()],
           'start_position': 0,
         },
