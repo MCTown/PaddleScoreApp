@@ -6,70 +6,6 @@ import 'package:sqflite/sqflite.dart';
 
 import 'DatabaseManager.dart';
 
-Future<void> importLongDistanceScore(
-    String dbName, List<int> fileBinary) async {
-  String tableName = "长距离比赛";
-  Database db = await DatabaseManager.getDatabase(dbName);
-  var excel = Excel.decodeBytes(fileBinary);
-  Map<String, Sheet> sheets = excel.sheets;
-  // 录入数据到长距离比赛时间
-  var divisions = await getDivisions(dbName);
-  // 遍历所有sheet
-  // print(divisions);
-  for (var division in divisions) {
-    var sheet = sheets[division];
-    if (sheet == null) {
-      throw Exception("表格中没有$division");
-    } else {
-      //todo reconsider
-      // 要实现的是从表格里读取所有运动员的长距离数据，并进行分组
-      // 分别录入到长距离成绩表，与所有初赛成绩表中
-      // 读取成绩并打印 读取格式为{编号:时间}
-      Map<String, String> scores = {};
-      var maxRows = sheet.maxRows;
-      for (int i = 2; i < maxRows; i++) {
-        var id = sheet
-            .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: i))
-            .value
-            .toString();
-        var time = sheet
-            .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: i))
-            .value
-            .toString();
-        // 录入长距离数据库
-        db.update(tableName, {"time": time}, where: "id = ?", whereArgs: [id]);
-        scores[id] = timeAnalysis(time);
-        // 录入到初赛数据库
-        var tables = await DatabaseManager.getTableNames(db);
-        for (var t in ['${division}_初赛_趴板', '${division}_初赛_竞速']) {
-          if (!tables.contains(t)) {
-            continue;
-          }
-          db.update(t, {"long_distant_time": time},
-              where: "id = ?", whereArgs: [id]);
-        }
-      }
-      // 将id按时间排序
-      scores = Map.fromEntries(scores.entries.toList()
-        ..sort((a, b) => int.parse(a.value).compareTo(int.parse(b.value))));
-      var processedGroup = getGroup(scores);
-      // processedGroup的key为id，value为组别，将组别录入数据库
-      var tables = await DatabaseManager.getTableNames(db);
-      var tablesName = ['${division}_初赛_趴板', '${division}_初赛_竞速'];
-      for (var tableName in tablesName) {
-        if (!tables.contains(tableName)) {
-          continue;
-        }
-        processedGroup.forEach((key, value) {
-          db.update(tableName, {"_group": value},
-              where: "id = ?", whereArgs: [key]);
-        });
-      }
-    }
-  }
-  print("All good");
-}
-
 // 导入除了长距离以外的成绩
 importGenericScore(String division, CType c, SType s, String dbName) async {
   var competitionType = cTypeTranslate(c);
@@ -137,3 +73,4 @@ Map<dynamic, dynamic> getGroup(Map<String, String> sortedScores) {
   print(result);
   return result;
 }
+
