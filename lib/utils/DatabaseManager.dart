@@ -1,12 +1,11 @@
+import 'dart:io';
+
 import 'package:paddle_score_app/utils/GlobalFunction.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DatabaseManager {
   static Future<Database> getDatabase(String event) async {
     String path = await getFilePath("$event.db");
-    // 如若数据库存在则删除
-    // await deleteDatabase(path);
-    // delete test code -todo
     return await openDatabase(
       path,
       onCreate: (db, version) async {

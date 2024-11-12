@@ -56,15 +56,18 @@ Future<void> initScoreTable(Database db) async {
   }
 }
 
-Future<void> generateScoreTable(Database db, List<Map<String, Object?>> athletes,
-    String division, String schedule, String competition) async {
+Future<void> generateScoreTable(
+    Database db,
+    List<Map<String, Object?>> athletes,
+    String division,
+    String schedule,
+    String competition) async {
   await db.execute('''
         CREATE TABLE '${division}_${schedule}_$competition' (
           id INT PRIMARY KEY,
           name VARCHAR(255),
           time VARCHAR(255),
-          _group INT,
-          start_position INT
+          _group INT
         );
       ''');
   // 生成比赛表
@@ -79,7 +82,6 @@ Future<void> generateScoreTable(Database db, List<Map<String, Object?>> athletes
           'name': athlete['name'],
           'time': '0',
           '_group': 0,
-          'start_position': 0,
         },
       );
     }
@@ -99,7 +101,6 @@ Future<void> generateScoreTable(Database db, List<Map<String, Object?>> athletes
           'name': athlete['name'],
           'time': '0',
           '_group': group[athlete['id'].toString()],
-          'start_position': 0,
         },
       );
     }

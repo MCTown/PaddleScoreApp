@@ -28,4 +28,20 @@ String randomTimeGenerator() {
   return '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}:${second.toString().padLeft(2, '0')}';
 }
 
+int getStaticPosition(int index) {
+  // 静水中，从中间出发为优势水道
+  if (index % 2 == 0) {
+    return 8 - (index ~/ 2);
+  } else {
+    return 9 + ((index - 1) ~/ 2);
+  }
+}
 
+int getDynamicPosition(int index) {
+  // 动水中，从两侧出发为优势水道
+  if (index % 2 == 0) {
+    return 16 - (index ~/ 2);
+  } else {
+    return 1 + ((index - 1) ~/ 2);
+  }
+}

@@ -279,7 +279,7 @@ class DataHelper {
   // 生成趴板和竞速的Excel
   // 四个参数分别为组别、比赛进度、项目、水域类型、数据库名
   static Future<List<int>?> generateGenericExcel(
-      String division, CType c, SType s, WType w, String dbName) async {
+      String division, CType c, SType s, String dbName) async {
     print('生成$division${cTypeTranslate(c)}${sTypeTranslate(s)}的Excel');
     var excel = Excel.createExcel();
     var tableName = "${division}_${sTypeTranslate(s)}_${cTypeTranslate(c)}";
@@ -297,18 +297,27 @@ class DataHelper {
       var athletes = await db.rawQuery(
           'SELECT $tableName.name,$tableName.id, $tableName._group, "长距离比赛".long_distant_rank FROM $tableName LEFT JOIN "长距离比赛" ON "长距离比赛".id = $tableName.id WHERE $tableName._group = ${i + 1}');
       // print('查询$tableName,查询到的运动员：$athletes');
-      // 将运动员按long_distant_rank排序
+      // 将运动员按long_distant_rank倒序排序，long_distant_rank越小越优先
       var sortedAthletes = List.from(athletes);
-      sortedAthletes.sort((a, b) =>
-          int.parse(a['long_distant_rank'].toString())
-              .compareTo(int.parse(b['long_distant_rank'].toString())));
-      print(sortedAthletes);
-      return null;
-      List<String> headers = ['编号', '姓名', '成绩', '长距离比赛成绩', '出发赛道', '备注'];
+      sortedAthletes.sort((a, b) {
+        int rankA = int.parse(a['long_distant_rank'].toString());
+        int rankB = int.parse(b['long_distant_rank'].toString());
+        return rankA.compareTo(rankB); // 按降序排序
+      });
+      print('排序后的运动员：$sortedAthletes');
+      List<String> headers = [
+        '编号',
+        '姓名',
+        '成绩',
+        '长距离比赛排名',
+        '静水出发位置',
+        '动水出发位置',
+        '备注'
+      ];
       var sheet =
           excel['$division${cTypeTranslate(c)}${sTypeTranslate(s)}${i + 1}'];
       // 设置标题
-      sheet.merge(CellIndex.indexByString('A1'), CellIndex.indexByString('D1'),
+      sheet.merge(CellIndex.indexByString('A1'), CellIndex.indexByString('G1'),
           customValue: TextCellValue(
               '$division${cTypeTranslate(c)}${sTypeTranslate(s)}${i + 1}'));
       // 添加header
@@ -322,7 +331,7 @@ class DataHelper {
       }
       // 录入运动员
       var index = 2;
-      for (var athlete in athletes) {
+      for (var athlete in sortedAthletes) {
         print('正在录入${athlete['name']}');
         sheet
             .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: index))
@@ -332,15 +341,22 @@ class DataHelper {
             .value = TextCellValue('${athlete['name']}');
         sheet
             .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: index))
-            .value = TextCellValue('');
+            .value = TextCellValue(randomTimeGenerator()); // 时间 -todo delete
         sheet
             .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: index))
             .value = TextCellValue('${athlete['long_distant_rank']}'); // todo
         sheet
             .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: index))
-            .value = TextCellValue('');
+            .value = TextCellValue(getStaticPosition(
+                index - 2)
+            .toString()); // 静水
         sheet
             .cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: index))
+            .value = TextCellValue(getDynamicPosition(
+                index - 2)
+            .toString()); // 动水
+        sheet
+            .cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: index))
             .value = TextCellValue('');
         ++index;
       }
@@ -348,5 +364,10 @@ class DataHelper {
       excel.delete('Sheet1');
     }
     return excel.encode();
+  }
+
+  // 选择并导入趴板或竞速成绩表的Excel
+  static Future<void> importGenericCompetitionScore(
+      String division, List<int> fileBinary, CType c, SType s, String dbName) async {
   }
 }
