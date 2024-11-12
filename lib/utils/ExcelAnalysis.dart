@@ -1,51 +1,6 @@
 import 'package:excel/excel.dart';
 import 'package:sqflite/sqflite.dart';
-
 import 'DatabaseManager.dart';
-
-// 传入数据库对象，让用户选择一个excel文件，然后将excel文件中的数据导入到数据库中
-Future<void> loadExcelFileToAthleteDatabase(
-    String dbName, List<int> xlsxFileBytes) async {
-  Database db = await DatabaseManager.getDatabase(dbName);
-  var excel = Excel.decodeBytes(xlsxFileBytes);
-  // print("可用的table：${excel.tables}");
-  var tableSelected = excel.tables.keys.first;
-  // print("选中的table：$table_selected");
-  var table = excel.tables[tableSelected]!;
-  // print("表格的行数：${table.maxRows}");
-  // 从第二行开始读取数据
-  for (int i = 1; i < table.maxRows; i++) {
-    var row = table.row(i);
-    // 将数据插入到数据库中
-    // 如果id中含有非数字则跳过
-    if (row[1]?.value == null ||
-        !RegExp(r'^\d+$').hasMatch(row[1]!.value.toString())) {
-      print("id不合法，跳过");
-      continue;
-    }
-    // print("第$i行数据：${row[0]?.value ?? ''} ${row[1]?.value ?? ''} ${row[2]?.value ?? ''} ${row[3]?.value ?? ''}");
-    await db.insert(
-      'athletes',
-      {
-        'id': row[1]!.value.toString(),
-        'name': row[2]!.value.toString(),
-        'team': row[3]!.value.toString(),
-        'division': row[0]!.value.toString(),
-        'long_distant_score': '0',
-        'prone_paddle_score': '0',
-        'sprint_score': '0',
-      },
-    );
-    // 先处理长距离的表
-    await db.insert("长距离比赛", {
-      "id": row[1]!.value.toString(),
-      "name": row[2]!.value.toString(),
-      "time": "0"
-    });
-  }
-  await initScoreTable(db);
-  return;
-}
 
 // 由以下实体的排列组合生成表
 // 1. 组别 2. 比赛进度（预赛、决赛）3. 项目（长距离、趴板、竞速）4. 性别
@@ -101,16 +56,18 @@ Future<void> initScoreTable(Database db) async {
   }
 }
 
-Future<void> generateScoreTable(Database db, List<Map<String, Object?>> athletes,
-    String division, String schedule, String competition) async {
+Future<void> generateScoreTable(
+    Database db,
+    List<Map<String, Object?>> athletes,
+    String division,
+    String schedule,
+    String competition) async {
   await db.execute('''
         CREATE TABLE '${division}_${schedule}_$competition' (
           id INT PRIMARY KEY,
           name VARCHAR(255),
           time VARCHAR(255),
-          long_distant_time VARCHAR(255),
-          _group INT,
-          start_position INT
+          _group INT
         );
       ''');
   // 生成比赛表
@@ -124,9 +81,7 @@ Future<void> generateScoreTable(Database db, List<Map<String, Object?>> athletes
           'id': athlete['id'],
           'name': athlete['name'],
           'time': '0',
-          'long_distant_time': '0',
           '_group': 0,
-          'start_position': 0,
         },
       );
     }
@@ -145,9 +100,7 @@ Future<void> generateScoreTable(Database db, List<Map<String, Object?>> athletes
           'id': athlete['id'],
           'name': athlete['name'],
           'time': '0',
-          'long_distant_time': '0',
           '_group': group[athlete['id'].toString()],
-          'start_position': 0,
         },
       );
     }

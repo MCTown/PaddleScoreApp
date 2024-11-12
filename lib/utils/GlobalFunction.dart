@@ -85,3 +85,5 @@ String wTypeTranslate(WType w) {
     throw "传入错误的水域类型";
   }
 }
+
+const List<String> divisionBlackList = ['仅团体','接力赛','龙板'];
