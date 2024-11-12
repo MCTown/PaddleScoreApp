@@ -43,3 +43,47 @@ Future<List<String>> getDivisions(String dbName) async {
   }
   return divisions;
 }
+
+enum CType { pronePaddle, sprint }
+
+String cTypeTranslate(CType c) {
+  if (c == CType.pronePaddle) {
+    return "趴板";
+  } else if (c == CType.sprint) {
+    return "竞速";
+  } else {
+    throw "传入错误的比赛类型";
+  }
+}
+
+enum SType { firstRound, roundOf16, quarterfinals, semifinals, finals }
+
+String sTypeTranslate(SType s) {
+  if (s == SType.firstRound) {
+    return "初赛";
+  } else if (s == SType.roundOf16) {
+    return "1/8决赛";
+  } else if (s == SType.quarterfinals) {
+    return "1/4决赛";
+  } else if (s == SType.semifinals) {
+    return "1/2决赛";
+  } else if (s == SType.finals) {
+    return "决赛";
+  } else {
+    throw "传入错误的比赛类型";
+  }
+}
+
+enum WType { dynamic, static }
+
+String wTypeTranslate(WType w) {
+  if (w == WType.dynamic) {
+    return "静水";
+  } else if (w == WType.static) {
+    return "动水";
+  } else {
+    throw "传入错误的水域类型";
+  }
+}
+
+const List<String> divisionBlackList = ['仅团体','接力赛','龙板'];
