@@ -86,4 +86,16 @@ String wTypeTranslate(WType w) {
   }
 }
 
-const List<String> divisionBlackList = ['仅团体','接力赛','龙板'];
+const List<String> divisionBlackList = ['仅团体', '接力赛', '龙板'];
+
+int getGroupNum(int personNum) {
+  var groupNum = (personNum / 16).ceil();
+  while (groupNum != 1 &&
+      groupNum != 2 &&
+      groupNum != 4 &&
+      groupNum != 8 &&
+      groupNum != 16) {
+    groupNum++;
+  }
+  return groupNum;
+}

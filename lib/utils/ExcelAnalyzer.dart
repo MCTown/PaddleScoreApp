@@ -64,7 +64,7 @@ class ExcelAnalyzer {
     List<Map<String, dynamic>> sortedAthletes = [];
     // 将所有athletes的time转换为s
     athletes.map((athlete) {
-      print("athlete: $athlete ${athlete['time']}");
+      // print("athlete: $athlete ${athlete['time']}");
       sortedAthletes.add({
         "id": athlete['id'],
         "time": _timeConvert(athlete['time'].toString())
@@ -157,10 +157,10 @@ class ExcelAnalyzer {
     // 蛇形分组
     int personNum = sortedScores.length;
     // 每组最多16人，尽量平均分组，不足16人的组别不分组
-    int groupNum = (personNum / 16).ceil();
-    // print("$personNum应该分为$groupNum组");
+    // 组数只能为1,2,4,8,16
+    int groupNum = getGroupNum(personNum);
+    print("$personNum应该分为$groupNum组");
     // 每组的人数
-    int groupSize = (personNum / groupNum).ceil();
     // print("每组$groupSize人");
     var result = {};
     // print(sortedScores.keys.toList());
@@ -306,6 +306,37 @@ class ExcelAnalyzer {
     var sheets = excel.sheets;
     var tableName = "${division}_${sTypeTranslate(s)}_${cTypeTranslate(c)}";
     var athletes = await db.query(tableName, columns: ['id']);
+    // 遍历所有sheet
+    var targetTable = await _getNextTableName(dbName, division, c, s);
+    print(targetTable);
+    for (var sheet in sheets.keys) {
+      for (var athlete in athletes) {
+        print("$sheet, $athlete");
+      }
+    }
+  }
 
+  static Future<String> _getNextTableName(
+      String dbName, String division, CType c, SType s) async {
+    Database db = await DatabaseManager.getDatabase(dbName);
+    if (s == SType.firstRound) {
+      String tableName =
+          "${division}_${sTypeTranslate(s)}_${cTypeTranslate(c)}";
+      var athletes = await db.query(tableName, columns: ['id']);
+      var athletesNum = athletes.length;
+      if (athletesNum == 0) {
+        throw Exception("致命错误：在进行初赛成绩导入时没有运动员");
+      }
+      if (athletesNum <= 16) {
+        throw Exception("致命错误：决赛无需获取下一场比赛表名");
+      } else if (athletesNum <= 64) {
+        return "${division}_决赛_${cTypeTranslate(c)}";
+      } else if (athletesNum <= 128) {
+        return "${division}_1/2决赛_${cTypeTranslate(c)}";
+      } else if (athletesNum <= 256) {
+        return "${division}_1/4决赛_${cTypeTranslate(c)}";
+      }
+    }
+    throw Exception("致命错误：无法获取下一场比赛表名");
   }
 }

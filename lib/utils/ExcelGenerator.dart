@@ -16,7 +16,7 @@ class ExcelGenerator {
     var a = await db.query(tableName, columns: ['id']);
     var athletesNum = a.length;
     // 生成Excel
-    int groupNum = (athletesNum / 16).ceil();
+    int groupNum = getGroupNum(athletesNum);
     if (groupNum == 0) {
       throw Exception("该比赛尚未进行！");
     }
