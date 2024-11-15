@@ -21,7 +21,7 @@ Future<String> getFilePath(String? fileName) async {
 Future<List<String>> getDivisions(String dbName) async {
   Database db = await DatabaseManager.getDatabase(dbName);
   List<Map<String, dynamic>> tables =
-      await db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'");
+  await db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'");
   List<String> tableNames = tables.map((row) => row['name'] as String).toList();
   List<String> divisions = [];
   for (var tableName in tableNames) {
