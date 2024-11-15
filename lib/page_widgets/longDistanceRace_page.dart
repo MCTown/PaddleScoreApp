@@ -3,11 +3,13 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:paddle_score_app/DataHelper.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import '../utils/ExcelGeneration.dart';
 import '../page_widgets/DivisionScoreTable.dart';
+import '../utils/ScoreAnalysis.dart';
 
 class LongDistanceRacePage extends StatefulWidget {
   final String raceBar;
@@ -92,9 +94,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                             );
                           },
                         );
-                        List<
-                            int>? excelFileBytes = await generateLongDistanceScoreExcel(
-                            widget.raceEventName);
+                        List<int>? excelFileBytes = await DataHelper.generateLongDistanceScoreExcel(widget.raceEventName);
                         if (excelFileBytes == null) {
                           throw Exception("生产Excel文件失败");
                         }
@@ -128,14 +128,14 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                             _selectedFile = file.name;
                           });
                         });
+                        List<int> fileBinary = File(result.paths.first!).readAsBytesSync();
+                        DataHelper.importLongDistanceScore(widget.raceEventName, fileBinary);
                       }
                     },
-                    child: const Text(
-                      '导入成绩',
-                      style: TextStyle(fontSize: 20),
-                    ),
+                    child: _selectedFile != null
+                        ? Text('已导入成绩: $_selectedFile',style: const TextStyle(fontSize: 18))
+                        : const Text('导入成绩', style: TextStyle(fontSize: 20),),
                   ),
-                  if (_selectedFile != null) Text('已选择文件：$_selectedFile'),
                   ElevatedButton(
                     onPressed: () {
                       print('点击生成200米趴板划水赛初赛分组名单');
@@ -269,222 +269,222 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                   height: 600,
                                   child:
                                   ListTileTheme(
-                                      tileColor: Colors.green[50],
-                                      child:SingleChildScrollView(
-                                        child:
-                                        Column(
-                                          children: [
-                                            ListTile(
-                                              title: const Text(
-                                                  '各组别总排名'),
-                                              onTap: () {
-                                                setState(() {
-                                                  _selectedGroup = null;
-                                                });
-                                                print(_selectedGroup);
-                                                print('各组别总排名');
-                                              },
-                                            ),
-                                            ListTile(
-                                              title: const Text('U9组男子'),
-                                              onTap: () {
-                                                setState(() {
-                                                  _selectedGroup = 'U9组男子';
-                                                });
-                                                print(_selectedGroup);
-                                              },
-                                            ),
-                                            ListTile(
-                                              title: const Text('U9组女子'),
-                                              onTap: () {
-                                                setState(() {
-                                                  _selectedGroup = 'U9组女子';
-                                                });
-                                                print(_selectedGroup);
-                                              },
-                                            ),
-                                            ListTile(
-                                              title: const Text('U12组男子'),
-                                              onTap: () {
-                                                setState(() {
-                                                  _selectedGroup =
-                                                  'U12组男子';
-                                                });
-                                                print(_selectedGroup);
-                                              },
-                                            ),
-                                            ListTile(
-                                              title: const Text('U12组女子'),
-                                              onTap: () {
-                                                setState(() {
-                                                  _selectedGroup =
-                                                  'U12组女子';
-                                                });
-                                                print(_selectedGroup);
-                                              },
-                                            ),
-                                            ListTile(
-                                              title: const Text('U15组男子'),
-                                              onTap: () {
-                                                setState(() {
-                                                  _selectedGroup =
-                                                  'U15组男子';
-                                                });
-                                                print(_selectedGroup);
-                                              },
-                                            ),
-                                            ListTile(
-                                              title: const Text('U15组女子'),
-                                              onTap: () {
-                                                setState(() {
-                                                  _selectedGroup =
-                                                  'U15组女子';
-                                                });
-                                                print(_selectedGroup);
-                                              },
-                                            ),
-                                            ListTile(
-                                              title: const Text('U18组男子'),
-                                              onTap: () {
-                                                setState(() {
-                                                  _selectedGroup =
-                                                  'U18组男子';
-                                                });
-                                                print(_selectedGroup);
-                                              },
-                                            ),
-                                            ListTile(
-                                              title: const Text(
-                                                  '充气板组男子'),
-                                              onTap: () {
-                                                setState(() {
-                                                  _selectedGroup =
-                                                  '充气板组男子';
-                                                });
-                                                print(_selectedGroup);
-                                              },
-                                            ),
-                                            ListTile(
-                                              title: const Text(
-                                                  '充气板组女子'),
-                                              onTap: () {
-                                                setState(() {
-                                                  _selectedGroup =
-                                                  '充气板组女子';
-                                                });
-                                                print(_selectedGroup);
-                                              },
-                                            ),
-                                            ListTile(
-                                              title: const Text('大师组男子'),
-                                              onTap: () {
-                                                setState(() {
-                                                  _selectedGroup =
-                                                  '大师组男子';
-                                                });
-                                                print(_selectedGroup);
-                                              },
-                                            ),
-                                            ListTile(
-                                              title: const Text('大师组女子'),
-                                              onTap: () {
-                                                setState(() {
-                                                  _selectedGroup =
-                                                  '大师组女子';
-                                                });
-                                                print(_selectedGroup);
-                                              },
-                                            ),
-                                            ListTile(
-                                              title: const Text(
-                                                  '高校甲组男子'),
-                                              onTap: () {
-                                                setState(() {
-                                                  _selectedGroup =
-                                                  '高校甲组男子';
-                                                });
-                                                print(_selectedGroup);
-                                              },
-                                            ),
-                                            ListTile(
-                                              title: const Text(
-                                                  '高校甲组女子'),
-                                              onTap: () {
-                                                setState(() {
-                                                  _selectedGroup =
-                                                  '高校甲组女子';
-                                                });
-                                                print(_selectedGroup);
-                                              },
-                                            ),
-                                            ListTile(
-                                              title: const Text(
-                                                  '高校乙组男子'),
-                                              onTap: () {
-                                                setState(() {
-                                                  _selectedGroup =
-                                                  '高校乙组男子';
-                                                });
-                                                print(_selectedGroup);
-                                              },
-                                            ),
-                                            ListTile(
-                                              title: const Text(
-                                                  '高校乙组女子'),
-                                              onTap: () {
-                                                setState(() {
-                                                  _selectedGroup =
-                                                  '高校乙组女子';
-                                                });
-                                                print(_selectedGroup);
-                                              },
-                                            ),
-                                            ListTile(
-                                              title: const Text(
-                                                  '卡胡纳组男子'),
-                                              onTap: () {
-                                                setState(() {
-                                                  _selectedGroup =
-                                                  '卡胡纳组男子';
-                                                });
-                                                print(_selectedGroup);
-                                              },
-                                            ),
-                                            ListTile(
-                                              title: const Text(
-                                                  '卡胡纳组女子'),
-                                              onTap: () {
-                                                setState(() {
-                                                  _selectedGroup =
-                                                  '卡胡纳组女子';
-                                                });
-                                                print(_selectedGroup);
-                                              },
-                                            ),
-                                            ListTile(
-                                              title: const Text('公开组男子'),
-                                              onTap: () {
-                                                setState(() {
-                                                  _selectedGroup =
-                                                  '公开组男子';
-                                                });
-                                                print(_selectedGroup);
-                                              },
-                                            ),
-                                            ListTile(
-                                              title: const Text('公开组女子'),
-                                              onTap: () {
-                                                setState(() {
-                                                  _selectedGroup =
-                                                  '公开组女子';
-                                                });
-                                                print(_selectedGroup);
-                                              },
-                                            ),
+                                    tileColor: Colors.grey[100],
+                                    child:SingleChildScrollView(
+                                      child:
+                                      Column(
+                                        children: [
+                                          ListTile(
+                                            title: const Text(
+                                                '各组别总排名'),
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedGroup = null;
+                                              });
+                                              print(_selectedGroup);
+                                              print('各组别总排名');
+                                            },
+                                          ),
+                                          ListTile(
+                                            title: const Text('U9组男子'),
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedGroup = 'U9组男子';
+                                              });
+                                              print(_selectedGroup);
+                                            },
+                                          ),
+                                          ListTile(
+                                            title: const Text('U9组女子'),
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedGroup = 'U9组女子';
+                                              });
+                                              print(_selectedGroup);
+                                            },
+                                          ),
+                                          ListTile(
+                                            title: const Text('U12组男子'),
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedGroup =
+                                                'U12组男子';
+                                              });
+                                              print(_selectedGroup);
+                                            },
+                                          ),
+                                          ListTile(
+                                            title: const Text('U12组女子'),
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedGroup =
+                                                'U12组女子';
+                                              });
+                                              print(_selectedGroup);
+                                            },
+                                          ),
+                                          ListTile(
+                                            title: const Text('U15组男子'),
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedGroup =
+                                                'U15组男子';
+                                              });
+                                              print(_selectedGroup);
+                                            },
+                                          ),
+                                          ListTile(
+                                            title: const Text('U15组女子'),
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedGroup =
+                                                'U15组女子';
+                                              });
+                                              print(_selectedGroup);
+                                            },
+                                          ),
+                                          ListTile(
+                                            title: const Text('U18组男子'),
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedGroup =
+                                                'U18组男子';
+                                              });
+                                              print(_selectedGroup);
+                                            },
+                                          ),
+                                          ListTile(
+                                            title: const Text(
+                                                '充气板组男子'),
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedGroup =
+                                                '充气板组男子';
+                                              });
+                                              print(_selectedGroup);
+                                            },
+                                          ),
+                                          ListTile(
+                                            title: const Text(
+                                                '充气板组女子'),
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedGroup =
+                                                '充气板组女子';
+                                              });
+                                              print(_selectedGroup);
+                                            },
+                                          ),
+                                          ListTile(
+                                            title: const Text('大师组男子'),
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedGroup =
+                                                '大师组男子';
+                                              });
+                                              print(_selectedGroup);
+                                            },
+                                          ),
+                                          ListTile(
+                                            title: const Text('大师组女子'),
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedGroup =
+                                                '大师组女子';
+                                              });
+                                              print(_selectedGroup);
+                                            },
+                                          ),
+                                          ListTile(
+                                            title: const Text(
+                                                '高校甲组男子'),
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedGroup =
+                                                '高校甲组男子';
+                                              });
+                                              print(_selectedGroup);
+                                            },
+                                          ),
+                                          ListTile(
+                                            title: const Text(
+                                                '高校甲组女子'),
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedGroup =
+                                                '高校甲组女子';
+                                              });
+                                              print(_selectedGroup);
+                                            },
+                                          ),
+                                          ListTile(
+                                            title: const Text(
+                                                '高校乙组男子'),
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedGroup =
+                                                '高校乙组男子';
+                                              });
+                                              print(_selectedGroup);
+                                            },
+                                          ),
+                                          ListTile(
+                                            title: const Text(
+                                                '高校乙组女子'),
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedGroup =
+                                                '高校乙组女子';
+                                              });
+                                              print(_selectedGroup);
+                                            },
+                                          ),
+                                          ListTile(
+                                            title: const Text(
+                                                '卡胡纳组男子'),
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedGroup =
+                                                '卡胡纳组男子';
+                                              });
+                                              print(_selectedGroup);
+                                            },
+                                          ),
+                                          ListTile(
+                                            title: const Text(
+                                                '卡胡纳组女子'),
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedGroup =
+                                                '卡胡纳组女子';
+                                              });
+                                              print(_selectedGroup);
+                                            },
+                                          ),
+                                          ListTile(
+                                            title: const Text('公开组男子'),
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedGroup =
+                                                '公开组男子';
+                                              });
+                                              print(_selectedGroup);
+                                            },
+                                          ),
+                                          ListTile(
+                                            title: const Text('公开组女子'),
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedGroup =
+                                                '公开组女子';
+                                              });
+                                              print(_selectedGroup);
+                                            },
+                                          ),
 
-                                          ],
-                                        ),
+                                        ],
                                       ),
+                                    ),
                                   ),
                                 ),
                                 Expanded(
@@ -507,7 +507,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                                       borderSide: BorderSide.none,
                                                     ),
                                                     filled: true,
-                                                    fillColor: Colors.green[50],
+                                                    fillColor: Colors.purple[50],
                                                   ),
                                                   onChanged: (text) {
                                                     setState(() {
