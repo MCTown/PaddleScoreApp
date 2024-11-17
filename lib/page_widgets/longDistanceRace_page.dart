@@ -10,6 +10,7 @@ import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import '../utils/ExcelGeneration.dart';
 import '../page_widgets/DivisionScoreTable.dart';
 import '../utils/ScoreAnalysis.dart';
+import '../widgetHelper.dart';
 
 class LongDistanceRacePage extends StatefulWidget {
   final String raceBar;
@@ -28,27 +29,52 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
   bool _isCheckAllScore = false;
   Future<List<Map<String, dynamic>>>? _tableDataFuture;
   String? _selectedGroup;
-  String _searchQuery = '';
+  List<String> raceTypeOptions = ['所有', '竞速赛', '趴板赛'];
+  List<String> divisionOptions = [
+    '所有',
+    'U9组',
+    'U12组',
+    'U15组',
+    'U18组',
+    '充气板组',
+    '大师组',
+    '高校甲组',
+    '高校乙组',
+    '卡胡纳组',
+    '公开组'
+  ];
+  List<String> genderOptions = ['所有', '男子', '女子'];
+
+  String? _selectedRaceType = '';
+  String? _selectedDivision = '';
+  String? _selectedGender = '';
+  String raceType = '赛事类型';
+  String division = '赛事组别';
+  String gender = '性别';
 
   @override
   void initState() {
     super.initState();
     _tableDataFuture = getDivisionScore(null);
+    _selectedRaceType = raceTypeOptions[0];
+    _selectedDivision = divisionOptions[0];
+    _selectedGender = genderOptions[0];
   }
 
   Future<List<Map<String, dynamic>>> getDivisionScore(String? division) async {
     final directory = await getApplicationDocumentsDirectory();
-    final dbPath = '${directory.path}/PaddleScoreData/${widget
-        .raceEventName}.db';
+    final dbPath =
+        '${directory.path}/PaddleScoreData/${widget.raceEventName}.db';
     print('Database path:$dbPath');
     final database = await openDatabase(dbPath);
     try {
       List<Map<String, dynamic>> data;
       if (division == null) {
         data =
-        await database.query('athletes', orderBy: 'long_distant_score ASC');
+            await database.query('athletes', orderBy: 'long_distant_score ASC');
       } else {
-        data = await database.query('athletes', where: 'division = ?',
+        data = await database.query('athletes',
+            where: 'division = ?',
             whereArgs: [division],
             orderBy: 'long_distant_score ASC');
       }
@@ -65,6 +91,29 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
 
   @override
   Widget build(BuildContext context) {
+    Widget raceTypeDropdown = WidgetHelper.createDropdownButton(
+        raceType, raceTypeOptions, _selectedRaceType!, (String? newValue) {
+      setState(() {
+        _selectedRaceType = newValue;
+      });
+    });
+    Widget divisionTypeDropdown = WidgetHelper.createDropdownButton(
+        division, divisionOptions, _selectedDivision!, (String? newValue) {
+      setState(() {
+        _selectedDivision = newValue;
+      });
+    });
+    Widget genderTypeDropdown = WidgetHelper.createDropdownButton(
+        gender, genderOptions, _selectedGender!, (String? newValue) {
+      setState(() {
+        _selectedGender = newValue;
+      });
+    });
+    Widget exportButton = ElevatedButton(
+        onPressed: ()async{
+          String division_name = _selectedDivision! + _selectedGender!;
+          CType
+        }, child: child)
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.raceBar),
@@ -94,9 +143,11 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                             );
                           },
                         );
-                        List<int>? excelFileBytes = await DataHelper.generateLongDistanceScoreExcel(widget.raceEventName);
+                        List<int>? excelFileBytes =
+                            await DataHelper.generateLongDistanceScoreExcel(
+                                widget.raceEventName);
                         if (excelFileBytes == null) {
-                          throw Exception("生产Excel文件失败");
+                          throw Exception("生成Excel文件失败");
                         }
                         Navigator.pop(context);
                         String? filePath = await FilePicker.platform.saveFile(
@@ -112,7 +163,8 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                       },
                       child: const Text(
                         '导出长距离成绩登记表',
-                        style: TextStyle(fontSize: 20),)),
+                        style: TextStyle(fontSize: 20),
+                      )),
                   ElevatedButton(
                     onPressed: () async {
                       final result = await FilePicker.platform.pickFiles(
@@ -128,33 +180,36 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                             _selectedFile = file.name;
                           });
                         });
-                        List<int> fileBinary = File(result.paths.first!).readAsBytesSync();
-                        DataHelper.importLongDistanceScore(widget.raceEventName, fileBinary);
+                        List<int> fileBinary =
+                            File(result.paths.first!).readAsBytesSync();
+                        DataHelper.importLongDistanceScore(
+                            widget.raceEventName, fileBinary);
                       }
                     },
                     child: _selectedFile != null
-                        ? Text('已导入成绩: $_selectedFile',style: const TextStyle(fontSize: 18))
-                        : const Text('导入成绩', style: TextStyle(fontSize: 20),),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      print('点击生成200米趴板划水赛初赛分组名单');
-                    },
-                    child: const Text(
-                      '生成200米趴板划水赛初赛分组名单',
-                      style: TextStyle(fontSize: 20),
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      print('点击了生成200米竟赛初赛分组名单');
-                    },
-                    child: const Text(
-                      '生成200米竟赛初赛分组名单',
-                      style: TextStyle(fontSize: 20),
-                    ),
+                        ? Text('已导入成绩: $_selectedFile',
+                            style: const TextStyle(fontSize: 18))
+                        : const Text(
+                            '导入成绩',
+                            style: TextStyle(fontSize: 20),
+                          ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 50),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 50),
+                child: Card(
+                    color: Colors.white,
+                    child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              raceTypeDropdown,
+                              divisionTypeDropdown,
+                              genderTypeDropdown,
+                            ]))),
               ),
               const SizedBox(height: 50),
               Padding(
@@ -185,7 +240,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                 height: 500,
                                 width: 800,
                                 child:
-                                FutureBuilder<List<Map<String, dynamic>>>(
+                                    FutureBuilder<List<Map<String, dynamic>>>(
                                   future: _tableDataFuture,
                                   builder: (context, snapshot) {
                                     if (snapshot.connectionState ==
@@ -202,8 +257,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                         child: SingleChildScrollView(
                                           scrollDirection: Axis.vertical,
                                           child: DataTable(
-                                            columns:
-                                            const [
+                                            columns: const [
                                               DataColumn(label: Text('编号')),
                                               DataColumn(label: Text('姓名')),
                                               DataColumn(label: Text('单位')),
@@ -212,12 +266,12 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                             rows: _tableData.map((row) {
                                               return DataRow(
                                                 cells: [
-                                                  DataCell(Text(row['id']
-                                                      .toString())),
-                                                  DataCell(Text(row['name']
-                                                      .toString())),
-                                                  DataCell(Text(row['team']
-                                                      .toString())),
+                                                  DataCell(Text(
+                                                      row['id'].toString())),
+                                                  DataCell(Text(
+                                                      row['name'].toString())),
+                                                  DataCell(Text(
+                                                      row['team'].toString())),
                                                   DataCell(Text(row['division']
                                                       .toString())),
                                                 ],
@@ -227,8 +281,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                         ),
                                       );
                                     } else {
-                                      return const Center(
-                                          child: Text('暂无数据'));
+                                      return const Center(child: Text('暂无数据'));
                                     }
                                   },
                                 ),
@@ -246,8 +299,8 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                       data: ThemeData(
                         dividerColor: Colors.transparent,
                       ),
-                      child:
-                      ExpansionTile( // 使用 GestureDetector 来触发展开和折叠
+                      child: ExpansionTile(
+                        // 使用 GestureDetector 来触发展开和折叠
                         title: const Text(
                           '查看长距离成绩排名',
                           style: TextStyle(fontSize: 18),
@@ -267,16 +320,13 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                 SizedBox(
                                   width: 200,
                                   height: 600,
-                                  child:
-                                  ListTileTheme(
+                                  child: ListTileTheme(
                                     tileColor: Colors.grey[100],
-                                    child:SingleChildScrollView(
-                                      child:
-                                      Column(
+                                    child: SingleChildScrollView(
+                                      child: Column(
                                         children: [
                                           ListTile(
-                                            title: const Text(
-                                                '各组别总排名'),
+                                            title: const Text('各组别总排名'),
                                             onTap: () {
                                               setState(() {
                                                 _selectedGroup = null;
@@ -307,8 +357,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                             title: const Text('U12组男子'),
                                             onTap: () {
                                               setState(() {
-                                                _selectedGroup =
-                                                'U12组男子';
+                                                _selectedGroup = 'U12组男子';
                                               });
                                               print(_selectedGroup);
                                             },
@@ -317,8 +366,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                             title: const Text('U12组女子'),
                                             onTap: () {
                                               setState(() {
-                                                _selectedGroup =
-                                                'U12组女子';
+                                                _selectedGroup = 'U12组女子';
                                               });
                                               print(_selectedGroup);
                                             },
@@ -327,8 +375,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                             title: const Text('U15组男子'),
                                             onTap: () {
                                               setState(() {
-                                                _selectedGroup =
-                                                'U15组男子';
+                                                _selectedGroup = 'U15组男子';
                                               });
                                               print(_selectedGroup);
                                             },
@@ -337,8 +384,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                             title: const Text('U15组女子'),
                                             onTap: () {
                                               setState(() {
-                                                _selectedGroup =
-                                                'U15组女子';
+                                                _selectedGroup = 'U15组女子';
                                               });
                                               print(_selectedGroup);
                                             },
@@ -347,30 +393,33 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                             title: const Text('U18组男子'),
                                             onTap: () {
                                               setState(() {
-                                                _selectedGroup =
-                                                'U18组男子';
+                                                _selectedGroup = 'U18组男子';
                                               });
                                               print(_selectedGroup);
                                             },
                                           ),
                                           ListTile(
-                                            title: const Text(
-                                                '充气板组男子'),
+                                              title: const Text('U18组女子'),
+                                              onTap: () {
+                                                setState(() {
+                                                  _selectedGroup = 'U18组女子';
+                                                });
+                                                print(_selectedGroup);
+                                              }),
+                                          ListTile(
+                                            title: const Text('充气板组男子'),
                                             onTap: () {
                                               setState(() {
-                                                _selectedGroup =
-                                                '充气板组男子';
+                                                _selectedGroup = '充气板组男子';
                                               });
                                               print(_selectedGroup);
                                             },
                                           ),
                                           ListTile(
-                                            title: const Text(
-                                                '充气板组女子'),
+                                            title: const Text('充气板组女子'),
                                             onTap: () {
                                               setState(() {
-                                                _selectedGroup =
-                                                '充气板组女子';
+                                                _selectedGroup = '充气板组女子';
                                               });
                                               print(_selectedGroup);
                                             },
@@ -379,8 +428,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                             title: const Text('大师组男子'),
                                             onTap: () {
                                               setState(() {
-                                                _selectedGroup =
-                                                '大师组男子';
+                                                _selectedGroup = '大师组男子';
                                               });
                                               print(_selectedGroup);
                                             },
@@ -389,74 +437,61 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                             title: const Text('大师组女子'),
                                             onTap: () {
                                               setState(() {
-                                                _selectedGroup =
-                                                '大师组女子';
+                                                _selectedGroup = '大师组女子';
                                               });
                                               print(_selectedGroup);
                                             },
                                           ),
                                           ListTile(
-                                            title: const Text(
-                                                '高校甲组男子'),
+                                            title: const Text('高校甲组男子'),
                                             onTap: () {
                                               setState(() {
-                                                _selectedGroup =
-                                                '高校甲组男子';
+                                                _selectedGroup = '高校甲组男子';
                                               });
                                               print(_selectedGroup);
                                             },
                                           ),
                                           ListTile(
-                                            title: const Text(
-                                                '高校甲组女子'),
+                                            title: const Text('高校甲组女子'),
                                             onTap: () {
                                               setState(() {
-                                                _selectedGroup =
-                                                '高校甲组女子';
+                                                _selectedGroup = '高校甲组女子';
                                               });
                                               print(_selectedGroup);
                                             },
                                           ),
                                           ListTile(
-                                            title: const Text(
-                                                '高校乙组男子'),
+                                            title: const Text('高校乙组男子'),
                                             onTap: () {
                                               setState(() {
-                                                _selectedGroup =
-                                                '高校乙组男子';
+                                                _selectedGroup = '高校乙组男子';
                                               });
                                               print(_selectedGroup);
                                             },
                                           ),
                                           ListTile(
-                                            title: const Text(
-                                                '高校乙组女子'),
+                                            title: const Text('高校乙组女子'),
                                             onTap: () {
                                               setState(() {
-                                                _selectedGroup =
-                                                '高校乙组女子';
+                                                _selectedGroup = '高校乙组女子';
                                               });
                                               print(_selectedGroup);
                                             },
                                           ),
                                           ListTile(
-                                            title: const Text(
-                                                '卡胡纳组男子'),
+                                            title: const Text('卡胡纳组男子'),
                                             onTap: () {
                                               setState(() {
-                                                _selectedGroup =
-                                                '卡胡纳组男子';
+                                                _selectedGroup = '卡胡纳组男子';
                                               });
                                               print(_selectedGroup);
                                             },
                                           ),
                                           ListTile(
-                                            title: const Text(
-                                                '卡胡纳组女子'),
+                                            title: const Text('卡胡纳组女子'),
                                             onTap: () {
                                               setState(() {
-                                                _selectedGroup =
-                                                '卡胡纳组女子';
+                                                _selectedGroup = '卡胡纳组女子';
                                               });
                                               print(_selectedGroup);
                                             },
@@ -465,8 +500,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                             title: const Text('公开组男子'),
                                             onTap: () {
                                               setState(() {
-                                                _selectedGroup =
-                                                '公开组男子';
+                                                _selectedGroup = '公开组男子';
                                               });
                                               print(_selectedGroup);
                                             },
@@ -475,13 +509,11 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                             title: const Text('公开组女子'),
                                             onTap: () {
                                               setState(() {
-                                                _selectedGroup =
-                                                '公开组女子';
+                                                _selectedGroup = '公开组女子';
                                               });
                                               print(_selectedGroup);
                                             },
                                           ),
-
                                         ],
                                       ),
                                     ),
@@ -489,48 +521,53 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                 ),
                                 Expanded(
                                     child: SizedBox(
-                                      height: 600,
-                                      child: Column(
-                                        children: [
-                                          Align(
-                                            alignment:Alignment.topRight,
-                                            child:Padding(
-                                              padding: const EdgeInsets.only(right: 60),
-                                              child: SizedBox(
-                                                width:200,
-                                                child: TextField(
-                                                  decoration: InputDecoration(
-                                                    hintText: '搜索组别',
-                                                    prefixIcon: const Icon(Icons.search),
-                                                    border: OutlineInputBorder(
-                                                      borderRadius: BorderRadius.circular(25.0),
-                                                      borderSide: BorderSide.none,
-                                                    ),
-                                                    filled: true,
-                                                    fillColor: Colors.purple[50],
-                                                  ),
-                                                  onChanged: (text) {
-                                                    setState(() {
-                                                      _selectedGroup = text;
-                                                    });
-                                                  },
+                                  height: 600,
+                                  child: Column(
+                                    children: [
+                                      Align(
+                                        alignment: Alignment.topRight,
+                                        child: Padding(
+                                          padding:
+                                              const EdgeInsets.only(right: 60),
+                                          child: SizedBox(
+                                            width: 200,
+                                            child: TextField(
+                                              decoration: InputDecoration(
+                                                hintText: '搜索组别',
+                                                prefixIcon:
+                                                    const Icon(Icons.search),
+                                                border: OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          25.0),
+                                                  borderSide: BorderSide.none,
                                                 ),
+                                                filled: true,
+                                                fillColor: Colors.purple[50],
                                               ),
+                                              onChanged: (text) {
+                                                setState(() {
+                                                  _selectedGroup = text;
+                                                });
+                                              },
                                             ),
                                           ),
-                                          Align(
-                                            alignment: Alignment.centerLeft,
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(left: 100),
-                                              child: DivisionScoreTable(
-                                                  division: _selectedGroup,
-                                                  raceEventName: widget.raceEventName),
-                                            ),
-                                          )
-                                        ],
+                                        ),
                                       ),
-                                    )
-                                )
+                                      Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 100),
+                                          child: DivisionScoreTable(
+                                              division: _selectedGroup,
+                                              raceEventName:
+                                                  widget.raceEventName),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ))
                               ],
                             )
                         ],
