@@ -130,13 +130,14 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                   }else{
                     s = SType.firstRound;
                   }
+                  String raceProgress = s == SType.firstRound ?'初赛':'决赛';
                   List<int>? fileBinary = await DataHelper.generateGenericExcel(
                       (div + gender).toString(), c, s,
                       widget.raceEventName);
                   if (fileBinary != null) {
                     //将文件二进制码添加到 archiveFiles 列表中
                     archiveFiles.add(ArchiveFile(
-                        '${div + gender}.xlsx', fileBinary.length, fileBinary));
+                        '${div+gender}_$raceProgress分组名单.xlsx', fileBinary.length, fileBinary));
                   }
                 }
               }
@@ -149,8 +150,8 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
             final bytes = ZipEncoder().encode(archive) as Uint8List;
             //将压缩包保存到手机本地
             String? filePath = await FilePicker.platform.saveFile(
-                dialogTitle: '保存短距离赛事分组表',
-                fileName: '短距离赛事分组表.zip');
+                dialogTitle: '保存短距离赛事分组汇总表',
+                fileName: '短距离赛事分组汇总表.zip');
             if (filePath != null) {
               File file = File(filePath);
               await file.writeAsBytes(bytes as List<int>);
@@ -165,11 +166,12 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
             if(athleteCount<=16){
               s = SType.finals;
             }
+            String raceProgress = s == SType.firstRound ?'初赛':'决赛';
             List<int>? fileBinary = await DataHelper.generateGenericExcel(
                 divisionName, c, s, widget.raceEventName);
             String? filePath = await FilePicker.platform.saveFile(
               dialogTitle: '保存$divisionName分组表',
-              fileName: '$divisionName分组表.xlsx',
+              fileName: '${divisionName}_${raceProgress}分组名单.xlsx',
             );
             if (filePath != null) {
               File file = File(filePath);
