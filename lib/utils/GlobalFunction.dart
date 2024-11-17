@@ -20,28 +20,8 @@ Future<String> getFilePath(String? fileName) async {
 
 Future<List<String>> getDivisions(String dbName) async {
   Database db = await DatabaseManager.getDatabase(dbName);
-  List<Map<String, dynamic>> tables =
-  await db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'");
-  List<String> tableNames = tables.map((row) => row['name'] as String).toList();
-  List<String> divisions = [];
-  for (var tableName in tableNames) {
-    try {
-      tableName = tableName.split('_')[0];
-    } catch (e) {
-      print("表名不符合规范");
-      continue;
-    }
-    if (!divisions.contains(tableName)) {
-      divisions.add(tableName);
-    }
-  }
-  divisions.remove('athletes');
-  divisions.remove('长距离比赛');
-  divisions.remove('仅团体');
-  if (divisions.isEmpty) {
-    throw Exception("数据库中没有数据");
-  }
-  return divisions;
+  List<Map<String, dynamic>> maps = await db.rawQuery('SELECT DISTINCT division FROM athletes');
+  return maps.map((map) => map['division'] as String).toList();
 }
 
 enum CType { pronePaddle, sprint }
@@ -54,6 +34,12 @@ String cTypeTranslate(CType c) {
   } else {
     throw "传入错误的比赛类型";
   }
+}
+
+Future<int> getAthleteCountByDivision(String dbName, String division) async {
+Database db = await DatabaseManager.getDatabase(dbName);
+List<Map<String, dynamic>> maps = await db.rawQuery('SELECT COUNT(*) FROM athletes WHERE division = ?', [division]);
+return Sqflite.firstIntValue(maps)!;
 }
 
 enum SType { firstRound, roundOf16, quarterfinals, semifinals, finals }
