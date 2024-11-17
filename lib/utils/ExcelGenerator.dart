@@ -12,8 +12,9 @@ class ExcelGenerator {
     print('生成$division${cTypeTranslate(c)}${sTypeTranslate(s)}的Excel');
     var excel = Excel.createExcel();
     var tableName = "${division}_${sTypeTranslate(s)}_${cTypeTranslate(c)}";
+    print('tableName: $tableName');
     Database db = await DatabaseManager.getDatabase(dbName);
-    var a = await db.query(tableName, columns: ['id']);
+    var a = await db.query("'$tableName'", columns: ['id']);
     var athletesNum = a.length;
     // 生成Excel
     int groupNum = getGroupNum(athletesNum);
@@ -25,6 +26,9 @@ class ExcelGenerator {
       print('正在录入第${i + 1}组');
       var athletes = await db.rawQuery(
           'SELECT $tableName.name,$tableName.id, $tableName._group, "长距离比赛".long_distant_rank FROM $tableName LEFT JOIN "长距离比赛" ON "长距离比赛".id = $tableName.id WHERE $tableName._group = ${i + 1}');
+      if (athletes.isEmpty){
+        throw Exception("$tableName的上一场比赛尚未录入数据！");
+      }
       // print('查询$tableName,查询到的运动员：$athletes');
       // 将运动员按long_distant_rank倒序排序，long_distant_rank越小越优先
       var sortedAthletes = List.from(athletes);

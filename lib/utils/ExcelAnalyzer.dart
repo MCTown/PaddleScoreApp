@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:excel/excel.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -38,11 +40,11 @@ class ExcelAnalyzer {
           db.update(tableName, {"time": time},
               where: "id = ?", whereArgs: [id]);
           scores[id] = _timeConvert(time);
-          // todo 删除初赛数据库中关于长距离的部分
         }
         // 将id按时间排序
         scores = Map.fromEntries(scores.entries.toList()
           ..sort((a, b) => int.parse(a.value).compareTo(int.parse(b.value))));
+
         var processedGroup = _getGroup(scores);
         // processedGroup的key为id，value为组别，将组别录入数据库
         var tables = await DatabaseManager.getTableNames(db);
@@ -77,12 +79,14 @@ class ExcelAnalyzer {
     for (int i = 0; i < sortedAthletes.length; i++) {
       db.update("长距离比赛", {"long_distant_rank": i + 1},
           where: "id = ?", whereArgs: [sortedAthletes[i]['id']]);
+      db.update("athletes", {"long_distance_score": rankToScore(i)},
+          where: "id = ?", whereArgs: [sortedAthletes[i]['id']]);
     }
     print("All done :D");
   }
 
-  static Future<void> initAthlete(
-      String dbName, List<int> xlsxFileBytes) async {
+  static Future<void> initAthlete(String dbName,
+      List<int> xlsxFileBytes) async {
     Database db = await DatabaseManager.getDatabase(dbName);
     var excel = Excel.decodeBytes(xlsxFileBytes);
     // print("可用的table：${excel.tables}");
@@ -143,8 +147,8 @@ class ExcelAnalyzer {
       return (timeList[0] * 60 + timeList[1]).toString();
     } else if (timeList.length == 3) {
       return (int.parse(timeList[0]) * 3600 +
-              int.parse(timeList[1]) * 60 +
-              int.parse(timeList[2]))
+          int.parse(timeList[1]) * 60 +
+          int.parse(timeList[2]))
           .toString();
     } else {
       throw Exception("时间格式不正确");
@@ -197,7 +201,7 @@ class ExcelAnalyzer {
     SELECT DISTINCT division FROM athletes
   ''');
     List<String> divisions =
-        divisionsRaw.map((row) => row['division'] as String).toList();
+    divisionsRaw.map((row) => row['division'] as String).toList();
     print('查询到的division：$divisions');
     List<String> competitions = ['趴板', '竞速'];
     // print('查询到的competition：$competitions');
@@ -221,22 +225,29 @@ class ExcelAnalyzer {
         print("比赛项目：$division $competition 共有$athleteCount名运动员");
         // 生成比赛表
         if (athleteCount <= 16) {
-          await _generateScoreTable(db, athletes, division, "决赛", competition);
+          await _generateScoreTable(
+              db, athletes, division, "决赛", competition);
         } else if (athleteCount <= 64) {
-          await _generateScoreTable(db, athletes, division, "初赛", competition);
-          await _generateScoreTable(db, athletes, division, "决赛", competition);
+          await _generateScoreTable(
+              db, athletes, division, "初赛", competition);
+          await _generateScoreTable(
+              db, athletes, division, "决赛", competition);
         } else if (athleteCount <= 128) {
-          await _generateScoreTable(db, athletes, division, "初赛", competition);
           await _generateScoreTable(
-              db, athletes, division, "1/2决赛", competition);
-          await _generateScoreTable(db, athletes, division, "决赛", competition);
+              db, athletes, division, "初赛", competition);
+          await _generateScoreTable(
+              db, athletes, division, "二分之一决赛", competition);
+          await _generateScoreTable(
+              db, athletes, division, "决赛", competition);
         } else if (athleteCount <= 256) {
-          await _generateScoreTable(db, athletes, division, "初赛", competition);
           await _generateScoreTable(
-              db, athletes, division, "1/4决赛", competition);
+              db, athletes, division, "初赛", competition);
           await _generateScoreTable(
-              db, athletes, division, "1/2决赛", competition);
-          await _generateScoreTable(db, athletes, division, "决赛", competition);
+              db, athletes, division, "四分之一决赛", competition);
+          await _generateScoreTable(
+              db, athletes, division, "二分之一决赛", competition);
+          await _generateScoreTable(
+              db, athletes, division, "决赛", competition);
         } else {
           throw Exception("运动员数量超过256，无法生成比赛表");
           // print("运动员数量超过256，无法生成比赛表");
@@ -245,8 +256,7 @@ class ExcelAnalyzer {
     }
   }
 
-  static Future<void> _generateScoreTable(
-      Database db,
+  static Future<void> _generateScoreTable(Database db,
       List<Map<String, Object?>> athletes,
       String division,
       String schedule,
@@ -296,33 +306,13 @@ class ExcelAnalyzer {
     }
   }
 
-  static Future<void> generic(String division, List<int> fileBinary, CType c,
-      SType s, String dbName) async {
-    // 需求：导入趴板或竞速的成绩表
-    // 确定下一场比赛的position与_group
-    print('导入通用比赛成绩');
-    Database db = await DatabaseManager.getDatabase(dbName);
-    var excel = Excel.decodeBytes(fileBinary);
-    var sheets = excel.sheets;
-    var tableName = "${division}_${sTypeTranslate(s)}_${cTypeTranslate(c)}";
-    var athletes = await db.query(tableName, columns: ['id']);
-    // 遍历所有sheet
-    var targetTable = await _getNextTableName(dbName, division, c, s);
-    print(targetTable);
-    for (var sheet in sheets.keys) {
-      for (var athlete in athletes) {
-        print("$sheet, $athlete");
-      }
-    }
-  }
-
-  static Future<String> _getNextTableName(
-      String dbName, String division, CType c, SType s) async {
+  static Future<String> _getNextTableName(String dbName, String division,
+      CType c, SType s) async {
     Database db = await DatabaseManager.getDatabase(dbName);
     if (s == SType.firstRound) {
       String tableName =
           "${division}_${sTypeTranslate(s)}_${cTypeTranslate(c)}";
-      var athletes = await db.query(tableName, columns: ['id']);
+      var athletes = await db.query("'$tableName'", columns: ['id']);
       var athletesNum = athletes.length;
       if (athletesNum == 0) {
         throw Exception("致命错误：在进行初赛成绩导入时没有运动员");
@@ -332,11 +322,119 @@ class ExcelAnalyzer {
       } else if (athletesNum <= 64) {
         return "${division}_决赛_${cTypeTranslate(c)}";
       } else if (athletesNum <= 128) {
-        return "${division}_1/2决赛_${cTypeTranslate(c)}";
+        return "${division}_二分之一决赛_${cTypeTranslate(c)}";
       } else if (athletesNum <= 256) {
-        return "${division}_1/4决赛_${cTypeTranslate(c)}";
+        return "${division}_四分之一决赛_${cTypeTranslate(c)}";
+      }
+    } else {
+      if (s == SType.semifinals) {
+        return "${division}_决赛_${cTypeTranslate(c)}";
+      } else if (s == SType.quarterfinals) {
+        return "${division}_二分之一决赛_${cTypeTranslate(c)}";
+      } else if (s == SType.roundOf16) {
+        return "${division}_四分之一决赛_${cTypeTranslate(c)}";
       }
     }
     throw Exception("致命错误：无法获取下一场比赛表名");
+  }
+
+  static int _getPromotionAthleteNum(int athleteNum) {
+    if (athleteNum <= 16) {
+      throw Exception("决赛无需晋级");
+    } else if (athleteNum <= 64) {
+      return 16;
+    } else if (athleteNum <= 128) {
+      return 64;
+    } else if (athleteNum <= 256) {
+      return 128;
+    } else {
+      throw Exception("运动员数量超过256，无法获取晋级人数");
+    }
+  }
+  static Future<void> generic(String division, List<int> fileBinary, CType c,
+      SType s, String dbName) async {
+    // 需求：导入趴板或竞速的成绩表
+    // 确定下一场比赛的position与_group
+    print('导入通用比赛成绩');
+    Database db = await DatabaseManager.getDatabase(dbName);
+    var excel = Excel.decodeBytes(fileBinary);
+    var sheets = excel.sheets;
+    var tableName = "${division}_${sTypeTranslate(s)}_${cTypeTranslate(c)}";
+    var a = await db.query("'$tableName'", columns: ['id']);
+    int athletesNum = a.length;
+    // 遍历所有sheet
+    int promotionNum = _getPromotionAthleteNum(athletesNum);
+    print(
+        "比赛${division}_${sTypeTranslate(s)}_${cTypeTranslate(
+            c)}的晋级人数为：$promotionNum");
+    Map<String,String> promotionScore = {};
+    for (var sheetKey in sheets.keys) {
+      var sheet = sheets[sheetKey];
+      if (sheet == null) {
+        throw Exception("表格中没有$sheetKey");
+      }
+      var maxRows = sheet.maxRows;
+      Map<String, String> scores = {};
+      for (int i = 2; i < maxRows; i++) {
+        var id = sheet
+            .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: i))
+            .value
+            .toString();
+        var time = sheet
+            .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: i))
+            .value
+            .toString();
+        // 录入相应数据库
+        db.update("'$tableName'", {"time": time}, where: "id = ?", whereArgs: [id]);
+        scores[id] = _timeConvert(time);
+      }
+      // 若为决赛则直接录入
+      if (s == SType.finals) {
+        scores = Map.fromEntries(scores.entries.toList()
+          ..sort((a, b) => int.parse(a.value).compareTo(int.parse(b.value))));
+            var sortedAthletes = scores.keys.toList();
+        for (int i = 0; i < sortedAthletes.length; i++) {
+          // 录入总分
+          db.update('athletes', {"long_distance_score": rankToScore(i)},
+              where: "id = ?", whereArgs: [sortedAthletes[i]]);
+        }
+      } else {
+        print("处理初赛");
+        // 若为初赛则晋级
+        scores = Map.fromEntries(scores.entries.toList()
+          ..sort((a, b) => int.parse(a.value).compareTo(int.parse(b.value))));
+            var sortedAthletes = scores.keys.toList();
+        print(promotionNum);
+        print(sortedAthletes);
+        print(tableName);
+        // 处理晋级的运动员
+        for (int i = 0; i < promotionNum/getGroupNum(athletesNum); i++) {
+          // 将该运动员添加到promotionScore中
+          promotionScore[sortedAthletes[i]] = i.toString();
+        }
+        // 处理未晋级运动员
+        for (int i = (promotionNum/getGroupNum(athletesNum)).ceil(); i < scores.length; i++) {
+          db.update('athletes', {"long_distance_score": rankToScore(i)},
+              where: "id = ?", whereArgs: [sortedAthletes[i]]);
+          print("未晋级运动员：${sortedAthletes[i]}");
+        }
+      }
+    }
+    // 处理晋级的运动员p2
+    print(promotionScore);
+    var groups = _getGroup(promotionScore);
+    print(groups);
+    var targetTable = await _getNextTableName(dbName, division, c, s);
+    print("将晋级运动员录入到$targetTable中");
+    for (var athleteID in groups.keys) {
+      // 获取名字
+      var name = (await db.query('athletes', columns: ['name'], where: 'id = ?', whereArgs: [athleteID]))[0]['name'];
+      db.insert("'$targetTable'", {
+        'id': athleteID,
+        'name': name,
+        'time': '0',
+        '_group': groups[athleteID]
+      });
+    }
   }
 }
