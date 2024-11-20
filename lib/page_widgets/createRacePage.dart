@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:paddle_score_app/DataHelper.dart';
 import 'package:provider/provider.dart';
 import '../main.dart';
 import '../utils/ExcelAnalysis.dart';
@@ -64,7 +65,7 @@ class _CreateRacePage extends State<CreateRacePage>{
           );
           return;
         }else{
-          loadExcelFileToAthleteDatabase(raceName,bytes);
+          DataHelper.loadExcelFileToAthleteDatabase(raceName,bytes);
         }
         appState3.addRace(_raceNameController.text);
         showDialog(
