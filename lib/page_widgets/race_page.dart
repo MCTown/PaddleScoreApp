@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:paddle_score_app/page_widgets/sprintRacePage.dart';
 import 'package:provider/provider.dart';
 
 import 'longDistanceRace_page.dart';
@@ -74,7 +75,7 @@ class _RaceCard extends State<RaceCard>{
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder:(context)=>LongDistanceRacePage(raceBar:raceBar, raceEventName:raceName),
+                        builder:(context)=>SprintRacePage(raceBar:raceBar, raceEventName:raceName),
                       ),
                     );
                     break;

@@ -1,3 +1,4 @@
+import 'dart:core';
 import 'dart:io';
 
 import 'package:paddle_score_app/utils/DatabaseManager.dart';
@@ -39,6 +40,11 @@ String cTypeTranslate(CType c) {
 }
 
 enum SType { firstRound, roundOf16, quarterfinals, semifinals, finals }
+Future<int> getAthleteCountByDivision(String raceEventName, String divisionName) async{
+  Database db = await DatabaseManager.getDatabase(raceEventName);
+  List<Map<String,dynamic>> result = await db.rawQuery('SELECT COUNT(*) FROM athletes WHERE division = ? ',[divisionName],);
+  return Sqflite.firstIntValue(result) ?? 0;
+}
 
 String sTypeTranslate(SType s) {
   if (s == SType.firstRound) {
