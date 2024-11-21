@@ -22,9 +22,9 @@ class _DivisionScoreTableState extends State<DivisionScoreTable> {
     try{
       List<Map<String,dynamic>> data;
       if(division == null){
-        data = await database.query('athletes',orderBy: 'long_distant_score ASC');
+        data = await database.query('athletes',orderBy: 'long_distance_score ASC');
       }else{
-        data = await database.query('athletes',where:'division = ?',whereArgs: [division],orderBy: 'long_distant_score ASC');
+        data = await database.query('athletes',where:'division = ?',whereArgs: [division],orderBy: 'long_distance_score ASC');
       }
       return data;
     }catch(e){
@@ -60,7 +60,7 @@ class _DivisionScoreTableState extends State<DivisionScoreTable> {
                 rows: data.asMap().entries.map((entry) {
                   final index = entry.key;
                   final row = entry.value;
-                  final score = row['long_distant_score'];
+                  final score = row['long_distance_score'];
                   return DataRow(
                     cells: [
                       DataCell(Text((index + 1).toString())),

@@ -70,12 +70,12 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
       List<Map<String, dynamic>> data;
       if (division == null) {
         data =
-        await database.query('athletes', orderBy: 'long_distant_score ASC');
+        await database.query('athletes', orderBy: 'long_distance_score ASC');
       } else {
         data = await database.query('athletes',
             where: 'division = ?',
             whereArgs: [division],
-            orderBy: 'long_distant_score ASC');
+            orderBy: 'long_distance_score ASC');
       }
       return data;
     } catch (e) {
@@ -121,23 +121,24 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                 for (var gender in genderOptions.where((element) =>
                 element != '所有')) {
                   CType c = raceType == '竞速赛' ?
-                            CType.sprint:(_selectedDivision!.startsWith('U')?
-                            CType.pronePaddle:CType.sprint);
+                  CType.sprint : (_selectedDivision!.startsWith('U') ?
+                  CType.pronePaddle : CType.sprint);
                   int athleteCount = await getAthleteCountByDivision(
-                      widget.raceEventName, div+gender);
-                  if(athleteCount<=16){
+                      widget.raceEventName, div + gender);
+                  if (athleteCount <= 16) {
                     s = SType.finals;
-                  }else{
+                  } else {
                     s = SType.firstRound;
                   }
-                  String raceProgress = s == SType.firstRound ?'初赛':'决赛';
+                  String raceProgress = s == SType.firstRound ? '初赛' : '决赛';
                   List<int>? fileBinary = await DataHelper.generateGenericExcel(
                       (div + gender).toString(), c, s,
                       widget.raceEventName);
                   if (fileBinary != null) {
                     //将文件二进制码添加到 archiveFiles 列表中
                     archiveFiles.add(ArchiveFile(
-                        '${div+gender}_$raceProgress分组名单.xlsx', fileBinary.length, fileBinary));
+                        '${div + gender}_$raceProgress分组名单.xlsx',
+                        fileBinary.length, fileBinary));
                   }
                 }
               }
@@ -145,7 +146,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
             //创建一个 Archive 对象将archiveFiles列表中的文件打包成压缩包
             final archive = Archive();
             for (var file in archiveFiles) {
-              archive.addFile(file);  // 使用 addFile() 来添加文件
+              archive.addFile(file); // 使用 addFile() 来添加文件
             }
             final bytes = ZipEncoder().encode(archive) as Uint8List;
             //将压缩包保存到手机本地
@@ -160,13 +161,16 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
           } else {
             String divisionName = _selectedDivision! + _selectedGender!;
             CType c = _selectedRaceType == '竞速赛' ?
-                      CType.sprint:(_selectedDivision!.startsWith('U')?
-                      CType.pronePaddle:CType.sprint);
-            int athleteCount = await getAthleteCountByDivision(widget.raceEventName, divisionName);
-            if(athleteCount<=16){
+            CType.sprint : (_selectedDivision!.startsWith('U') ?
+            CType.pronePaddle : CType.sprint);
+            int athleteCount = await getAthleteCountByDivision(
+                widget.raceEventName, divisionName);
+            if (athleteCount <= 16) {
               s = SType.finals;
+            } else {
+              s = SType.firstRound;
             }
-            String raceProgress = s == SType.firstRound ?'初赛':'决赛';
+            String raceProgress = s == SType.firstRound ? '初赛' : '决赛';
             List<int>? fileBinary = await DataHelper.generateGenericExcel(
                 divisionName, c, s, widget.raceEventName);
             String? filePath = await FilePicker.platform.saveFile(
@@ -219,8 +223,8 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                         // Navigator.pop(context);
                         Future.delayed(Duration.zero, () async {
                           String? filePath = await FilePicker.platform.saveFile(
-                              dialogTitle: '保存长距离登记表',
-                              fileName: '长距离成绩登记表.xlsx',
+                            dialogTitle: '保存长距离登记表',
+                            fileName: '长距离成绩登记表.xlsx',
                           );
                           if (filePath == null) {
                             throw Exception("用户未选择文件");
@@ -259,7 +263,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                         ? Text('已导入成绩: $_selectedFile',
                         style: const TextStyle(fontSize: 18))
                         : const Text(
-                      '导入成绩',
+                      '导入长距离成绩',
                       style: TextStyle(fontSize: 20),
                     ),
                   ),
@@ -272,16 +276,29 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                     color: Colors.white,
                     child: Padding(
                         padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              raceTypeDropdown,
-                              divisionTypeDropdown,
-                              genderTypeDropdown,
-                              exportButton,
-                            ]))),
+                        child: Column(
+                          children: [
+                            const Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                  "导出短距离初赛分组名单", style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold)),
+                            ),
+                            const SizedBox(height: 30,),
+                            Row(
+                                mainAxisAlignment: MainAxisAlignment
+                                    .spaceAround,
+                                children: [
+                                  raceTypeDropdown,
+                                  divisionTypeDropdown,
+                                  genderTypeDropdown,
+                                  exportButton,
+                                ]),
+                            const SizedBox(height: 20,),
+                          ],
+                        ))),
               ),
-              const SizedBox(height: 50),
+              const SizedBox(height: 20),
               Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 50),
                   child: Card(
@@ -293,7 +310,8 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                       child: ExpansionTile(
                         title: const Text(
                           '查看参赛运动员名单',
-                          style: TextStyle(fontSize: 18),
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         trailing: Icon(_isTableVisible
                             ? Icons.keyboard_arrow_up
@@ -362,6 +380,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                       ),
                     ),
                   )),
+              const SizedBox(height: 20),
               Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 50),
                   child: Card(
@@ -374,7 +393,8 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                         // 使用 GestureDetector 来触发展开和折叠
                         title: const Text(
                           '查看长距离成绩排名',
-                          style: TextStyle(fontSize: 18),
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         trailing: Icon(_isCheckAllScore
                             ? Icons.keyboard_arrow_up
