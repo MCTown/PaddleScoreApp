@@ -23,7 +23,7 @@ class DatabaseManager {
     name VARCHAR(255),
     team VARCHAR(255),
     division VARCHAR(255),
-    long_distant_score INT,
+    long_distance_score INT,
     prone_paddle_score INT,
     sprint_score INT
 );

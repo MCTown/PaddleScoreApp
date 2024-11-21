@@ -21,7 +21,9 @@ Future<String> getFilePath(String? fileName) async {
 Future<List<String>> getDivisions(String dbName) async {
   Database db = await DatabaseManager.getDatabase(dbName);
   List<Map<String, dynamic>> maps = await db.rawQuery('SELECT DISTINCT division FROM athletes');
-  return maps.map((map) => map['division'] as String).toList();
+  var result = maps.map((map) => map['division'] as String).toList();
+  print(result);
+  return result;
 }
 
 enum CType { pronePaddle, sprint }
@@ -36,23 +38,17 @@ String cTypeTranslate(CType c) {
   }
 }
 
-Future<int> getAthleteCountByDivision(String dbName, String division) async {
-Database db = await DatabaseManager.getDatabase(dbName);
-List<Map<String, dynamic>> maps = await db.rawQuery('SELECT COUNT(*) FROM athletes WHERE division = ?', [division]);
-return Sqflite.firstIntValue(maps)!;
-}
-
 enum SType { firstRound, roundOf16, quarterfinals, semifinals, finals }
 
 String sTypeTranslate(SType s) {
   if (s == SType.firstRound) {
     return "初赛";
   } else if (s == SType.roundOf16) {
-    return "1/8决赛";
+    return "八分之一决赛";
   } else if (s == SType.quarterfinals) {
-    return "1/4决赛";
+    return "四分之一决赛";
   } else if (s == SType.semifinals) {
-    return "1/2决赛";
+    return "二分之一决赛";
   } else if (s == SType.finals) {
     return "决赛";
   } else {
@@ -72,4 +68,81 @@ String wTypeTranslate(WType w) {
   }
 }
 
-const List<String> divisionBlackList = ['仅团体','接力赛','龙板'];
+const List<String> divisionBlackList = ['仅团体', '接力赛', '龙板'];
+
+int getGroupNum(int personNum) {
+  var groupNum = (personNum / 16).ceil();
+  while (groupNum != 1 &&
+      groupNum != 2 &&
+      groupNum != 4 &&
+      groupNum != 8 &&
+      groupNum != 16) {
+    groupNum++;
+  }
+  return groupNum;
+}
+
+// From rank to score
+int rankToScore(int rank) {
+  int score = 0;
+  if (rank < 17) {
+    switch (rank) {
+      case 1:
+        score = 1000;
+        break;
+      case 2:
+        score = 860;
+        break;
+      case 3:
+        score = 730;
+        break;
+      case 4:
+        score = 670;
+        break;
+      case 5:
+        score = 610;
+        break;
+      case 6:
+        score = 583;
+        break;
+      case 7:
+        score = 555;
+        break;
+      case 8:
+        score = 528;
+        break;
+      case 9:
+        score = 500;
+        break;
+      case 10:
+        score = 488;
+        break;
+      case 11:
+        score = 475;
+        break;
+      case 12:
+        score = 462;
+        break;
+      case 13:
+        score = 450;
+        break;
+      case 14:
+        score = 438;
+        break;
+      case 15:
+        score = 425;
+        break;
+      case 16:
+        score = 413;
+        break;
+    }
+  } else if (rank < 65) {
+    score = 400 - (rank - 17) * 5;
+  } else {
+    score = 160 - (rank - 65) * 2;
+  }
+  if (score < 0) {
+    score = 0;
+  }
+  return score;
+}
