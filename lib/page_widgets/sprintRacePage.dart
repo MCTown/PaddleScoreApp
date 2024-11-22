@@ -11,6 +11,78 @@ class SprintRacePage extends StatefulWidget{
   @override
   State<SprintRacePage> createState() => _SprintRacePageState();
 }
+class RaceState{
+  final String name;
+  final RaceStatus status;
+  RaceState({required this.name,required this.status});
+}
+enum RaceStatus{
+  completed,
+  ongoing,
+  notStarted,
+}
+class RaceTimeline extends StatelessWidget{
+  final List<RaceState> raceStates;
+  const RaceTimeline({super.key,required this.raceStates});
+  @override
+  Widget build(BuildContext context){
+    return SizedBox(
+      height: 100,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children:
+        raceStates.asMap().entries.map((entry){
+          final index = entry.key;
+          final stage = entry.value;
+
+            Color? dotColor;
+            Color? lineColor;
+            switch (stage.status){
+              case RaceStatus.completed:
+                dotColor = Colors.green;
+                lineColor = Colors.green;
+                break;
+              case RaceStatus.ongoing:
+                dotColor = Colors.blue;
+                lineColor = Colors.grey[100];
+                break;
+              case RaceStatus.notStarted:
+                dotColor = Colors.grey[100];
+                lineColor = Colors.grey[100];
+                break;
+            }
+          return Row(
+            children: [
+              // 第一个圆点和阶段名称
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: dotColor,
+                ),
+                child: Center(child: Text(stage.name)),
+              ),
+              // 连接圆点的直线
+              if (index < raceStates.length - 1)
+                  SizedBox(
+                    width: 200,
+                    child: Container(
+                      height: 5,
+                      color:lineColor,
+                    ),
+                  ),
+                // CustomPaint(
+                //   size: Size(100, 10), // 根据需要调整宽度
+                //   painter: LinePainter(color: Colors.grey),
+                // ),
+            ],
+          );
+          }).toList(),
+      ),
+    );
+  }
+}
 class _SprintRacePageState extends State<SprintRacePage>{
   final List<String> divisions = [
     'U9组男子',
@@ -179,6 +251,14 @@ class _SprintRacePageState extends State<SprintRacePage>{
     );
 
   }
+  List<RaceState> getRaceProcess(String division){
+    return [
+      RaceState(name: '初赛',status: RaceStatus.notStarted),
+      RaceState(name: '复赛', status: RaceStatus.notStarted),
+      RaceState(name: '决赛', status: RaceStatus.notStarted),
+    ];
+  }
+
  @override
  Widget build(BuildContext context){
    return Scaffold(
@@ -259,8 +339,12 @@ class _SprintRacePageState extends State<SprintRacePage>{
    );
  }
  Widget _buildContent(String division){
-    return Center(
-      child:Text("这是$division页面"),
+    final raceProcess = getRaceProcess(division);
+    return Column(
+      children:[
+        SizedBox(height: 100,),
+        RaceTimeline(raceStates: raceProcess),
+      ]
     );
  }
 }
