@@ -11,7 +11,7 @@
 
 [//]: # (todo 问题：初赛积分如何计算？)
 
-| 列名   | id      | name    | team    | division | long_distant_score | prone_paddle_score | sprint_score |
+| 列名   | id      | name    | team    | division | long_distance_score | prone_paddle_score | sprint_score |
 |------|---------|---------|---------|----------|--------------------|--------------------|--------------|
 | 数据类型 | VARCHAR | VARCHAR | VARCHAR | STRING   | INT                | INT                | INT          |
 
@@ -23,7 +23,7 @@ CREATE TABLE athletes (
     name VARCHAR(255),
     team VARCHAR(255),
     division VARCHAR(255),
-    long_distant_score INT,
+    long_distance_score INT,
     prone_paddle_score INT,
     sprint_score INT
 );
@@ -37,7 +37,7 @@ CREATE TABLE athletes (
 >
 > 3. 200米竞速赛
 
-### competitions_long_distant 表
+### competitions_long_distance 表
 
 | 列名 | id | name | time |
 |----|----|------|------|
@@ -45,7 +45,7 @@ CREATE TABLE athletes (
 SQL:
 
 ```sql
-CREATE TABLE competitions_long_distant (
+CREATE TABLE competitions_long_distance (
     id INT PRIMARY KEY,
     name VARCHAR(255),
     time VARCHAR(255)
@@ -143,7 +143,7 @@ flutter:
 - 分组（例U9男子组）： division
 - 赛程（1/4决赛）： schedule
 - 项目（例6000米长距离赛）： competitions
-- 长距离赛（例6000米长距离赛）： long_distant
+- 长距离赛（例6000米长距离赛）： long_distance
 - 趴板划水赛（例200米趴板划水赛）： prone_paddle
 - 竞速赛（例200米竞速赛）： sprint
 - 初赛： preliminary

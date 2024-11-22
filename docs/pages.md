@@ -43,6 +43,9 @@
 - [] 将数据库数据预载到某个位置
 - [] 减少显示代码重复,提高访问速度
 - [] 固定显示框与显示屏底部保持一定距离
+- [] 点开展开框以后自动定位到显示部分
+### SprintRacePage
+- [] 完善搜索功能,添加补齐功能
 ````
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
@@ -96,7 +99,7 @@ return SingleChildScrollView(
           GridColumn(columnName: '单位', label: Text('单位')),
           GridColumn(columnName: '组别', label: Text('组别')),
         ],
-        frozenRowsCount: 1, // 固定首行标题
+        frozenRows: 1, // 固定首行标题
       ),
     ),
   ),

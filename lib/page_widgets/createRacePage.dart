@@ -5,7 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:paddle_score_app/DataHelper.dart';
 import 'package:provider/provider.dart';
 import '../main.dart';
-import '../utils/ExcelAnalysis.dart';
+import '../utils/ExcelAnalyzer.dart';
 
 class CreateRacePage extends StatefulWidget{
   const CreateRacePage({Key? key}) : super(key: key);
