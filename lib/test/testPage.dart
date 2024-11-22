@@ -11,7 +11,7 @@ import 'package:paddle_score_app/utils/DatabaseManager.dart';
 
 class TestPage extends StatelessWidget {
   const TestPage({super.key});
-
+  static const testFilePath = '/home/apricityx/Desktop';
   @override
   Widget build(BuildContext context) {
     final items = ['Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5'];
@@ -33,7 +33,7 @@ class TestPage extends StatelessWidget {
         children: <Widget>[
           TestUnit(text: "导入报名表", icon: Icons.upload_file, callBack: ()async{
             String dbName = "athlete";
-            File xlsxFile = File("/home/francessca/Desktop/参赛信息-_汉丰湖.xlsx");
+            File xlsxFile = File("$testFilePath/参赛信息-_汉丰湖.xlsx");
 
             await DataHelper.loadExcelFileToAthleteDatabase(
                 dbName, xlsxFile.readAsBytesSync());
@@ -51,7 +51,7 @@ class TestPage extends StatelessWidget {
             //   fileName: '长距离成绩单.xlsx',
             // );
             var filePath =
-                "/home/francessca/Desktop/长距离成绩单.xlsx"; // -todo
+                "$testFilePath/长距离成绩单.xlsx"; // -todo
             // 创建文件并写入字节数据
             File file = File(filePath);
             await file.writeAsBytes(excelFileBytes);
@@ -64,7 +64,7 @@ class TestPage extends StatelessWidget {
               text: "导入已录入的长距离成绩",
               icon: Icons.import_contacts,
               callBack: () async {
-                File exampleFile = File("/home/francessca/Desktop/长距离成绩单.xlsx");
+                File exampleFile = File("$testFilePath/长距离成绩单.xlsx");
                 await DataHelper.importLongDistanceScore(
                     'athlete', exampleFile.readAsBytesSync());
               }),
@@ -74,7 +74,7 @@ class TestPage extends StatelessWidget {
               icon: Icons.sim_card_download_outlined,
               callBack: () async {
                 String dbName = "athlete";
-                String path = "/home/francessca/Desktop/大师组男子竞速初赛成绩表.xlsx";
+                String path = "$testFilePath/大师组男子竞速初赛成绩表.xlsx";
                 List<int>? exampleFile = await DataHelper.generateGenericExcel(
                     "大师组男子", CType.sprint, SType.firstRound, dbName);
                 File file = File(path);
@@ -86,7 +86,7 @@ class TestPage extends StatelessWidget {
               icon: Icons.import_contacts,
               callBack: () async {
                 String dbName = "athlete";
-                String path = "/home/francessca/Desktop/大师组男子竞速初赛成绩表.xlsx";
+                String path = "$testFilePath/大师组男子竞速初赛成绩表.xlsx";
                 await DataHelper.importGenericCompetitionScore(
                     "大师组男子",
                     File(path).readAsBytesSync(),
@@ -100,7 +100,7 @@ class TestPage extends StatelessWidget {
               icon: Icons.sim_card_download_outlined,
               callBack: () async {
                 String dbName = "athlete";
-                String path = "/home/francessca/Desktop/大师组男子竞速二分之一决赛成绩表.xlsx";
+                String path = "$testFilePath/大师组男子竞速二分之一决赛成绩表.xlsx";
                 List<int>? exampleFile = await DataHelper.generateGenericExcel(
                     "大师组男子", CType.sprint, SType.semifinals, dbName);
                 File file = File(path);
@@ -112,7 +112,7 @@ class TestPage extends StatelessWidget {
               icon: Icons.import_contacts,
               callBack: () async {
                 String dbName = "athlete";
-                String path = "/home/francessca/Desktop/大师组男子竞速二分之一决赛成绩表.xlsx";
+                String path = "$testFilePath/大师组男子竞速二分之一决赛成绩表.xlsx";
                 await DataHelper.importGenericCompetitionScore(
                     "大师组男子",
                     File(path).readAsBytesSync(),
@@ -126,7 +126,7 @@ class TestPage extends StatelessWidget {
               icon: Icons.sim_card_download_outlined,
               callBack: () async {
                 String dbName = "athlete";
-                String path = "/home/francessca/Desktop/大师组男子竞速决赛成绩表.xlsx";
+                String path = "$testFilePath/大师组男子竞速决赛成绩表.xlsx";
                 List<int>? exampleFile = await DataHelper.generateGenericExcel(
                     "大师组男子", CType.sprint, SType.finals, dbName);
                 File file = File(path);
@@ -138,7 +138,7 @@ class TestPage extends StatelessWidget {
               icon: Icons.import_contacts,
               callBack: () async {
                 String dbName = "athlete";
-                String path = "/home/francessca/Desktop/大师组男子竞速决赛成绩表.xlsx";
+                String path = "$testFilePath/大师组男子竞速决赛成绩表.xlsx";
                 await DataHelper.importGenericCompetitionScore(
                     "大师组男子",
                     File(path).readAsBytesSync(),
@@ -162,7 +162,7 @@ class TestPage extends StatelessWidget {
               icon: Icons.sim_card_download_outlined,
               callBack: () async {
                 String dbName = "athlete";
-                String path = "/home/francessca/Desktop/U15组女子竞速决赛成绩表.xlsx";
+                String path = "$testFilePath/U15组女子竞速决赛成绩表.xlsx";
                 List<int>? exampleFile = await DataHelper.generateGenericExcel(
                     "U15组女子", CType.sprint, SType.finals, dbName);
                 File file = File(path);

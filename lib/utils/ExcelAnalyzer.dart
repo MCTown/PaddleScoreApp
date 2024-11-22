@@ -46,9 +46,11 @@ class ExcelAnalyzer {
           ..sort((a, b) => int.parse(a.value).compareTo(int.parse(b.value))));
 
         var processedGroup = _getGroup(scores);
-        // processedGroup的key为id，value为组别，将组别录入数据库
+        // processedGroup的key为id，value为组别，将组别录入数据库1
+        print("$division的processedGroup为$processedGroup");
         var tables = await DatabaseManager.getTableNames(db);
-        var tablesName = ['${division}_初赛_趴板', '${division}_初赛_竞速'];
+        // 更新所有已确定人员名单的比赛的group
+        var tablesName = ['${division}_初赛_趴板','${division}_决赛_趴板', '${division}_初赛_竞速', '${division}_决赛_竞速'];
         for (var tableName in tablesName) {
           if (!tables.contains(tableName)) {
             continue;
