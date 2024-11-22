@@ -36,49 +36,74 @@ class _SprintRacePageState extends State<SprintRacePage>{
   late Widget searchBar;
   String _selectedDivision = 'U9组男子';
   String _searchText = '';
+  final _typeAheadController = TextEditingController();
   @override
   void initState(){
       super.initState();
-      void _performSearch(String searchText){
+      void performSearch(String searchText){
         final matchedDivision = divisions.firstWhere((division)=>division.contains(searchText),orElse:()=>'',);
         setState((){
           _selectedDivision = matchedDivision;
           _searchText = searchText;
         });
       }
-      searchBar = TypeAheadField(
-        textFieldConfiguration:  TextFieldConfiguration(
-          decoration:InputDecoration(
-              hintText: '搜索组别',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(3),
-              ),
-            filled: true,
-            fillColor: Colors.white,
-            // prefixIcon: const Icon(Icons.search),
-            suffixIcon: IconButton(
-              icon:const Icon(Icons.search),
-              onPressed: (){
-                _performSearch(_searchText);
-              },
+      searchBar = Row(
+        children: [
+          Expanded(
+            child:
+            TypeAheadField(
+              textFieldConfiguration:  TextFieldConfiguration(
+                decoration:InputDecoration(
+                  hintText: '搜索组别',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  prefixIcon: const Icon(Icons.search),
+                  // suffixIcon: IconButton(
+                  //   icon:const Icon(Icons.search),
+                  //   onPressed: (){
+                  //     performSearch(_typeAheadController.text);
+                  //   },
+                  // ),
+                ),
+                controller: _typeAheadController,
+                onSubmitted: (text){
+                  performSearch(text);
+                }
             ),
+            suggestionsCallback: (pattern){
+              return divisions.where((division)=>division.contains(pattern)).toList();
+            },
+            itemBuilder: (context,suggestion){
+              return ListTile(
+                  title:Text(suggestion),
+                  onTap:(){
+                    _typeAheadController.text = suggestion;
+                    performSearch(suggestion);
+                  }
+              );
+            },
+            onSuggestionSelected: (suggestion){
+              setState(() {
+                _selectedDivision = suggestion;
+                _searchText = suggestion;
+                _typeAheadController.text = suggestion;
+              });
+            },
           ),
-          onSubmitted: (text){
-            _performSearch(text);
-          }
-        ),
-        suggestionsCallback: (pattern){
-          return divisions.where((division)=>division.contains(pattern)).toList();
-        },
-        itemBuilder: (context,suggestion){
-          return ListTile(title:Text(suggestion));
-        },
-        onSuggestionSelected: (suggestion){
-          setState(() {
-            _selectedDivision = suggestion;
-            _searchText = suggestion;
-          });
-        },
+          ),
+          // SizedBox(
+          //   height: 40,
+          //   child:ElevatedButton(
+          //       onPressed: (){
+          //         performSearch(_typeAheadController.text);
+          //       },
+          //       child: const Text('搜索'),
+          //   ),
+          // ),
+        ],
       );
   }
   Map<String,bool> _hoveringStates = {};
