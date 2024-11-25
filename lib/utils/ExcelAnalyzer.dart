@@ -6,6 +6,7 @@ import 'package:sqflite/sqflite.dart';
 import 'DatabaseManager.dart';
 import 'GlobalFunction.dart';
 
+// 在分析表的时候，Athlete将分为三级，allAthletes指所有运动员，divisionAthletes指某一组的运动员，groupAthletes指某一场比赛的运动员
 class ExcelAnalyzer {
   static Future<void> longDistance(String dbName, List<int> fileBinary) async {
     String tableName = "长距离比赛";
@@ -50,7 +51,12 @@ class ExcelAnalyzer {
         print("$division的processedGroup为$processedGroup");
         var tables = await DatabaseManager.getTableNames(db);
         // 更新所有已确定人员名单的比赛的group
-        var tablesName = ['${division}_初赛_趴板','${division}_决赛_趴板', '${division}_初赛_竞速', '${division}_决赛_竞速'];
+        var tablesName = [
+          '${division}_初赛_趴板',
+          '${division}_决赛_趴板',
+          '${division}_初赛_竞速',
+          '${division}_决赛_竞速'
+        ];
         for (var tableName in tablesName) {
           if (!tables.contains(tableName)) {
             continue;
@@ -63,28 +69,64 @@ class ExcelAnalyzer {
       }
     }
     print("Import finished, sort starting...");
-    // 计算并排序长距离成绩单
-    var athletes = await db.query("长距离比赛", columns: ['id', 'time']);
-    List<Map<String, dynamic>> sortedAthletes = [];
-    // 将所有athletes的time转换为s
-    athletes.map((athlete) {
-      // print("athlete: $athlete ${athlete['time']}");
-      sortedAthletes.add({
-        "id": athlete['id'],
-        "time": _timeConvert(athlete['time'].toString())
-      });
-    }).toList();
-    // 按照time排序
-    sortedAthletes
-        .sort((a, b) => int.parse(a['time']).compareTo(int.parse(b['time'])));
-    // 将排序后的数据录入到数据库中
-    for (int i = 0; i < sortedAthletes.length; i++) {
-      db.update("长距离比赛", {"long_distant_rank": i + 1},
-          where: "id = ?", whereArgs: [sortedAthletes[i]['id']]);
-      db.update("athletes", {"long_distance_score": rankToScore(i)},
-          where: "id = ?", whereArgs: [sortedAthletes[i]['id']]);
+    // 按分组计算并排序长距离成绩单
+    for (var division in divisions) {
+      var athletes = await db.rawQuery('''
+        SELECT "长距离比赛".id,"长距离比赛".time 
+        FROM athletes 
+        LEFT JOIN "长距离比赛" 
+        ON athletes.id = "长距离比赛".id
+        WHERE athletes.division = '$division'
+      ''');
+      List<Map<String, dynamic>> sortedAthletes = [];
+      // 将所有athletes的time转换为s
+      athletes.map((athlete) {
+        // print("athlete: $athlete ${athlete['time']}");
+        sortedAthletes.add({
+          "id": athlete['id'],
+          "time": _timeConvert(athlete['time'].toString())
+        });
+      }).toList();
+      // 按照time排序
+      sortedAthletes
+          .sort((a, b) => int.parse(a['time']).compareTo(int.parse(b['time'])));
+      // 将排序后的数据录入到数据库中
+      for (int i = 0; i < sortedAthletes.length; i++) {
+        db.update("长距离比赛", {"long_distant_rank": i + 1},
+            where: "id = ?", whereArgs: [sortedAthletes[i]['id']]);
+        // 如果时间为99999999则分数为0 todo
+        if (sortedAthletes[i]['time'] == "99999999") {
+          db.update("athletes", {"long_distance_score": "0"},
+              where: "id = ?", whereArgs: [sortedAthletes[i]['id']]);
+        } else {
+          db.update("athletes", {"long_distance_score": rankToScore(i + 1)},
+              where: "id = ?", whereArgs: [sortedAthletes[i]['id']]);
+        }
+      }
     }
-    print("All done :D");
+
+    // 计算并排序长距离成绩单
+    // var athletes = await db.query("长距离比赛", columns: ['id', 'time']);
+    // List<Map<String, dynamic>> sortedAthletes = [];
+    // // 将所有athletes的time转换为s
+    // athletes.map((athlete) {
+    //   // print("athlete: $athlete ${athlete['time']}");
+    //   sortedAthletes.add({
+    //     "id": athlete['id'],
+    //     "time": _timeConvert(athlete['time'].toString())
+    //   });
+    // }).toList();
+    // // 按照time排序
+    // sortedAthletes
+    //     .sort((a, b) => int.parse(a['time']).compareTo(int.parse(b['time'])));
+    // // 将排序后的数据录入到数据库中
+    // for (int i = 0; i < sortedAthletes.length; i++) {
+    //   db.update("长距离比赛", {"long_distant_rank": i + 1},
+    //       where: "id = ?", whereArgs: [sortedAthletes[i]['id']]);
+    //   db.update("athletes", {"long_distance_score": rankToScore(i)},
+    //       where: "id = ?", whereArgs: [sortedAthletes[i]['id']]);
+    // }
+    // print("All done :D");
   }
 
   static Future<void> initAthlete(
@@ -360,9 +402,6 @@ class ExcelAnalyzer {
     var a = await db.query("'$tableName'", columns: ['id']);
     int athletesNum = a.length;
     // 遍历所有sheet
-    int promotionNum = _getPromotionAthleteNum(athletesNum);
-    print(
-        "比赛${division}_${sTypeTranslate(s)}_${cTypeTranslate(c)}的晋级人数为：$promotionNum");
     Map<String, String> promotionScore = {};
     for (var sheetKey in sheets.keys) {
       var sheet = sheets[sheetKey];
@@ -385,22 +424,41 @@ class ExcelAnalyzer {
             where: "id = ?", whereArgs: [id]);
         scores[id] = _timeConvert(time);
       }
+      const column = ["prone_paddle_score", "sprint_score"];
+      var matchType = '';
+      if (c == CType.sprint) {
+        matchType = column[1];
+      } else {
+        matchType = column[0];
+      }
       // 若为决赛则直接录入
       if (s == SType.finals) {
         scores = Map.fromEntries(scores.entries.toList()
           ..sort((a, b) => int.parse(a.value).compareTo(int.parse(b.value))));
         var sortedAthletes = scores.keys.toList();
         for (int i = 0; i < sortedAthletes.length; i++) {
-          // 录入总分
-          db.update('athletes', {"long_distance_score": rankToScore(i)},
-              where: "id = ?", whereArgs: [sortedAthletes[i]]);
+          // 录入比赛分数
+          // 若时间为99999999则分数为0
+          if (s == SType.firstRound &&
+              scores[sortedAthletes[i]] == "99999999") {
+            print("未参赛运动员：${sortedAthletes[i]}，成绩为0");
+            db.update('athletes', {matchType: "0"},
+                where: "id = ?", whereArgs: [sortedAthletes[i]]);
+          } else {
+            db.update('athletes', {matchType: rankToScore(i + 1)},
+                where: "id = ?", whereArgs: [sortedAthletes[i]]);
+          }
         }
+        return;
       } else {
         print("处理初赛");
         // 若为初赛则晋级
         scores = Map.fromEntries(scores.entries.toList()
           ..sort((a, b) => int.parse(a.value).compareTo(int.parse(b.value))));
         var sortedAthletes = scores.keys.toList();
+        int promotionNum = _getPromotionAthleteNum(athletesNum);
+        print(
+            "比赛${division}_${sTypeTranslate(s)}_${cTypeTranslate(c)}的晋级人数为：$promotionNum");
         print(promotionNum);
         print(sortedAthletes);
         print(tableName);
@@ -413,8 +471,16 @@ class ExcelAnalyzer {
         for (int i = (promotionNum / getGroupNum(athletesNum)).ceil();
             i < scores.length;
             i++) {
-          db.update('athletes', {"long_distance_score": rankToScore(i)},
-              where: "id = ?", whereArgs: [sortedAthletes[i]]);
+          // 如果初赛未参赛则分数为0，晋级后，后续比赛中若出现未参赛则按最后一名处理
+          if (s == SType.firstRound &&
+              scores[sortedAthletes[i]] == "99999999") {
+            print("未参赛运动员：${sortedAthletes[i]}，成绩为0");
+            db.update('athletes', {matchType: "0"},
+                where: "id = ?", whereArgs: [sortedAthletes[i]]);
+          } else {
+            db.update('athletes', {matchType: rankToScore(i + 1)},
+                where: "id = ?", whereArgs: [sortedAthletes[i]]);
+          }
           print("未晋级运动员：${sortedAthletes[i]}");
         }
       }
