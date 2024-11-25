@@ -402,10 +402,6 @@ class ExcelAnalyzer {
     var a = await db.query("'$tableName'", columns: ['id']);
     int athletesNum = a.length;
     // 遍历所有sheet
-    if (s == SType.finals) {
-      // 若为决赛则直接录入总成绩即可 todo
-    }
-
     Map<String, String> promotionScore = {};
     for (var sheetKey in sheets.keys) {
       var sheet = sheets[sheetKey];
@@ -441,10 +437,19 @@ class ExcelAnalyzer {
           ..sort((a, b) => int.parse(a.value).compareTo(int.parse(b.value))));
         var sortedAthletes = scores.keys.toList();
         for (int i = 0; i < sortedAthletes.length; i++) {
-          // 录入总分
-          db.update('athletes', {matchType: rankToScore(i)},
-              where: "id = ?", whereArgs: [sortedAthletes[i]]);
+          // 录入比赛分数
+          // 若时间为99999999则分数为0
+          if (s == SType.firstRound &&
+              scores[sortedAthletes[i]] == "99999999") {
+            print("未参赛运动员：${sortedAthletes[i]}，成绩为0");
+            db.update('athletes', {matchType: "0"},
+                where: "id = ?", whereArgs: [sortedAthletes[i]]);
+          } else {
+            db.update('athletes', {matchType: rankToScore(i + 1)},
+                where: "id = ?", whereArgs: [sortedAthletes[i]]);
+          }
         }
+        return;
       } else {
         print("处理初赛");
         // 若为初赛则晋级
@@ -466,8 +471,16 @@ class ExcelAnalyzer {
         for (int i = (promotionNum / getGroupNum(athletesNum)).ceil();
             i < scores.length;
             i++) {
-          db.update('athletes', {matchType: rankToScore(i)},
-              where: "id = ?", whereArgs: [sortedAthletes[i]]);
+          // 如果初赛未参赛则分数为0，晋级后，后续比赛中若出现未参赛则按最后一名处理
+          if (s == SType.firstRound &&
+              scores[sortedAthletes[i]] == "99999999") {
+            print("未参赛运动员：${sortedAthletes[i]}，成绩为0");
+            db.update('athletes', {matchType: "0"},
+                where: "id = ?", whereArgs: [sortedAthletes[i]]);
+          } else {
+            db.update('athletes', {matchType: rankToScore(i + 1)},
+                where: "id = ?", whereArgs: [sortedAthletes[i]]);
+          }
           print("未晋级运动员：${sortedAthletes[i]}");
         }
       }
