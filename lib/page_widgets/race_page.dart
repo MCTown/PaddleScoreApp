@@ -51,6 +51,7 @@ class _RaceCard extends State<RaceCard>{
           width: cardWidth,
           height: 100,
           child: InkWell(
+            // checkIfUnavailable todo
               onTap: () {
                 final raceBar = '$raceName/$title';
                 print('点击了$title');

@@ -12,6 +12,10 @@ class DataHelper {
   static Future<void> loadExcelFileToAthleteDatabase(
       String dbName, List<int> xlsxFileBytes) async {
     await ExcelAnalyzer.initAthlete(dbName, xlsxFileBytes);
+    await DatabaseManager.getDatabase(dbName).then((db) async {
+      await db.update('progress', {'progress_value': 1},
+          where: 'progress_name = ?', whereArgs: ['athlete_imported']);
+    });
     print("All Done :D");
     return;
   }
@@ -30,6 +34,10 @@ class DataHelper {
   static Future<void> importLongDistanceScore(
       String dbName, List<int> fileBinary) async {
     await ExcelAnalyzer.longDistance(dbName, fileBinary);
+    await DatabaseManager.getDatabase(dbName).then((db) async {
+      await db.update('progress', {'progress_value': 1},
+          where: 'progress_name = ?', whereArgs: ['long_distance_imported']);
+    });
     print("All Done :D");
     return;
   }
@@ -46,7 +54,13 @@ class DataHelper {
   // 选择并导入趴板或竞速成绩表的Excel
   static Future<void> importGenericCompetitionScore(String division,
       List<int> fileBinary, CType c, SType s, String dbName) async {
-    ExcelAnalyzer.generic(division, fileBinary, c, s, dbName);
+    await ExcelAnalyzer.generic(division, fileBinary, c, s, dbName);
+    await DatabaseManager.getDatabase(dbName).then((db) async {
+      print('尝试将${division}_${cTypeTranslate(c)}_${sTypeTranslate(s)}_imported更新为1');
+      await db.update('progress', {'progress_value': 1},
+          where: 'progress_name = ?',
+          whereArgs: ['${division}_${sTypeTranslate(s)}_${cTypeTranslate(c)}_imported']);
+    });
     print("All Done :D");
     return;
   }

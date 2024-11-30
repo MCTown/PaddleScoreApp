@@ -103,6 +103,7 @@ class ExcelAnalyzer {
               where: "id = ?", whereArgs: [sortedAthletes[i]['id']]);
         }
       }
+      return;
     }
 
     // 计算并排序长距离成绩单
@@ -299,6 +300,9 @@ class ExcelAnalyzer {
       String division,
       String schedule,
       String competition) async {
+    // 完善progress表
+    await db.insert(
+        'progress', {'progress_name': '${division}_${schedule}_${competition}_imported'});
     await db.execute('''
         CREATE TABLE '${division}_${schedule}_$competition' (
           id INT PRIMARY KEY,
@@ -342,6 +346,7 @@ class ExcelAnalyzer {
         );
       }
     }
+    return;
   }
 
   static Future<String> _getNextTableName(
@@ -504,5 +509,6 @@ class ExcelAnalyzer {
         '_group': groups[athleteID]
       });
     }
+    return;
   }
 }

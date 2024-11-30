@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'PaddleScore demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
       home:MultiProvider(providers: [
@@ -72,8 +72,8 @@ class MyAppState extends ChangeNotifier {
   }
   Future<void> loadRaceNames() async {
     final directory = await getApplicationDocumentsDirectory();
-    final files_path = p.join(directory.path,'PaddleScoreData');
-    final entities = await Directory(files_path).listSync();
+    final filesPath = p.join(directory.path,'PaddleScoreData');
+    final entities = Directory(filesPath).listSync();
     races = entities.where((entity) => entity is File && p.extension(entity.path)=='.db').map((entity)=>p.basenameWithoutExtension(entity.path)).toList();
     notifyListeners();
   }
