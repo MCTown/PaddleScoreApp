@@ -6,7 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:paddle_score_app/utils/GlobalFunction.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'RaceStageCard.dart';
+import 'RaceStageCardWidget.dart';
 import 'RaceStateWidget.dart';
 import 'RaceTimelineWidget.dart';
 
