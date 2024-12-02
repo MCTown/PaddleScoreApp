@@ -27,7 +27,7 @@ class ExcelGenerator {
       var athletes = await db.rawQuery(
           'SELECT $tableName.name,$tableName.id, $tableName._group, "长距离比赛".long_distant_rank FROM $tableName LEFT JOIN "长距离比赛" ON "长距离比赛".id = $tableName.id WHERE $tableName._group = ${i + 1}');
       if (athletes.isEmpty){
-        throw Exception("$tableName的上一场比赛尚未录入数据！");
+        throw Exception("未获取到运动员！$tableName的上一场比赛可能尚未录入数据！");
       }
       // print('查询$tableName,查询到的运动员：$athletes');
       // 将运动员按long_distant_rank倒序排序，long_distant_rank越小越优先

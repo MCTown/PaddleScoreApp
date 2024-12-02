@@ -11,6 +11,14 @@ class DatabaseManager {
       onCreate: (db, version) async {
         print("数据库不存在，创建数据库：$path");
         await initAthleteTable(db);
+        db.execute('''
+        CREATE TABLE 'progress' (
+          progress_name VARCHAR(255) PRIMARY KEY,
+          progress_value INT DEFAULT 0
+        );
+        ''');
+        db.insert('progress', {'progress_name': 'athlete_imported', 'progress_value': 0});
+        db.insert('progress', {'progress_name': 'long_distance_imported', 'progress_value': 0});
       },
       version: 1,
     );

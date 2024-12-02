@@ -12,8 +12,8 @@
 [//]: # (todo 问题：初赛积分如何计算？)
 
 | 列名   | id      | name    | team    | division | long_distance_score | prone_paddle_score | sprint_score |
-|------|---------|---------|---------|----------|--------------------|--------------------|--------------|
-| 数据类型 | VARCHAR | VARCHAR | VARCHAR | STRING   | INT                | INT                | INT          |
+|------|---------|---------|---------|----------|---------------------|--------------------|--------------|
+| 数据类型 | VARCHAR | VARCHAR | VARCHAR | STRING   | INT                 | INT                | INT          |
 
 ---
 
@@ -123,6 +123,7 @@ flutter:
 那么将有以下表：
 
 ---
+
 - U12组男子_趴板_初赛
 - U12组男子_趴板_决赛
 - U12组女子_趴板_初赛
@@ -131,9 +132,20 @@ flutter:
 - U15组男子_趴板_决赛
 - U15组女子_趴板_初赛
 - ...
+
 ---
 
 每一场比赛都对应一个表
+
+## 成绩统计进度
+
+数据库中有一个Progress表，用于记录各个项目的成绩导入进度
+
+1. athlete_imported - 已完成运动员导入
+2. long_distance_imported - 已完成长距离赛成绩导入
+
+- <division>_prone_paddle_imported - 已完成某项比赛趴板划水赛成绩导入
+- <division>_sprint_imported - 已完成某项比赛竞速赛成绩导入
 
 ## 统一翻译规定：
 

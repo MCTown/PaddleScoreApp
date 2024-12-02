@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:paddle_score_app/utils/DatabaseManager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-
+const isDebugMode = true;
 Future<String> getFilePath(String? fileName) async {
   final directory = await getApplicationDocumentsDirectory();
 // 若PaddleScoreData文件夹不存在，则创建
@@ -21,7 +21,8 @@ Future<String> getFilePath(String? fileName) async {
 
 Future<List<String>> getDivisions(String dbName) async {
   Database db = await DatabaseManager.getDatabase(dbName);
-  List<Map<String, dynamic>> maps = await db.rawQuery('SELECT DISTINCT division FROM athletes');
+  List<Map<String, dynamic>> maps =
+      await db.rawQuery('SELECT DISTINCT division FROM athletes');
   var result = maps.map((map) => map['division'] as String).toList();
   print(result);
   return result;
@@ -40,9 +41,14 @@ String cTypeTranslate(CType c) {
 }
 
 enum SType { firstRound, roundOf16, quarterfinals, semifinals, finals }
-Future<int> getAthleteCountByDivision(String raceEventName, String divisionName) async{
+
+Future<int> getAthleteCountByDivision(
+    String raceEventName, String divisionName) async {
   Database db = await DatabaseManager.getDatabase(raceEventName);
-  List<Map<String,dynamic>> result = await db.rawQuery('SELECT COUNT(*) FROM athletes WHERE division = ? ',[divisionName],);
+  List<Map<String, dynamic>> result = await db.rawQuery(
+    'SELECT COUNT(*) FROM athletes WHERE division = ? ',
+    [divisionName],
+  );
   return Sqflite.firstIntValue(result) ?? 0;
 }
 
@@ -151,4 +157,9 @@ int rankToScore(int rank) {
     score = 0;
   }
   return score;
+}
+
+bool checkIfLongRaceImported() {
+
+  return true;
 }
