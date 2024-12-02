@@ -3,20 +3,23 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:paddle_score_app/page_widgets/sprintHelper.dart';
 import 'package:paddle_score_app/utils/GlobalFunction.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class SprintRacePage extends StatefulWidget{
+import 'RaceStageCard.dart';
+import 'RaceStateWidget.dart';
+import 'RaceTimelineWidget.dart';
+
+class shortDistancePage extends StatefulWidget{
   final String raceBar;
   final String raceEventName;
-  const SprintRacePage(
+  const shortDistancePage(
   {super.key,required this.raceBar,required this.raceEventName}
       );
   @override
-  State<SprintRacePage> createState() => _SprintRacePageState();
+  State<shortDistancePage> createState() => _SprintRacePageState();
 }
-class _SprintRacePageState extends State<SprintRacePage>{
+class _SprintRacePageState extends State<shortDistancePage>{
   List<String> divisions = [
     'U9组男子',
     'U9组女子',

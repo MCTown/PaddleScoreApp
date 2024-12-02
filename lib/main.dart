@@ -1,12 +1,15 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:paddle_score_app/page_widgets/race_page.dart';
+import 'package:paddle_score_app/pageWidgets/appEntrances/createRacePage.dart';
+import 'package:paddle_score_app/pageWidgets/appEntrances/homePage.dart';
+import 'package:paddle_score_app/pageWidgets/appEntrances/racesEntrance.dart';
+// import 'package:paddle_score_app/page_widgets/racesEntrance.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import '/page_widgets/home_page_content.dart';
-import 'page_widgets/createRacePage.dart';
+// import '/page_widgets/homePage.dart';
+// import 'page_widgets/createRacePage.dart';
 import 'package:path/path.dart' as p;
 
 void main() {
