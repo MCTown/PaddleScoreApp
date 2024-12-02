@@ -5,13 +5,13 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:paddle_score_app/DataHelper.dart';
+import 'package:paddle_score_app/page_widgets/child_widgets/Loading.dart';
 import 'package:paddle_score_app/utils/GlobalFunction.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import '../page_widgets/DivisionScoreTable.dart';
 import '../widgetHelper.dart';
 import 'dart:typed_data';
-
 
 class LongDistanceRacePage extends StatefulWidget {
   final String raceBar;
@@ -69,8 +69,8 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
     try {
       List<Map<String, dynamic>> data;
       if (division == null) {
-        data =
-        await database.query('athletes', orderBy: 'long_distance_score ASC');
+        data = await database.query('athletes',
+            orderBy: 'long_distance_score ASC');
       } else {
         data = await database.query('athletes',
             where: 'division = ?',
@@ -111,18 +111,21 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
     Widget exportButton = ElevatedButton(
         onPressed: () async {
           SType s = SType.firstRound;
-          if (_selectedDivision == '所有' || _selectedRaceType == '所有' ||
+          if (_selectedDivision == '所有' ||
+              _selectedRaceType == '所有' ||
               _selectedGender == '所有') {
             List<ArchiveFile> archiveFiles = [];
-            for (var div in divisionOptions.where((element) =>
-            element != '所有')) {
-              for (var raceType in raceTypeOptions.where((element) =>
-              element != '所有')) {
-                for (var gender in genderOptions.where((element) =>
-                element != '所有')) {
-                  CType c = raceType == '竞速赛' ?
-                  CType.sprint : (_selectedDivision!.startsWith('U') ?
-                  CType.pronePaddle : CType.sprint);
+            for (var div
+                in divisionOptions.where((element) => element != '所有')) {
+              for (var raceType
+                  in raceTypeOptions.where((element) => element != '所有')) {
+                for (var gender
+                    in genderOptions.where((element) => element != '所有')) {
+                  CType c = raceType == '竞速赛'
+                      ? CType.sprint
+                      : (_selectedDivision!.startsWith('U')
+                          ? CType.pronePaddle
+                          : CType.sprint);
                   int athleteCount = await getAthleteCountByDivision(
                       widget.raceEventName, div + gender);
                   if (athleteCount <= 16) {
@@ -131,14 +134,16 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                     s = SType.firstRound;
                   }
                   String raceProgress = s == SType.firstRound ? '初赛' : '决赛';
+                  Loading.startLoading(context);
                   List<int>? fileBinary = await DataHelper.generateGenericExcel(
-                      (div + gender).toString(), c, s,
-                      widget.raceEventName);
+                      (div + gender).toString(), c, s, widget.raceEventName);
+                  Loading.stopLoading(context);
                   if (fileBinary != null) {
                     //将文件二进制码添加到 archiveFiles 列表中
                     archiveFiles.add(ArchiveFile(
                         '${div + gender}_$raceProgress分组名单.xlsx',
-                        fileBinary.length, fileBinary));
+                        fileBinary.length,
+                        fileBinary));
                   }
                 }
               }
@@ -151,8 +156,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
             final bytes = ZipEncoder().encode(archive) as Uint8List;
             //将压缩包保存到手机本地
             String? filePath = await FilePicker.platform.saveFile(
-                dialogTitle: '保存短距离赛事分组汇总表',
-                fileName: '短距离赛事分组汇总表.zip');
+                dialogTitle: '保存短距离赛事分组汇总表', fileName: '短距离赛事分组汇总表.zip');
             if (filePath != null) {
               File file = File(filePath);
               await file.writeAsBytes(bytes as List<int>);
@@ -160,9 +164,11 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
             }
           } else {
             String divisionName = _selectedDivision! + _selectedGender!;
-            CType c = _selectedRaceType == '竞速赛' ?
-            CType.sprint : (_selectedDivision!.startsWith('U') ?
-            CType.pronePaddle : CType.sprint);
+            CType c = _selectedRaceType == '竞速赛'
+                ? CType.sprint
+                : (_selectedDivision!.startsWith('U')
+                    ? CType.pronePaddle
+                    : CType.sprint);
             int athleteCount = await getAthleteCountByDivision(
                 widget.raceEventName, divisionName);
             if (athleteCount <= 16) {
@@ -171,8 +177,10 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
               s = SType.firstRound;
             }
             String raceProgress = s == SType.firstRound ? '初赛' : '决赛';
+            Loading.startLoading(context);
             List<int>? fileBinary = await DataHelper.generateGenericExcel(
                 divisionName, c, s, widget.raceEventName);
+            Loading.stopLoading(context);
             String? filePath = await FilePicker.platform.saveFile(
               dialogTitle: '保存$divisionName分组表',
               fileName: '${divisionName}_${raceProgress}分组名单.xlsx',
@@ -183,7 +191,8 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
               print('文件已保存到:$filePath');
             }
           }
-        }, child: const Text("导出分组名单"));
+        },
+        child: const Text("导出分组名单"));
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.raceBar),
@@ -214,9 +223,11 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                         //   },
                         // );
                         print(widget.raceEventName);
+                        Loading.startLoading(context);
                         List<int>? excelFileBytes =
-                        await DataHelper.generateLongDistanceScoreExcel(
-                            widget.raceEventName);
+                            await DataHelper.generateLongDistanceScoreExcel(
+                                widget.raceEventName);
+                        Loading.stopLoading(context);
                         if (excelFileBytes == null) {
                           throw Exception("生成Excel文件失败");
                         }
@@ -254,18 +265,20 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                           });
                         });
                         List<int> fileBinary =
-                        File(result.paths.first!).readAsBytesSync();
+                            File(result.paths.first!).readAsBytesSync();
+                        Loading.startLoading(context);
                         DataHelper.importLongDistanceScore(
                             widget.raceEventName, fileBinary);
+                        Loading.stopLoading(context);
                       }
                     },
                     child: _selectedFile != null
                         ? Text('已导入成绩: $_selectedFile',
-                        style: const TextStyle(fontSize: 18))
+                            style: const TextStyle(fontSize: 18))
                         : const Text(
-                      '导入长距离成绩',
-                      style: TextStyle(fontSize: 20),
-                    ),
+                            '导入长距离成绩',
+                            style: TextStyle(fontSize: 20),
+                          ),
                   ),
                 ],
               ),
@@ -280,21 +293,26 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                           children: [
                             const Align(
                               alignment: Alignment.centerLeft,
-                              child: Text(
-                                  "导出短距离初赛分组名单", style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold)),
+                              child: Text("导出短距离初赛分组名单",
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold)),
                             ),
-                            const SizedBox(height: 30,),
+                            const SizedBox(
+                              height: 30,
+                            ),
                             Row(
-                                mainAxisAlignment: MainAxisAlignment
-                                    .spaceAround,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
                                 children: [
                                   raceTypeDropdown,
                                   divisionTypeDropdown,
                                   genderTypeDropdown,
                                   exportButton,
                                 ]),
-                            const SizedBox(height: 20,),
+                            const SizedBox(
+                              height: 20,
+                            ),
                           ],
                         ))),
               ),
@@ -328,7 +346,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                 height: 500,
                                 width: 800,
                                 child:
-                                FutureBuilder<List<Map<String, dynamic>>>(
+                                    FutureBuilder<List<Map<String, dynamic>>>(
                                   future: _tableDataFuture,
                                   builder: (context, snapshot) {
                                     if (snapshot.connectionState ==
@@ -369,8 +387,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                         ),
                                       );
                                     } else {
-                                      return const Center(
-                                          child: Text('暂无数据'));
+                                      return const Center(child: Text('暂无数据'));
                                     }
                                   },
                                 ),
@@ -612,55 +629,53 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                 ),
                                 Expanded(
                                     child: SizedBox(
-                                      height: 600,
-                                      child: Column(
-                                        children: [
-                                          Align(
-                                            alignment: Alignment.topRight,
-                                            child: Padding(
-                                              padding:
+                                  height: 600,
+                                  child: Column(
+                                    children: [
+                                      Align(
+                                        alignment: Alignment.topRight,
+                                        child: Padding(
+                                          padding:
                                               const EdgeInsets.only(right: 60),
-                                              child: SizedBox(
-                                                width: 200,
-                                                child: TextField(
-                                                  decoration: InputDecoration(
-                                                    hintText: '搜索组别',
-                                                    prefixIcon:
+                                          child: SizedBox(
+                                            width: 200,
+                                            child: TextField(
+                                              decoration: InputDecoration(
+                                                hintText: '搜索组别',
+                                                prefixIcon:
                                                     const Icon(Icons.search),
-                                                    border: OutlineInputBorder(
-                                                      borderRadius:
+                                                border: OutlineInputBorder(
+                                                  borderRadius:
                                                       BorderRadius.circular(
                                                           25.0),
-                                                      borderSide: BorderSide
-                                                          .none,
-                                                    ),
-                                                    filled: true,
-                                                    fillColor: Colors
-                                                        .purple[50],
-                                                  ),
-                                                  onChanged: (text) {
-                                                    setState(() {
-                                                      _selectedGroup = text;
-                                                    });
-                                                  },
+                                                  borderSide: BorderSide.none,
                                                 ),
+                                                filled: true,
+                                                fillColor: Colors.purple[50],
                                               ),
+                                              onChanged: (text) {
+                                                setState(() {
+                                                  _selectedGroup = text;
+                                                });
+                                              },
                                             ),
                                           ),
-                                          Align(
-                                            alignment: Alignment.centerLeft,
-                                            child: Padding(
-                                              padding:
-                                              const EdgeInsets.only(left: 100),
-                                              child: DivisionScoreTable(
-                                                  division: _selectedGroup,
-                                                  raceEventName:
-                                                  widget.raceEventName),
-                                            ),
-                                          )
-                                        ],
+                                        ),
                                       ),
-                                    ))
+                                      Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 100),
+                                          child: DivisionScoreTable(
+                                              division: _selectedGroup,
+                                              raceEventName:
+                                                  widget.raceEventName),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ))
                               ],
                             )
                         ],

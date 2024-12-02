@@ -6,6 +6,7 @@ import 'package:paddle_score_app/DataHelper.dart';
 import 'package:provider/provider.dart';
 import '../main.dart';
 import '../utils/ExcelAnalyzer.dart';
+import 'child_widgets/Loading.dart';
 
 class CreateRacePage extends StatefulWidget{
   const CreateRacePage({Key? key}) : super(key: key);
@@ -39,7 +40,7 @@ class _CreateRacePage extends State<CreateRacePage>{
     }
   }
 
-  void _submitForm(){
+  Future<void> _submitForm() async {
     MyAppState appState3 = Provider.of<MyAppState>(context, listen: false);
     if (_formKey.currentState!.validate()){
       String raceName = _raceNameController.text;
@@ -65,7 +66,9 @@ class _CreateRacePage extends State<CreateRacePage>{
           );
           return;
         }else{
-          DataHelper.loadExcelFileToAthleteDatabase(raceName,bytes);
+          Loading.startLoading(context);
+          await DataHelper.loadExcelFileToAthleteDatabase(raceName,bytes);
+          Loading.stopLoading(context);
         }
         appState3.addRace(_raceNameController.text);
         showDialog(

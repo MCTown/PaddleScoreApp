@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:paddle_score_app/utils/DatabaseManager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-
+const isDebugMode = true;
 Future<String> getFilePath(String? fileName) async {
   final directory = await getApplicationDocumentsDirectory();
 // 若PaddleScoreData文件夹不存在，则创建
