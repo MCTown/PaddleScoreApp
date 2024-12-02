@@ -267,7 +267,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                         List<int> fileBinary =
                             File(result.paths.first!).readAsBytesSync();
                         Loading.startLoading(context);
-                        DataHelper.importLongDistanceScore(
+                        await DataHelper.importLongDistanceScore(
                             widget.raceEventName, fileBinary);
                         Loading.stopLoading(context);
                       }
