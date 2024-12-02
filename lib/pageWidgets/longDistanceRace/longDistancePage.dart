@@ -198,6 +198,25 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStateProperty.all(Colors.blue[100]),
+                        foregroundColor: WidgetStateProperty.all(Colors.black),
+                        textStyle: WidgetStateProperty.all(TextStyle(fontSize: 20)),
+                        padding:WidgetStateProperty.all<EdgeInsetsGeometry>(
+                          EdgeInsets.symmetric(horizontal: 20,vertical:15)
+                        ),
+                        shape:WidgetStateProperty.all<OutlinedBorder>(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          )
+                        ),
+                        elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
+                          if (states.contains(WidgetState.hovered)) {
+                            return 16.0;
+                          }
+                          return 8.0;
+                        }),
+                      ),
                       onPressed: () async {
                         // showDialog(
                         //   context: context,
@@ -240,6 +259,25 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                         style: TextStyle(fontSize: 20),
                       )),
                   ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.all(Colors.blue[100]),
+                      foregroundColor: WidgetStateProperty.all(Colors.black),
+                      textStyle: WidgetStateProperty.all(TextStyle(fontSize: 20)),
+                      padding:WidgetStateProperty.all<EdgeInsetsGeometry>(
+                          EdgeInsets.symmetric(horizontal: 20,vertical:15)
+                      ),
+                      shape:WidgetStateProperty.all<OutlinedBorder>(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          )
+                      ),
+                      elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
+                        if (states.contains(WidgetState.hovered)) {
+                          return 16.0;
+                        }
+                        return 8.0;
+                      }),
+                    ),
                     onPressed: () async {
                       final result = await FilePicker.platform.pickFiles(
                         type: FileType.custom,
