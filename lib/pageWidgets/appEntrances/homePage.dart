@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 import '../../main.dart';
-import 'package:paddle_score_app/pageWidgets/race_page.dart';
+import 'package:paddle_score_app/pageWidgets/appEntrances/racesEntrance.dart';
 
 class HomePageContent extends StatelessWidget{
   @override

@@ -8,9 +8,10 @@ import 'package:paddle_score_app/DataHelper.dart';
 import 'package:paddle_score_app/utils/GlobalFunction.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-import '../../page_widgets/ScoreTableWidget.dart';
 import '../../widgetHelper.dart';
 import 'dart:typed_data';
+
+import 'ScoreTableWidget.dart';
 
 
 class LongDistanceRacePage extends StatefulWidget {

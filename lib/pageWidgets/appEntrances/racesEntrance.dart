@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:paddle_score_app/page_widgets/sprintRacePage.dart';
+// import 'package:paddle_score_app/page_widgets/shortDistancePage.dart';
 import 'package:provider/provider.dart';
 
-import '../longDistanceRace_page.dart';
+import '../longDistanceRace/longDistancePage.dart';
+import '../shortDistanceRace/shortDistancePage.dart';
 enum RaceType{
   longRace,
   shortRace1,
@@ -67,7 +68,7 @@ class _RaceCard extends State<RaceCard>{
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder:(context)=>SprintRacePage(raceBar:raceBar, raceEventName:raceName),
+                        builder:(context)=>shortDistancePage(raceBar:raceBar, raceEventName:raceName),
                       ),
                     );
                     break;
@@ -75,7 +76,7 @@ class _RaceCard extends State<RaceCard>{
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder:(context)=>SprintRacePage(raceBar:raceBar, raceEventName:raceName),
+                        builder:(context)=>shortDistancePage(raceBar:raceBar, raceEventName:raceName),
                       ),
                     );
                     break;

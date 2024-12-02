@@ -46,7 +46,8 @@
 - [] 固定显示框与显示屏底部保持一定距离
 - [] 点开展开框以后自动定位到显示部分
 ### SprintRacePage
-- [] 完善搜索功能,添加补齐功能
+- [-] 完善搜索功能,添加补齐功能
+- []  保存赛事进度状态到本地
 ````
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
