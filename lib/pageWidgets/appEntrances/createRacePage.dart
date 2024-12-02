@@ -39,7 +39,7 @@ class _CreateRacePage extends State<CreateRacePage>{
     }
   }
 
-  void _submitForm(){
+  Future<void> _submitForm() async {
     MyAppState appState3 = Provider.of<MyAppState>(context, listen: false);
     if (_formKey.currentState!.validate()){
       String raceName = _raceNameController.text;
@@ -65,7 +65,23 @@ class _CreateRacePage extends State<CreateRacePage>{
           );
           return;
         }else{
-          DataHelper.loadExcelFileToAthleteDatabase(raceName,bytes);
+          showDialog(
+            context: context,
+            barrierDismissible: false, //点击对话框外部不关闭对话框
+            builder: (BuildContext context){
+              return const AlertDialog(
+                content: Row(
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(width:16),
+                    Text('正在处理运动员数据,请耐心等待...'),
+                  ],
+                ),
+              );
+            },
+          );
+          await DataHelper.loadExcelFileToAthleteDatabase(raceName,bytes);
+          Navigator.of(context).pop();
         }
         appState3.addRace(_raceNameController.text);
         showDialog(

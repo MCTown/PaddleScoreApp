@@ -3,7 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:paddle_score_app/pageWidgets/appEntrances/createRacePage.dart';
 import 'package:paddle_score_app/pageWidgets/appEntrances/homePage.dart';
-import 'package:paddle_score_app/pageWidgets/appEntrances/racesEntrance.dart';
+// import 'package:paddle_score_app/pageWidgets/appEntrances/racesEntrance.dart';
+import 'package:paddle_score_app/pageWidgets/appEntrances/racesEntrancePage.dart';
 // import 'package:paddle_score_app/page_widgets/racesEntrance.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -118,72 +119,72 @@ class _MyHomePageState extends State<MyHomePage> {
         page = CreateRacePage();
       default:
         page = RacePage(raceName: appState.races[size - selectedIndex + 2])
-            as Widget;
+        as Widget;
         break;
     }
     return LayoutBuilder(builder: (context, constraints) {
       var navigationWidth = constraints.maxWidth * 0.13;
       return Scaffold(
           body: Row(
-        children: [
-          AnimatedContainer(
-              duration: Duration(milliseconds: 200),
-              width: isRailExtended ? navigationWidth : 50,
-              padding: EdgeInsets.only(top: 16.0, right: 6),
-              child: Stack(
-                children: [
-                  if (isRailExtended)
-                    SafeArea(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 27),
-                        child: NavigationRail(
-                          extended: constraints.maxWidth >= 700,
-                          selectedIndex: selectedIndex,
-                          onDestinationSelected: (value) {
-                            navigateToPage(value);
+            children: [
+              AnimatedContainer(
+                  duration: Duration(milliseconds: 200),
+                  width: isRailExtended ? navigationWidth : 50,
+                  padding: EdgeInsets.only(top: 16.0, right: 6),
+                  child: Stack(
+                    children: [
+                      if (isRailExtended)
+                        SafeArea(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 27),
+                            child: NavigationRail(
+                              extended: constraints.maxWidth >= 700,
+                              selectedIndex: selectedIndex,
+                              onDestinationSelected: (value) {
+                                navigateToPage(value);
+                              },
+                              destinations: [
+                                const NavigationRailDestination(
+                                  icon: Icon(Icons.home),
+                                  label: Text('首页'),
+                                ),
+                                const NavigationRailDestination(
+                                  icon: Icon(Icons.settings),
+                                  label: Text('管理赛事'),
+                                ),
+                                const NavigationRailDestination(
+                                    icon: Icon(Icons.add), label: Text('创建赛事')),
+                                for (var race in appState.races.reversed)
+                                  NavigationRailDestination(
+                                    icon: Icon(Icons.start),
+                                    label: Text(race),
+                                  )
+                              ],
+                            ),
+                          ),
+                        ),
+                      Positioned(
+                        top: 0,
+                        right: 0,
+                        child: IconButton(
+                          icon:
+                          Icon(isRailExtended ? Icons.arrow_back : Icons.menu),
+                          onPressed: () {
+                            setState(() {
+                              isRailExtended = !isRailExtended;
+                            });
                           },
-                          destinations: [
-                            const NavigationRailDestination(
-                              icon: Icon(Icons.home),
-                              label: Text('首页'),
-                            ),
-                            const NavigationRailDestination(
-                              icon: Icon(Icons.settings),
-                              label: Text('管理赛事'),
-                            ),
-                            const NavigationRailDestination(
-                                icon: Icon(Icons.add), label: Text('创建赛事')),
-                            for (var race in appState.races.reversed)
-                              NavigationRailDestination(
-                                icon: Icon(Icons.start),
-                                label: Text(race),
-                              )
-                          ],
                         ),
                       ),
-                    ),
-                  Positioned(
-                    top: 0,
-                    right: 0,
-                    child: IconButton(
-                      icon:
-                          Icon(isRailExtended ? Icons.arrow_back : Icons.menu),
-                      onPressed: () {
-                        setState(() {
-                          isRailExtended = !isRailExtended;
-                        });
-                      },
-                    ),
-                  ),
-                ],
-              )),
-          Expanded(
-              child: Container(
-            color: Theme.of(context).colorScheme.primaryContainer,
-            child: page,
-          ))
-        ],
-      ));
+                    ],
+                  )),
+              Expanded(
+                  child: Container(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    child: page,
+                  ))
+            ],
+          ));
     });
   }
 }
