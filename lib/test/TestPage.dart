@@ -187,7 +187,18 @@ class TestPage extends StatelessWidget {
                     SType.finals,
                     dbName);
               }),
-
+          TestUnit(
+              text: '导出最终积分',
+              icon: Icons.score,
+              callBack: () async {
+                String dbName = "athlete";
+                String path = "$testFilePath/最终积分表2.xlsx";
+                var fileBinary = await DataHelper.exportFinalScore(
+                    dbName, ExportType.asDivision);
+                File file = File(path);
+                await file.writeAsBytes(fileBinary);
+                print('文件已保存到: $path');
+              }),
         ],
       ),
     );

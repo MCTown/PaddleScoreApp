@@ -26,7 +26,7 @@ class ExcelGenerator {
       print('正在录入第${i + 1}组');
       var athletes = await db.rawQuery(
           'SELECT $tableName.name,$tableName.id, $tableName._group, "长距离比赛".long_distant_rank FROM $tableName LEFT JOIN "长距离比赛" ON "长距离比赛".id = $tableName.id WHERE $tableName._group = ${i + 1}');
-      if (athletes.isEmpty){
+      if (athletes.isEmpty) {
         throw Exception("未获取到运动员！$tableName的上一场比赛可能尚未录入数据！");
       }
       // print('查询$tableName,查询到的运动员：$athletes');
@@ -229,6 +229,103 @@ class ExcelGenerator {
       }
     }
     var fileBytes = excel.encode();
+    return fileBytes;
+  }
+
+  static Future<List<int>> exportScores(String dbName, ExportType e) async {
+    Database db = await DatabaseManager.getDatabase(dbName);
+    // var divisions = await getDivisions(dbName);
+    var excel = Excel.createExcel();
+    // 确定导出的类型
+    List sheetNames;
+    if (e == ExportType.asDivision) {
+      sheetNames = await getDivisions(dbName);
+    } else if (e == ExportType.asTeam) {
+      sheetNames = await db
+          .rawQuery('SELECT DISTINCT team FROM athletes')
+          .then((value) => value.map((e) => e['team'].toString()).toList());
+    } else {
+      throw "未知的导出类型，请检查调用参数";
+    }
+    for (var sheetName in sheetNames) {
+      var sheet = excel[sheetName];
+      // 设置标题
+      sheet.merge(CellIndex.indexByString('A1'), CellIndex.indexByString('F1'),
+          customValue: TextCellValue('$sheetName成绩表'));
+      // 设置合并单元格的样式
+      var cell = sheet.cell(CellIndex.indexByString('A1'));
+      cell.cellStyle = CellStyle(
+        fontSize: 20,
+        bold: true,
+        horizontalAlign: HorizontalAlign.Center,
+      );
+      List<String> headers = [];
+      if (e == ExportType.asDivision) {
+        headers = ['编号', '姓名', '代表队', '长距离积分', '竞速积分', '趴板积分', '总积分', '备注'];
+      } else {
+        headers = ['编号', '姓名', '分组', '长距离积分', '竞速积分', '趴板积分', '总积分', '备注'];
+      }
+      for (int i = 0; i < headers.length; i++) {
+        sheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 1))
+          ..value = TextCellValue(headers[i])
+          ..cellStyle = CellStyle(
+            bold: true,
+            horizontalAlign: HorizontalAlign.Center,
+          );
+      }
+      // 从数据库读取数据
+      List<Map> athletes;
+      if (e == ExportType.asDivision) {
+        athletes = await db.rawQuery('''
+      SELECT id,name,team,long_distance_score,prone_paddle_score,sprint_score FROM athletes WHERE division = '$sheetName'
+    ''');
+      } else {
+        athletes = await db.rawQuery('''
+      SELECT id,name,division,long_distance_score,prone_paddle_score,sprint_score FROM athletes WHERE team = '$sheetName'
+    ''');
+      }
+      print(athletes);
+      for (int i = 0; i < athletes.length; i++) {
+        var athlete = athletes[i];
+        var longDistanceScore = athlete['long_distance_score'];
+        var pronePaddleScore = athlete['prone_paddle_score'];
+        var sprintScore = athlete['sprint_score'];
+        var totalScore =
+            longDistanceScore ?? 0 + pronePaddleScore ?? 0 + sprintScore ?? 0;
+        sheet
+            .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: i + 2))
+            .value = TextCellValue('${athlete['id']}');
+        sheet
+            .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: i + 2))
+            .value = TextCellValue('${athlete['name']}');
+        if (e == ExportType.asDivision) {
+          sheet
+              .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: i + 2))
+              .value = TextCellValue('${athlete['team']}');
+        } else {
+          sheet
+              .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: i + 2))
+              .value = TextCellValue('${athlete['division']}');
+        }
+        sheet
+            .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: i + 2))
+            .value = TextCellValue('$longDistanceScore');
+        sheet
+            .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: i + 2))
+            .value = TextCellValue('$pronePaddleScore');
+        sheet
+            .cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: i + 2))
+            .value = TextCellValue('$sprintScore');
+        sheet
+            .cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: i + 2))
+            .value = TextCellValue('$totalScore');
+      }
+    }
+    excel.delete('Sheet1');
+    var fileBytes = excel.encode();
+    if (fileBytes == null) {
+      throw Exception('导出最终成绩Excel失败！');
+    }
     return fileBytes;
   }
 

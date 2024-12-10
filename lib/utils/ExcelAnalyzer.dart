@@ -45,7 +45,11 @@ class ExcelAnalyzer {
         // 将id按时间排序
         scores = Map.fromEntries(scores.entries.toList()
           ..sort((a, b) => int.parse(a.value).compareTo(int.parse(b.value))));
-
+        // 将排序后的运动员按名次录入到长距离计分表中
+        for (int i = 0; i < scores.length; i++) {
+          db.update('athletes', {"long_distance_score": rankToScore(i + 1)},
+              where: "id = ?", whereArgs: [scores.keys.toList()[i]]);
+        }
         var processedGroup = _getGroup(scores);
         // processedGroup的key为id，value为组别，将组别录入数据库1
         print("$division的processedGroup为$processedGroup");
@@ -70,6 +74,7 @@ class ExcelAnalyzer {
     }
     print("Import finished, sort starting...");
     // 按分组计算并排序长距离成绩单
+    /*
     for (var division in divisions) {
       var athletes = await db.rawQuery('''
         SELECT "长距离比赛".id,"长距离比赛".time 
@@ -128,6 +133,7 @@ class ExcelAnalyzer {
     //       where: "id = ?", whereArgs: [sortedAthletes[i]['id']]);
     // }
     // print("All done :D");
+     */
   }
 
   static Future<void> initAthlete(
@@ -301,8 +307,8 @@ class ExcelAnalyzer {
       String schedule,
       String competition) async {
     // 完善progress表
-    await db.insert(
-        'progress', {'progress_name': '${division}_${schedule}_${competition}_imported'});
+    await db.insert('progress',
+        {'progress_name': '${division}_${schedule}_${competition}_imported'});
     await db.execute('''
         CREATE TABLE '${division}_${schedule}_$competition' (
           id INT PRIMARY KEY,
