@@ -93,9 +93,14 @@ class MyAppState extends ChangeNotifier {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  bool isRailExtended = true;
+  bool isRailExtended = false;
   int selectedIndex = 0;
 
+  @override
+  void initState() {
+    final appState = context.read<MyAppState>();
+    appState.loadRaceNames(); // 在初始化时加载数据
+  }
   void navigateToPage(int index) {
     setState(() {
       selectedIndex = index;
@@ -105,7 +110,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
-    appState.loadRaceNames();
+    // appState.loadRaceNames();
     Widget page;
     int size = appState.races.length;
     switch (selectedIndex) {
@@ -115,60 +120,33 @@ class _MyHomePageState extends State<MyHomePage> {
       case 1:
         page = Placeholder() as Widget;
         break;
-      case 2:
-        page = CreateRacePage();
       default:
-        page = RacePage(raceName: appState.races[size - selectedIndex + 2])
-        as Widget;
-        break;
+        page = Placeholder() as Widget;
+      // case 2:
+      //   page = CreateRacePage();
+      //   break;
+      // default:
+      //   page = RacePage(raceName: appState.races[size - selectedIndex + 2])
+      //   as Widget;
+      //   break;
     }
-    return LayoutBuilder(builder: (context, constraints) {
-      var navigationWidth = constraints.maxWidth * 0.13;
-      return Scaffold(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Scaffold(
           body: Row(
             children: [
-              AnimatedContainer(
-                  duration: Duration(milliseconds: 200),
-                  width: isRailExtended ? navigationWidth : 50,
-                  padding: EdgeInsets.only(top: 16.0, right: 6),
-                  child: Stack(
+              SafeArea(
+                child: Container(
+                  color: Color(0xFFFAFAFA),
+                  child: Column(
                     children: [
-                      if (isRailExtended)
-                        SafeArea(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 27),
-                            child: NavigationRail(
-                              extended: constraints.maxWidth >= 700,
-                              selectedIndex: selectedIndex,
-                              onDestinationSelected: (value) {
-                                navigateToPage(value);
-                              },
-                              destinations: [
-                                const NavigationRailDestination(
-                                  icon: Icon(Icons.home),
-                                  label: Text('首页'),
-                                ),
-                                const NavigationRailDestination(
-                                  icon: Icon(Icons.settings),
-                                  label: Text('管理赛事'),
-                                ),
-                                const NavigationRailDestination(
-                                    icon: Icon(Icons.add), label: Text('创建赛事')),
-                                for (var race in appState.races.reversed)
-                                  NavigationRailDestination(
-                                    icon: Icon(Icons.start),
-                                    label: Text(race),
-                                  )
-                              ],
-                            ),
-                          ),
-                        ),
-                      Positioned(
-                        top: 0,
-                        right: 0,
+                      // 菜单按钮
+                      Padding(
+                        padding: isRailExtended?
+                        const EdgeInsets.only(top: 8, left:0)
+                            :EdgeInsets.all(8.0),
                         child: IconButton(
-                          icon:
-                          Icon(isRailExtended ? Icons.arrow_back : Icons.menu),
+                          icon: Icon(Icons.menu),
                           onPressed: () {
                             setState(() {
                               isRailExtended = !isRailExtended;
@@ -176,15 +154,46 @@ class _MyHomePageState extends State<MyHomePage> {
                           },
                         ),
                       ),
+                      if (isRailExtended) const SizedBox(height: 16),                       // 导航栏
+                      Expanded(
+                        child: SizedBox(
+                          width: isRailExtended ? constraints.maxWidth*0.15 : constraints.maxWidth*0.08,
+                          child: NavigationRail(
+                            extended: isRailExtended && constraints.maxWidth >= 600,
+                            destinations: const [
+                              NavigationRailDestination(
+                                icon: Icon(Icons.home),
+                                label: Text("首页"),
+                              ),
+                              NavigationRailDestination(
+                                icon: Icon(Icons.access_time),
+                                label: Text("历史赛事"),
+                              ),
+                            ],
+                            selectedIndex: selectedIndex,
+                            onDestinationSelected: (value) {
+                              setState(() {
+                                selectedIndex = value;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
                     ],
-                  )),
+                  ),
+                ),
+              ),
+              // 主内容区域
               Expanded(
-                  child: Container(
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                    child: page,
-                  ))
+                child: Container(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  child: page,
+                ),
+              ),
             ],
-          ));
-    });
+          ),
+        );
+      },
+    );
   }
 }

@@ -1,24 +1,23 @@
 import 'package:flutter/material.dart';
-
-class Loading {
-  static void startLoading(context) {
-    showDialog(
+class Loading{
+  static Future startLoading(String text,context){
+    return  showDialog(
         context: context,
         barrierDismissible: false, // 点击外部不可关闭
         builder: (BuildContext context) {
-          return const AlertDialog(
+          return AlertDialog(
             content: Row(
               children: [
-                CircularProgressIndicator(),
-                SizedBox(width: 20),
-                Text("加载中..."),
+                const CircularProgressIndicator(),
+                const SizedBox(width: 20),
+                Text(text),
               ],
             ),
           );
         });
   }
-
-  static void stopLoading(context) {
+  static stopLoading(context) {
     Navigator.of(context).pop();
   }
 }
+

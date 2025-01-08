@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:glassmorphism/glassmorphism.dart';
 import '../../DataHelper.dart';
 import '../../utils/GlobalFunction.dart';
+import '../universalWidgets/Loading.dart';
+import '../universalWidgets/OkDialog.dart';
 import 'RaceStateWidget.dart';
 
 class RaceStageCard extends StatefulWidget{
@@ -67,7 +69,10 @@ class _RaceStageCardState extends State<RaceStageCard> {
                       ElevatedButton(
                         onPressed: ()async{
                           print('导出分组名单');
+                          String text = "正在生成${widget.division}${widget.StageName}分组名单,请耐心等待...";
+                          Loading.startLoading(text,context);
                           List<int>? excelFileBytes = await DataHelper.generateGenericExcel(widget.division, raceType, stageType, widget.dbName);
+                          Loading.stopLoading(context);
                           if(excelFileBytes == null){
                             throw Exception("生成Excel失败");
                           }
@@ -82,6 +87,9 @@ class _RaceStageCardState extends State<RaceStageCard> {
                             File file = File(filePath);
                             await file.writeAsBytes(excelFileBytes);
                             print("文件已保存到: $filePath");
+                            // (
+                            //   title: '导出${widget.division}${widget.StageName}分组名单',
+                            //   content: '成功导出${widget.division}${widget.StageName}分组名单,文件已保存到: $filePath');
                             widget.onStatusChanged(widget.index,RaceStatus.ongoing);
                           });
                         },
@@ -125,7 +133,9 @@ class _RaceStageCardState extends State<RaceStageCard> {
                           }
                           isCompleted = true;
                           List<int> fileBytes = File(result.paths.first!).readAsBytesSync();
+                          Loading.startLoading("正在导入${widget.StageName}${widget.StageName}成绩,请耐心等待...", context);
                           DataHelper.importGenericCompetitionScore(widget.division, fileBytes, raceType, stageType, widget.dbName);
+                          Loading.stopLoading(context);
                           print("导入${widget.StageName}成绩");
                           widget.onStatusChanged(widget.index,RaceStatus.completed);
                           setState(() {
