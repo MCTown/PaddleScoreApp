@@ -4,8 +4,8 @@ import 'package:paddle_score_app/utils/GlobalFunction.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DatabaseManager {
-  static Future<Database> getDatabase(String event) async {
-    String path = await getFilePath("$event.db");
+  static Future<Database> getDatabase(String dbName) async {
+    String path = await getFilePath("$dbName.db");
     return await openDatabase(
       path,
       onCreate: (db, version) async {

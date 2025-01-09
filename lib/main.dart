@@ -2,13 +2,19 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:paddle_score_app/pageWidgets/appEntrances/createRacePage.dart';
+// import 'package:paddle_score_app/pageWidgets/abondon/createRacePage.dart';
 import 'package:paddle_score_app/pageWidgets/appEntrances/homePage.dart';
+
 // import 'package:paddle_score_app/pageWidgets/appEntrances/racesEntrance.dart';
 import 'package:paddle_score_app/pageWidgets/appEntrances/racesEntrancePage.dart';
+import 'package:paddle_score_app/pageWidgets/appEntrances/settingsPage.dart';
+import 'package:paddle_score_app/utils/Routes.dart';
+
 // import 'package:paddle_score_app/page_widgets/racesEntrance.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
 // import '/page_widgets/homePage.dart';
 // import 'page_widgets/createRacePage.dart';
 import 'package:path/path.dart' as p;
@@ -17,10 +23,17 @@ void main() {
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => MyAppState(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => MyAppState()),
+        ChangeNotifierProvider(create: (context) => RaceCardState()),
+      ],
       child: MyApp(),
     ),
+    // ChangeNotifierProvider(
+    //   create: (context) => MyAppState(),
+    //   child: MyApp(),
+    // ),
   );
 }
 
@@ -36,21 +49,40 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (context) => MyAppState()),
-          ChangeNotifierProvider(create: (context) => RaceCardState()),
-        ],
-        child: MyHomePage(),
-      ),
-      routes: {
-        '/home': (context) => MyHomePage(),
-        '/create': (context) => CreateRacePage(),
-        '/race/:raceName': (context) {
-          final raceName = ModalRoute.of(context)!.settings.arguments as String;
-          return RacePage(raceName: raceName);
+      home: MyHomePage(),
+
+      // todo 路由表
+      routes:routes,
+      onGenerateRoute: (settings) {
+        if (settings.name!.startsWith('/race/')) {
+          final raceName = settings.name!.substring('/race/'.length);
+          return MaterialPageRoute(
+            builder: (context) => RacePage(raceName: raceName),
+          );
+        } else if (settings.name == '/race') {
+          return MaterialPageRoute(
+            builder: (context) => Scaffold(
+              appBar: AppBar(title: Text('错误')),
+              body: Center(child: Text('请指定比赛名称')),
+            ),
+          );
         }
+        return MaterialPageRoute(builder: (context) => UnknownRouteScreen());
       },
+      // {
+      //     '/home': (context) => MyHomePage(),
+      //     '/race/:raceName': (context) => RacePage(raceName: '',), // 注意这里是 RacePage()，不传递参数
+      //     // ...其他路由
+      //   },
+      // onGenerateRoute: (settings) {
+      //   if (settings.name!.startsWith('/race/')) {
+      //     final raceName = settings.name!.substring('/race/'.length);
+      //     return MaterialPageRoute(
+      //       builder: (context) => RacePage(raceName: raceName),
+      //     );
+      //   }
+      //   return MaterialPageRoute(builder: (context) => Placeholder());//处理未知路由
+      // },
     );
   }
 }
@@ -101,6 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final appState = context.read<MyAppState>();
     appState.loadRaceNames(); // 在初始化时加载数据
   }
+
   void navigateToPage(int index) {
     setState(() {
       selectedIndex = index;
@@ -119,6 +152,9 @@ class _MyHomePageState extends State<MyHomePage> {
         break;
       case 1:
         page = Placeholder() as Widget;
+        break;
+      case 2:
+        page = SettingsPage() as Widget;
         break;
       default:
         page = Placeholder() as Widget;
@@ -142,9 +178,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: [
                       // 菜单按钮
                       Padding(
-                        padding: isRailExtended?
-                        const EdgeInsets.only(top: 8, left:0)
-                            :EdgeInsets.all(8.0),
+                        padding: isRailExtended
+                            ? const EdgeInsets.only(top: 8, left: 0)
+                            : EdgeInsets.all(8.0),
                         child: IconButton(
                           icon: Icon(Icons.menu),
                           onPressed: () {
@@ -154,12 +190,15 @@ class _MyHomePageState extends State<MyHomePage> {
                           },
                         ),
                       ),
-                      if (isRailExtended) const SizedBox(height: 16),                       // 导航栏
+                      if (isRailExtended) const SizedBox(height: 16), // 导航栏
                       Expanded(
                         child: SizedBox(
-                          width: isRailExtended ? constraints.maxWidth*0.15 : constraints.maxWidth*0.08,
+                          width: isRailExtended
+                              ? constraints.maxWidth * 0.15
+                              : constraints.maxWidth * 0.08,
                           child: NavigationRail(
-                            extended: isRailExtended && constraints.maxWidth >= 600,
+                            extended:
+                                isRailExtended && constraints.maxWidth >= 600,
                             destinations: const [
                               NavigationRailDestination(
                                 icon: Icon(Icons.home),
@@ -168,6 +207,10 @@ class _MyHomePageState extends State<MyHomePage> {
                               NavigationRailDestination(
                                 icon: Icon(Icons.access_time),
                                 label: Text("历史赛事"),
+                              ),
+                              NavigationRailDestination(
+                                icon: Icon(Icons.settings),
+                                label: Text("设置"),
                               ),
                             ],
                             selectedIndex: selectedIndex,
@@ -194,6 +237,15 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         );
       },
+    );
+  }
+}
+class UnknownRouteScreen extends StatelessWidget{
+  @override
+  Widget build(BuildContext context){
+    return Scaffold(
+      appBar: AppBar(title: Text('404')),
+      body: Center(child: Text('页面未找到')),
     );
   }
 }

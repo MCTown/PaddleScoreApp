@@ -33,6 +33,13 @@ class TestPage extends StatelessWidget {
       ),
       body: ListView(
         children: <Widget>[
+          ListTile(
+              leading: Icon(Icons.generating_tokens),
+              title: Text("跳转到新页面"),
+              onTap: () async {
+                Navigator.pushNamed(context,"/create",);
+                // Navigator.pushNamed(context,"/settings");
+              }),
           TestUnit(
               text: "导入报名表",
               icon: Icons.upload_file,

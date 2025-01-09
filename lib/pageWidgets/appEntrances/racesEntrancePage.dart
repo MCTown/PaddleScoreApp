@@ -183,7 +183,12 @@ class RacePage extends StatelessWidget{
   const RacePage({super.key,required this.raceName});
   @override
   Widget build(BuildContext context){
-    var raceCardState = context.watch<RaceCardState>();
+    // final raceName = ModalRoute
+    //     .of(context)!
+    //     .settings
+    //     .arguments as String? ??
+    //     'No Race Name Provided';
+    final raceCardState = context.watch<RaceCardState>();
     raceCardState.raceEventName = raceName;
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primaryContainer,
@@ -197,7 +202,7 @@ class RacePage extends StatelessWidget{
             RaceCard(rt:RaceType.longRace),
             RaceCard(rt:RaceType.shortRace1),
             RaceCard(rt:RaceType.shortRace2),
-            RaceCard(rt:RaceType.teamRace),
+            // RaceCard(rt:RaceType.teamRace),
             RaceCard(rt:RaceType.personalScore),
           ]
         )

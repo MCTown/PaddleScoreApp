@@ -14,7 +14,7 @@ class shortDistancePage extends StatefulWidget{
   final String raceBar;
   final String raceEventName;
   const shortDistancePage(
-  {super.key,required this.raceBar,required this.raceEventName}
+      {super.key,required this.raceBar,required this.raceEventName}
       );
   @override
   State<shortDistancePage> createState() => _SprintRacePageState();
@@ -51,26 +51,26 @@ class _SprintRacePageState extends State<shortDistancePage>{
   bool _isLoading = true;
   @override
   void initState(){
-      super.initState();
-      _loadRaceStates();
-      totalAccount = 0;
-      raceAccount = 0;
-      if(widget.raceBar.contains('趴板')){
-        divisions = divisions.where((division)=>division.startsWith('U')).toList();
-      }
-      void performSearch(String searchText){
-        final matchedDivision = divisions.firstWhere((division)=>division.contains(searchText),orElse:()=>'',);
-        setState((){
-          _selectedDivision = matchedDivision;
-          _searchText = searchText;
-        });
-      }
-      searchBar = Row(
-        children: [
-          Expanded(
-            child:
-            TypeAheadField(
-              textFieldConfiguration:  TextFieldConfiguration(
+    super.initState();
+    _loadRaceStates();
+    totalAccount = 0;
+    raceAccount = 0;
+    if(widget.raceBar.contains('趴板')){
+      divisions = divisions.where((division)=>division.startsWith('U')).toList();
+    }
+    void performSearch(String searchText){
+      final matchedDivision = divisions.firstWhere((division)=>division.contains(searchText),orElse:()=>'',);
+      setState((){
+        _selectedDivision = matchedDivision;
+        _searchText = searchText;
+      });
+    }
+    searchBar = Row(
+      children: [
+        Expanded(
+          child:
+          TypeAheadField(
+            textFieldConfiguration:  TextFieldConfiguration(
                 decoration:InputDecoration(
                   hintText: '搜索组别',
                   border: OutlineInputBorder(
@@ -111,18 +111,18 @@ class _SprintRacePageState extends State<shortDistancePage>{
               });
             },
           ),
-          ),
-          // SizedBox(
-          //   height: 40,
-          //   child:ElevatedButton(
-          //       onPressed: (){
-          //         performSearch(_typeAheadController.text);
-          //       },
-          //       child: const Text('搜索'),
-          //   ),
-          // ),
-        ],
-      );
+        ),
+        // SizedBox(
+        //   height: 40,
+        //   child:ElevatedButton(
+        //       onPressed: (){
+        //         performSearch(_typeAheadController.text);
+        //       },
+        //       child: const Text('搜索'),
+        //   ),
+        // ),
+      ],
+    );
   }
 
   Future<void> _loadRaceStates() async{
@@ -261,175 +261,175 @@ class _SprintRacePageState extends State<shortDistancePage>{
   }
 
 
- @override
+  @override
   Widget build(BuildContext context){
-   return Scaffold(
-     backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-     appBar:AppBar(
-       title:Text(widget.raceBar),
-     ),
-     body:Stack(
-       children: [
-         Row(
-           children: [
-             Expanded(
-               flex: 1,
-                 child: Column(
-                   children: [
-                     Expanded(
-                       child:SizedBox(
-                         // width: 200,
-                         child: Container(
-                           decoration: BoxDecoration(
-                             color:Colors.white,
-                             boxShadow:[
-                               BoxShadow(
-                                 color:Colors.grey.withOpacity(0.5),
-                                 spreadRadius: 2,
-                                 blurRadius: 5,
-                                 offset: const Offset(3, 3),
-                               )
-                             ]
-                           ),
-                           child:
-                           widget.raceBar.contains('趴板')
-                               ?ListView(
-                               children: [
-                                 createNavi('U9组男子'),
-                                 createNavi('U9组女子'),
-                                 createNavi('U12组男子'),
-                                 createNavi('U12组女子'),
-                                 createNavi('U15组男子'),
-                                 createNavi('U15组女子'),
-                                 createNavi('U18组男子'),
-                                 createNavi('U18组女子'),])
-                               :ListView(
-                             children: [
-                               createNavi('U9组男子'),
-                               createNavi('U9组女子'),
-                               createNavi('U12组男子'),
-                               createNavi('U12组女子'),
-                               createNavi('U15组男子'),
-                               createNavi('U15组女子'),
-                               createNavi('U18组男子'),
-                               createNavi('U18组女子'),
-                               createNavi('充气板组男子'),
-                               createNavi('充气板组女子'),
-                               createNavi('大师组男子'),
-                               createNavi('大师组女子'),
-                               createNavi('高校甲组男子'),
-                               createNavi('高校甲组女子'),
-                               createNavi('高校乙组男子'),
-                               createNavi('高校乙组女子'),
-                               createNavi('卡胡纳组男子'),
-                               createNavi('卡胡纳组女子'),
-                               createNavi('公开组男子'),
-                               createNavi('公开组女子'),
-                             ],
-                           ),
-                         )
-                       ),
-                     ),
-                   ],
-                 ),
-             ),
-          Expanded(
-            flex:5,
-            child: _buildContent(_selectedDivision),),
-           ],
-         ),
-         Positioned(
-           top:16,
-           right: 16,
-           child:SizedBox(
-             width: 200,
-             height: 40,
-             child:searchBar,
-           )
-         )
+    return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+      appBar:AppBar(
+        title:Text(widget.raceBar),
+      ),
+      body:Stack(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: Column(
+                  children: [
+                    Expanded(
+                      child:SizedBox(
+                        // width: 200,
+                          child: Container(
+                            decoration: BoxDecoration(
+                                color:Colors.white,
+                                boxShadow:[
+                                  BoxShadow(
+                                    color:Colors.grey.withOpacity(0.5),
+                                    spreadRadius: 2,
+                                    blurRadius: 5,
+                                    offset: const Offset(3, 3),
+                                  )
+                                ]
+                            ),
+                            child:
+                            widget.raceBar.contains('趴板')
+                                ?ListView(
+                                children: [
+                                  createNavi('U9组男子'),
+                                  createNavi('U9组女子'),
+                                  createNavi('U12组男子'),
+                                  createNavi('U12组女子'),
+                                  createNavi('U15组男子'),
+                                  createNavi('U15组女子'),
+                                  createNavi('U18组男子'),
+                                  createNavi('U18组女子'),])
+                                :ListView(
+                              children: [
+                                createNavi('U9组男子'),
+                                createNavi('U9组女子'),
+                                createNavi('U12组男子'),
+                                createNavi('U12组女子'),
+                                createNavi('U15组男子'),
+                                createNavi('U15组女子'),
+                                createNavi('U18组男子'),
+                                createNavi('U18组女子'),
+                                createNavi('充气板组男子'),
+                                createNavi('充气板组女子'),
+                                createNavi('大师组男子'),
+                                createNavi('大师组女子'),
+                                createNavi('高校甲组男子'),
+                                createNavi('高校甲组女子'),
+                                createNavi('高校乙组男子'),
+                                createNavi('高校乙组女子'),
+                                createNavi('卡胡纳组男子'),
+                                createNavi('卡胡纳组女子'),
+                                createNavi('公开组男子'),
+                                createNavi('公开组女子'),
+                              ],
+                            ),
+                          )
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                flex:5,
+                child: _buildContent(_selectedDivision),),
+            ],
+          ),
+          Positioned(
+              top:16,
+              right: 16,
+              child:SizedBox(
+                width: 200,
+                height: 40,
+                child:searchBar,
+              )
+          )
 
-       ],
-     ),
-   );
- }
+        ],
+      ),
+    );
+  }
   Widget _buildContent(String division){
     final raceProcess = getRaceProcess(division);
     return Column(
-      children:[
-        const SizedBox(height: 80,),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 50),
-          child: Card(
-            child:
-            Column(
-              children: [
-                ExpansionTile(
-                  leading: FaIcon(FontAwesomeIcons.safari,color: Colors.purple[200],),
-                  title: Text("$_selectedDivision赛事进度",style: const TextStyle(fontSize: 18),),
-                  subtitle: Text('总人数: $totalAccount   总比赛场数: $raceAccount',style: const TextStyle(fontSize: 13),),
+        children:[
+          const SizedBox(height: 80,),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 50),
+            child: Card(
+                child:
+                Column(
                   children: [
-                    Stack(
+                    ExpansionTile(
+                      leading: FaIcon(FontAwesomeIcons.safari,color: Colors.purple[200],),
+                      title: Text("$_selectedDivision赛事进度",style: const TextStyle(fontSize: 18),),
+                      subtitle: Text('总人数: $totalAccount   总比赛场数: $raceAccount',style: const TextStyle(fontSize: 13),),
                       children: [
-                        // 进度条居中显示
-                        Center(
-                          child: RaceTimeline(
-                              raceStates: _getRaceStates(),
-                              onStatusChanged:_onRaceStageStatusChanged),
-                        ),
-                        // 图例位于右下角，并且距离边框留有一定的间距
-                        const Positioned(
-                          bottom: 10.0, // 设置距离底部的间距
-                          right: 50.0,  // 设置距离右边的间距
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end, // 让文本右对齐
-                            children: [
-                              Text("🔵 赛事进行中"),
-                              Text("🟢 赛事已完成"),
-                              Text("⚪ 赛事未开始"),
-                            ],
-                          ),
+                        Stack(
+                          children: [
+                            // 进度条居中显示
+                            Center(
+                              child: RaceTimeline(
+                                  raceStates: _getRaceStates(),
+                                  onStatusChanged:_onRaceStageStatusChanged),
+                            ),
+                            // 图例位于右下角，并且距离边框留有一定的间距
+                            const Positioned(
+                              bottom: 10.0, // 设置距离底部的间距
+                              right: 50.0,  // 设置距离右边的间距
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end, // 让文本右对齐
+                                children: [
+                                  Text("🔵 赛事进行中"),
+                                  Text("🟢 赛事已完成"),
+                                  Text("⚪ 赛事未开始"),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ],
-                ),
-              ],
-            )
-          ),
-        ),
-        if(!_isLoading)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 50),
-            child: IgnorePointer(
-              ignoring: _raceStates.isEmpty,
-              child:
-              SizedBox(
-                height: _raceStates.length * 100,
-                child: ListView.builder(
-                itemCount:_raceStates.length,
-                itemBuilder:(context,index){
-                  return RaceStageCard(StageName: _raceStates[index].name,raceName: widget.raceBar.contains('趴板')?'趴板':'竞速',division: _selectedDivision,dbName: widget.raceEventName,index: index,onStatusChanged: _onRaceStageStatusChanged);
-                },
-                          ),
-              ),
+                )
             ),
           ),
-        FutureBuilder(
-          future: raceProcess,
-          builder: (context,snapshot){
-          if(snapshot.hasData){
-            _raceStates = snapshot.data!;
-            _isLoading = false;
-            // setState(() {});
-            return const SizedBox.shrink();
-          }else if(snapshot.hasError){
-            return Text('Error:${snapshot.error}');
-          }else{
-            return const CircularProgressIndicator();
-          }
-        },
-        ),
-      ]
+          if(!_isLoading)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 50),
+              child: IgnorePointer(
+                ignoring: _raceStates.isEmpty,
+                child:
+                SizedBox(
+                  height: _raceStates.length * 100,
+                  child: ListView.builder(
+                    itemCount:_raceStates.length,
+                    itemBuilder:(context,index){
+                      return RaceStageCard(StageName: _raceStates[index].name,raceName: widget.raceBar.contains('趴板')?'趴板':'竞速',division: _selectedDivision,dbName: widget.raceEventName,index: index,onStatusChanged: _onRaceStageStatusChanged);
+                    },
+                  ),
+                ),
+              ),
+            ),
+          FutureBuilder(
+            future: raceProcess,
+            builder: (context,snapshot){
+              if(snapshot.hasData){
+                _raceStates = snapshot.data!;
+                _isLoading = false;
+                // setState(() {});
+                return const SizedBox.shrink();
+              }else if(snapshot.hasError){
+                return Text('Error:${snapshot.error}');
+              }else{
+                return const CircularProgressIndicator();
+              }
+            },
+          ),
+        ]
     );
- }
+  }
 }

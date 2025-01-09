@@ -1,247 +1,220 @@
 import 'dart:io';
+import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:paddle_score_app/DataHelper.dart';
-import 'package:provider/provider.dart';
-import '../../main.dart';
-import '../../utils/ExcelAnalyzer.dart';
+import 'package:paddle_score_app/utils/DatabaseManager.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:sqflite_common/sqlite_api.dart';
 
-class CreateRacePage extends StatefulWidget{
-  const CreateRacePage({Key? key}) : super(key: key);
+import '../universalWidgets/Loading.dart';
+
+bool button1Pressed = false;
+bool button2Pressed = false;
+class CreateRacePage extends StatefulWidget {
+  const CreateRacePage({super.key});
+
   @override
-  State<CreateRacePage> createState()=>_CreateRacePage();
+  _CreateRaceDetailPage createState() => _CreateRaceDetailPage();
 }
 
-class _CreateRacePage extends State<CreateRacePage>{
-  final _formKey = GlobalKey<FormState>();
-  final _raceNameController = TextEditingController();
-  FilePickerResult? _selectedFile;
-  List<int> bytes = [];
-
-  Future<void> _pickExcelFile() async{
-    try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['xlsx'],
-        withData: true,
-        allowMultiple: false,
-      );
-      if (result != null) {
-        setState(() {
-          _selectedFile = result;
-          bytes = File(result.paths.first!).readAsBytesSync();
-          // print(_selectedFile);
-        });
-      }
-    } catch(e){
-      print('Error: $e');
-    }
-  }
-
-  Future<void> _submitForm() async {
-    MyAppState appState3 = Provider.of<MyAppState>(context, listen: false);
-    if (_formKey.currentState!.validate()){
-      String raceName = _raceNameController.text;
-      //处理Excel文件
-      if(_selectedFile!=null && raceName.isNotEmpty) {
-        if(appState3.races.contains(raceName)){
-          showDialog(
-            context: context,
-            builder: (BuildContext context){
-              return AlertDialog(
-                title:const Text('赛事创建失败'),
-                content:const Text('赛事名称已存在,请输入不同的赛事名称'),
-                actions:[
-                  TextButton(
-                    onPressed: (){
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('确认'),
-                  ),
-                ],
-              );
-            },
-          );
-          return;
-        }else{
-          showDialog(
-            context: context,
-            barrierDismissible: false, //点击对话框外部不关闭对话框
-            builder: (BuildContext context){
-              return const AlertDialog(
-                content: Row(
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(width:16),
-                    Text('正在处理运动员数据,请耐心等待...'),
-                  ],
-                ),
-              );
-            },
-          );
-          await DataHelper.loadExcelFileToAthleteDatabase(raceName,bytes);
-          Navigator.of(context).pop();
-        }
-        appState3.addRace(_raceNameController.text);
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('赛事创建成功'),
-              content: Text('赛事名称：$raceName'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    //跳转到赛事页面
-                    Navigator.of(context).pop();
-                    appState3.setSelectRace(raceName);
-                    Navigator.pushNamed(context, '/race/$raceName');
-                  },
-                  child: const Text('跳转到赛事页面'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('确认并返回'),
-                ),
-              ],
-            );
-          },
-        );
-      }else{
-        showDialog(
-          context: context,
-          builder:(BuildContext context){
-            return AlertDialog(
-              title:const Text('赛事创建失败'),
-              content:raceName.isEmpty
-                  ?const Text('赛事名称不能为空')
-                  :_selectedFile == null
-                    ? const Text('请上传赛事人员名单')
-                    :const Text('未知错误'),
-              actions:[
-                TextButton(
-                  onPressed:(){
-                    Navigator.of(context).pop();
-                  },
-                  child:const Text('确认'),
-                ),
-              ],
-            );
-          }
-        );
-      }
-    }
-  }
-
-  void _clearFrom(){
-    _formKey.currentState!.reset();
-    _raceNameController.clear();
-    setState(() {
-      _selectedFile = null;
-    });
-  }
-
+class _CreateRaceDetailPage extends State<CreateRacePage> {
+  String filePath = '';
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
+    final raceName = ModalRoute
+        .of(context)!
+        .settings
+        .arguments as String? ??
+        'No Race Name Provided';
     return Scaffold(
-      appBar:AppBar(
-        title:const Text('创建赛事'),
+      appBar: AppBar(
+        title: Text('创建赛事：$raceName'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () {
+              print(1); // 点击加号时输出1
+            },
+          ),
+        ],
       ),
-      body:Container(
-        color:Theme.of(context).colorScheme.primaryContainer,
-        child: Center(
-          child: Padding(
-            padding:const EdgeInsets.all(16),
-            child:Container(
-              width: 600,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.all(76.0),
-              child: Form(
-                key:_formKey,
-                child:Column(
-                  mainAxisSize: MainAxisSize.min,
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // 第一个卡片：下载报名表
+            Card(
+              elevation: 4,
+              margin: EdgeInsets.symmetric(vertical: 8),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(
-                      width: 450,
-                      child:TextFormField(
-                        controller:_raceNameController,
-                        decoration: const InputDecoration(labelText:'赛事名称',hintText: '请输入赛事名称'),
-                        validator:(value){
-                          if(value == null || value.isEmpty){
-                            return '请输入赛事名称';
+                    const Text(
+                      '下载报名表',
+                      style:
+                      TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '点击下方按钮下载最新的报名表。',
+                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                    ),
+                    const SizedBox(height: 16),
+                    Center(
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          // todo实现下载逻辑
+                          Loading.startLoading("请稍候", context);
+                          try {
+                            await Future.delayed(Duration.zero, () async {
+                              String? filePath =
+                              await FilePicker.platform.saveFile(
+                                dialogTitle: '保存参赛名单',
+                                fileName: '参赛名单 - $raceName.xlsx',
+                              );
+                              if (filePath == null) {
+                                throw Exception("用户未选择文件");
+                              } else {
+                                File file = File(filePath);
+                                ByteData byteData = await rootBundle
+                                    .load("lib/assets/参赛信息.xlsx");
+                                Uint8List uint8List = byteData.buffer
+                                    .asUint8List(byteData.offsetInBytes,
+                                    byteData.lengthInBytes);
+                                await file.writeAsBytes(uint8List);
+                                print("文件已保存到:$filePath");
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('报名表下载完成'),
+                                  ),
+                                );
+                                setState(() {
+                                  button1Pressed = true;
+                                });
+                              }
+                            });
+                          } catch (e) {
+                            print("用户未选择文件");
+                            setState(() {
+                              button1Pressed = false;
+                            });
                           }
-                          return null;
+                          Loading.stopLoading(context);
                         },
+                        icon: const Icon(Icons.download),
+                        label: const Text('下载报名表'),
                       ),
-                    ),
-
-                    const SizedBox(height:40),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child:
-                        ElevatedButton(
-                          onPressed:_pickExcelFile,
-                          style: ElevatedButton.styleFrom(
-                            textStyle: const TextStyle(fontSize: 18),
-                            padding: const EdgeInsets.symmetric(horizontal: 24,vertical: 12 ),
-                          ),
-                          child:const Text('上传赛事人员名单'),
-                        ),
-                    ),
-                    const SizedBox(height: 15),
-                    if(_selectedFile != null)
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child:Padding(
-                          padding:const EdgeInsets.only(top:8.0),
-                          child: Text('已选择文件：${_selectedFile!.files.first.name}',
-                            style: const TextStyle(fontSize: 18),),
-                        ),
-                      ),
-                    const SizedBox(height:39),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children:[
-                        ElevatedButton(
-                          onPressed:_clearFrom,
-                          style: ElevatedButton.styleFrom(
-                            textStyle: const TextStyle(fontSize: 18),
-                            padding: const EdgeInsets.symmetric(horizontal: 24,vertical: 12),
-                          ),
-                          child:const Text('清空'),
-                        ),
-                        const SizedBox(width: 16),
-                        ElevatedButton(
-                          onPressed:(){
-                            _submitForm();
-                          },
-                          style: ElevatedButton.styleFrom(
-                            textStyle: const TextStyle(fontSize: 18),
-                            padding: const EdgeInsets.symmetric(horizontal: 24,vertical: 12),
-                          ),
-                          child:const Text('确认'),
-                        ),
-                      ],
                     ),
                   ],
                 ),
               ),
             ),
-          ),
+
+            // 第二个卡片：上传报名表
+            Card(
+              elevation: 4,
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '上传报名表',
+                      style:
+                      TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '点击下方按钮上传您的填写好的报名表。',
+                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                    ),
+                    const SizedBox(height: 16),
+                    Center(
+                      child: ElevatedButton.icon(
+                        onPressed: button1Pressed
+                            ? () {
+                          // todo 上传逻辑
+                          FilePicker.platform.pickFiles().then((result) {
+                            if (result != null) {
+                              // 处理选中的文件
+                              setState(() {
+                                filePath = result.paths.first!;
+                                button2Pressed = true;
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('报名表上传完成'),
+                                ),
+                              );
+                            } else {
+                              setState(() {
+                                button2Pressed = false;
+                              });
+                            }
+                          });
+                        }
+                            : null,
+                        icon: const Icon(Icons.upload),
+                        label: const Text('上传报名表'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // 第三个卡片：确定
+            Card(
+              elevation: 4,
+              margin: EdgeInsets.symmetric(vertical: 8),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '确定',
+                      style:
+                      TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '点击下方按钮以确认您的操作。',
+                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                    ),
+                    const SizedBox(height: 16),
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: button2Pressed
+                            ? () async {
+                          // 实现确认逻辑
+                          Loading.startLoading("正在录入运动员信息，请稍候", context);
+                          print(filePath);
+                          File xlsxFile = File(filePath!);
+                          await DataHelper.loadExcelFileToAthleteDatabase(
+                              raceName, xlsxFile.readAsBytesSync());
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('运动员已录入'),
+                            ),
+                          );
+                        }
+                            : null,
+                        child: const Text('确定'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
