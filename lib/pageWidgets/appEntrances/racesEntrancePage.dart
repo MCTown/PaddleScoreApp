@@ -1,32 +1,40 @@
 import 'package:flutter/material.dart';
+
 // import 'package:paddle_score_app/page_widgets/shortDistancePage.dart';
 import 'package:provider/provider.dart';
 
 import '../longDistanceRace/longDistancePage.dart';
 import '../shortDistanceRace/shortDistancePage.dart';
-enum RaceType{
+
+enum RaceType {
   longRace,
   shortRace1,
   shortRace2,
   teamRace,
   personalScore,
 }
-class RaceCardState extends ChangeNotifier{
+
+class RaceCardState extends ChangeNotifier {
   String raceEventName = '';
 }
-class RaceCard extends StatefulWidget{
+
+class RaceCard extends StatefulWidget {
   final RaceType rt;
-  const RaceCard({super.key,required this.rt});
+
+  const RaceCard({super.key, required this.rt});
+
   @override
-  State<RaceCard> createState()=>_RaceCard();
+  State<RaceCard> createState() => _RaceCard();
 }
-class _RaceCard extends State<RaceCard>{
+
+class _RaceCard extends State<RaceCard> {
   bool isHovering = false;
+
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     RaceType rt = widget.rt;
     String title;
-    switch(rt){
+    switch (rt) {
       case RaceType.longRace:
         title = '6000米长距离赛（青少年3000米）';
         break;
@@ -40,173 +48,100 @@ class _RaceCard extends State<RaceCard>{
         title = '团体竞赛';
         break;
       case RaceType.personalScore:
-        title  = '个人积分';
+        title = '个人积分';
         break;
     }
     return LayoutBuilder(
-      builder:(BuildContext context,BoxConstraints constraints) {
-        var raceCardState_ = context.watch<RaceCardState>();
-        String raceName = raceCardState_.raceEventName;
-        double cardWidth = constraints.maxWidth*0.7 ;
-        return SizedBox(
-          width: cardWidth,
-          height: 100,
-          child: InkWell(
-              onTap: () {
-                final raceBar = '$raceName/$title';
-                print('点击了$title');
-                switch(rt){
-                 case RaceType.longRace:
-                   Navigator.push(
-                     context,
-                     MaterialPageRoute(
-                       builder:(context)=>LongDistanceRacePage(raceBar:raceBar, raceEventName:raceName),
-                     ),
-                   );
-                   break;
-                  case RaceType.shortRace1:
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:(context)=>shortDistancePage(raceBar:raceBar, raceEventName:raceName),
-                      ),
-                    );
-                    break;
-                    case RaceType.shortRace2:
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:(context)=>shortDistancePage(raceBar:raceBar, raceEventName:raceName),
-                      ),
-                    );
-                    break;
-                    case RaceType.teamRace:
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:(context)=>LongDistanceRacePage(raceBar:raceBar, raceEventName:raceName),
-                      ),
-                    );
-                    break;
-                    case RaceType.personalScore:
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:(context)=>LongDistanceRacePage(raceBar:raceBar, raceEventName:raceName),
-                      ),
-                    );
-                    break;
-                }
-
-              },
-              onHover: (hovering) {
-                setState(() {
-                  isHovering = hovering;
-                });
-              },
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    curve: Curves.easeInOut,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: isHovering
-                          ? [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
-                          blurRadius: 12,
-                          spreadRadius:12,
-                        ),
-                      ] : [
-                        const BoxShadow(
-                          color: Colors.transparent,
-                          blurRadius: 0,
-                          spreadRadius: 0,
-                        ),
-                      ],
-                    ),
-                    child: Card(
-                      elevation: isHovering ? 10 : 4,
-                      shadowColor: isHovering ? Colors.grey:Colors.grey,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      // color:Colors.white.withOpacity(isHovering?0.8:1.0),
-                      child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: AnimatedOpacity(
-                            opacity: isHovering ? 0.0 : 1.0,
-                            duration: const Duration(milliseconds: 200),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child:FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: Text(title, style: const TextStyle(
-                                        fontSize: 24, color: Colors.black)),
-                                  )
-                                ),
-                              ],
-                            ),
-                          )
-                      ),
-                    ),
-                  ),
-                  AnimatedOpacity(
-                      opacity: isHovering ? 1.0 : 0.0,
-                      duration: const Duration(milliseconds: 200),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text('查看详情', style: TextStyle(
-                                  fontSize: 16, color: Colors.purple))
-                          ),
-                          Icon(Icons.arrow_forward_ios, color: Colors.purple),
-                        ],
-                      )
-                  )
-                ],
-              )
-          ),
-        );
-      }
-    );
+        builder: (BuildContext context, BoxConstraints constraints) {
+      var raceCardState_ = context.watch<RaceCardState>();
+      String raceName = raceCardState_.raceEventName;
+      double cardWidth = constraints.maxWidth * 0.7;
+      // todo
+      return Placeholder();
+    });
   }
 }
-class RacePage extends StatelessWidget{
+
+class RacePage extends StatelessWidget {
   final String raceName;
-  const RacePage({super.key,required this.raceName});
+
+  const RacePage({super.key, required this.raceName});
+
   @override
-  Widget build(BuildContext context){
-    // final raceName = ModalRoute
-    //     .of(context)!
-    //     .settings
-    //     .arguments as String? ??
-    //     'No Race Name Provided';
+  Widget build(BuildContext context) {
     final raceCardState = context.watch<RaceCardState>();
     raceCardState.raceEventName = raceName;
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-      appBar:AppBar(
-        title:Text(raceName),
+        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        appBar: AppBar(
+          title: Text(raceName),
+        ),
+        body: Padding(
+            // 添加一些 Padding 使列表不紧贴屏幕边缘
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                RaceNameCard(
+                  title: '6000米长距离赛（青少年3000米）',
+                  raceName: raceName,
+                  subtitle: "点击进入",
+                ),
+                RaceNameCard(
+                  title: '200米趴板划水赛（仅限青少年）',
+                  raceName: raceName,
+                  subtitle: "点击进入",
+                ),
+                RaceNameCard(
+                  title: '200米竞速赛',
+                  raceName: raceName,
+                  subtitle: "点击进入",
+                ),
+                RaceNameCard(
+                  title: '个人积分',
+                  raceName: raceName,
+                  subtitle: "点击导出总积分",
+                ),
+              ],
+            )));
+  }
+}
+
+class RaceNameCard extends StatelessWidget {
+  final String title;
+  final String raceName;
+  final String? subtitle; // 副标题设为可选参数
+
+  const RaceNameCard({
+    Key? key,
+    required this.title,
+    required this.raceName,
+    required this.subtitle,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+      child: ListTile(
+        tileColor: Theme.of(context).canvasColor,
+        title: Text(title),
+        subtitle: subtitle != null ? Text(subtitle!) : null,
+        // 根据是否传入副标题来显示
+        trailing: const Icon(Icons.arrow_forward_ios),
+        onTap: () {
+          final raceBar = '$raceName/$title'; // 更清晰的参数组合方式
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => shortDistancePage(
+                raceBar: raceBar,
+                raceEventName: raceName,
+              ),
+            ),
+          );
+        },
       ),
-      body:const Center(
-        child:Column(
-          mainAxisSize: MainAxisSize.min,
-          children:[
-            RaceCard(rt:RaceType.longRace),
-            RaceCard(rt:RaceType.shortRace1),
-            RaceCard(rt:RaceType.shortRace2),
-            // RaceCard(rt:RaceType.teamRace),
-            RaceCard(rt:RaceType.personalScore),
-          ]
-        )
-      )
     );
   }
 }

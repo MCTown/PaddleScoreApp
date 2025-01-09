@@ -245,7 +245,7 @@ class _SprintRacePageState extends State<shortDistancePage>{
       raceAccount = 3;
       return [
         RaceState(name: '初赛',status: RaceStatus.notStarted),
-        RaceState(name: ' 1/2\n决赛', status: RaceStatus.notStarted),
+        RaceState(name: '1/2\n决赛', status: RaceStatus.notStarted),
         RaceState(name: '决赛', status: RaceStatus.notStarted),
       ];
     }else{
