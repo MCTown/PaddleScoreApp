@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:excel/excel.dart';
+import 'package:paddle_score_app/utils/SettingService.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'DatabaseManager.dart';
@@ -41,7 +42,7 @@ class ExcelGenerator {
       List<String> headers = [
         '编号',
         '姓名',
-        '成绩',
+        '成绩（按照xx:xx:xx的格式填写）',
         '长距离比赛排名',
         '静水出发位置',
         '动水出发位置',
@@ -72,9 +73,15 @@ class ExcelGenerator {
         sheet
             .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: index))
             .value = TextCellValue('${athlete['name']}');
-        sheet
-            .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: index))
-            .value = TextCellValue(_randomTimeGenerator()); // 时间 -todo delete
+        if (SettingService.settings['isDebugMode']) {
+          sheet
+              .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: index))
+              .value = TextCellValue(_randomTimeGenerator()); // 时间 -todo delete
+        } else {
+          sheet
+              .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: index))
+              .value = TextCellValue('');
+        }
         sheet
             .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: index))
             .value = TextCellValue('${athlete['long_distant_rank']}'); // todo
@@ -110,8 +117,8 @@ class ExcelGenerator {
     // 生成Excel，生成n个sheet，每一个sheet代表一个组别
     // 生成表头
     var excel = Excel.createExcel();
-    List<String> headers = ['编号', '姓名', '代表队', '成绩', '备注'];
-    List<String> overviewHeaders = ['编号', '姓名', '代表队', '成绩', '组别', '备注'];
+    List<String> headers = ['编号', '姓名', '代表队', '成绩（按照xx:xx:xx的格式填写）', '备注'];
+    List<String> overviewHeaders = ['编号', '姓名', '代表队', '成绩(按照xx:xx:xx的格式填写)', '组别', '备注'];
     // 将sheet1重命名为总表
     excel.rename("Sheet1", "总表");
     var overviewSheet = excel["总表"];
@@ -186,12 +193,15 @@ class ExcelGenerator {
         sheet
             .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: i + 2))
             .value = TextCellValue('${athlete['team']}');
-        // sheet
-        //     .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: i + 2))
-        //     .value = TextCellValue(''); -todo - 实际代码
-        sheet
-            .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: i + 2))
-            .value = TextCellValue(_randomTimeGenerator());
+        if (SettingService.settings['isDebugMode']) {
+          sheet
+              .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: i + 2))
+              .value = TextCellValue(_randomTimeGenerator());
+        } else {
+          sheet
+              .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: i + 2))
+              .value = TextCellValue('');
+        } // todo delete
         sheet
             .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: i + 2))
             .value = TextCellValue('');

@@ -6,7 +6,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:paddle_score_app/DataHelper.dart';
+import 'package:paddle_score_app/utils/CreateRaceExcelChecker.dart';
 import 'package:paddle_score_app/utils/DatabaseManager.dart';
+import 'package:paddle_score_app/utils/GlobalFunction.dart';
+import 'package:paddle_score_app/utils/SettingService.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
@@ -14,6 +17,7 @@ import '../universalWidgets/Loading.dart';
 
 bool button1Pressed = false;
 bool button2Pressed = false;
+
 class CreateRacePage extends StatefulWidget {
   const CreateRacePage({super.key});
 
@@ -23,12 +27,16 @@ class CreateRacePage extends StatefulWidget {
 
 class _CreateRaceDetailPage extends State<CreateRacePage> {
   String filePath = '';
+  List<String> divisions = [];
+  int athleteNum = 0;
+
   @override
   Widget build(BuildContext context) {
-    final raceName = ModalRoute
-        .of(context)!
-        .settings
-        .arguments as String? ??
+    if (SettingService.settings['isDebugMode']) {
+      button1Pressed = true;
+      button2Pressed = true;
+    }
+    final raceName = ModalRoute.of(context)!.settings.arguments as String? ??
         'No Race Name Provided';
     return Scaffold(
       appBar: AppBar(
@@ -46,6 +54,8 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            // 说明文字 居左 有标题和正文
+            /// todo: 优化文字说明
             // 第一个卡片：下载报名表
             Card(
               elevation: 4,
@@ -56,25 +66,24 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      '下载报名表',
+                      '第一步： 下载报名表',
                       style:
-                      TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '点击下方按钮下载最新的报名表。',
+                      '点击下方按钮下载最新的报名表，下载好报名表后，请将运动员的信息填写进报名表中',
                       style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                     ),
                     const SizedBox(height: 16),
                     Center(
                       child: ElevatedButton.icon(
                         onPressed: () async {
-                          // todo实现下载逻辑
                           Loading.startLoading("请稍候", context);
                           try {
                             await Future.delayed(Duration.zero, () async {
                               String? filePath =
-                              await FilePicker.platform.saveFile(
+                                  await FilePicker.platform.saveFile(
                                 dialogTitle: '保存参赛名单',
                                 fileName: '参赛名单 - $raceName.xlsx',
                               );
@@ -86,7 +95,7 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                     .load("lib/assets/参赛信息.xlsx");
                                 Uint8List uint8List = byteData.buffer
                                     .asUint8List(byteData.offsetInBytes,
-                                    byteData.lengthInBytes);
+                                        byteData.lengthInBytes);
                                 await file.writeAsBytes(uint8List);
                                 print("文件已保存到:$filePath");
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -126,9 +135,9 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      '上传报名表',
+                      '第二步：上传报名表',
                       style:
-                      TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -140,26 +149,40 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                       child: ElevatedButton.icon(
                         onPressed: button1Pressed
                             ? () {
-                          // todo 上传逻辑
-                          FilePicker.platform.pickFiles().then((result) {
-                            if (result != null) {
-                              // 处理选中的文件
-                              setState(() {
-                                filePath = result.paths.first!;
-                                button2Pressed = true;
-                              });
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('报名表上传完成'),
-                                ),
-                              );
-                            } else {
-                              setState(() {
-                                button2Pressed = false;
-                              });
-                            }
-                          });
-                        }
+                                // todo 上传逻辑
+                                FilePicker.platform
+                                    .pickFiles()
+                                    .then((result) async {
+                                  if (result != null) {
+                                    // 处理选中的文件
+                                    var tempDivision =
+                                        await CreateRaceExcelChecker
+                                            .getDivisions(
+                                                File(result.paths.first!)
+                                                    .readAsBytesSync());
+                                    int tempAthleteNum =
+                                        await CreateRaceExcelChecker
+                                            .getAthleteCount(
+                                                File(result.paths.first!)
+                                                    .readAsBytesSync());
+                                    setState(() {
+                                      filePath = result.paths.first!;
+                                      button2Pressed = true;
+                                      divisions = tempDivision;
+                                      athleteNum = tempAthleteNum;
+                                    });
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('报名表上传完成'),
+                                      ),
+                                    );
+                                  } else {
+                                    setState(() {
+                                      button2Pressed = false;
+                                    });
+                                  }
+                                });
+                              }
                             : null,
                         icon: const Icon(Icons.upload),
                         label: const Text('上传报名表'),
@@ -180,32 +203,180 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      '确定',
+                      '第三步：确定',
                       style:
-                      TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '点击下方按钮以确认您的操作。',
+                      '请点击确认按钮来创建一个新的比赛',
                       style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                     ),
+
+                    /// 确认信息
                     const SizedBox(height: 16),
                     Center(
                       child: ElevatedButton(
                         onPressed: button2Pressed
                             ? () async {
-                          // 实现确认逻辑
-                          Loading.startLoading("正在录入运动员信息，请稍候", context);
-                          print(filePath);
-                          File xlsxFile = File(filePath!);
-                          await DataHelper.loadExcelFileToAthleteDatabase(
-                              raceName, xlsxFile.readAsBytesSync());
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('运动员已录入'),
-                            ),
-                          );
-                        }
+                                /// 弹出弹窗让用户确认信息
+                                var isConfirmed = await showDialog<bool>(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: const Text('确认信息'),
+                                      content: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Card(
+                                            child: Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical: 12, horizontal: 16),
+                                              child: Row(
+                                                children: const [
+                                                  Icon(Icons.info,
+                                                      color: Colors.green),
+                                                  SizedBox(width: 8),
+                                                  Expanded(
+                                                    child: Text(
+                                                      "请确认以下解析得出的信息是否正确，如若有误请检查你的报名表，修正后再次上传",
+                                                      style: TextStyle(
+                                                          fontSize: 16,
+                                                          color:
+                                                              Colors.black87),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          Card(
+                                            child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 12,
+                                                        horizontal: 16),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment
+                                                          .start, // 让标题左对齐
+                                                  children: [
+                                                    const Padding(
+                                                      padding: EdgeInsets.only(
+                                                          bottom:
+                                                              8), // 标题和内容之间的间距
+                                                      child: Text(
+                                                        '基本信息',
+                                                        style: TextStyle(
+                                                          fontSize: 18,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Row(
+                                                      children: [
+                                                        const SizedBox(
+                                                            width: 8),
+                                                        Expanded(
+                                                          child: Text(
+                                                            "赛事名称：$raceName\n报名表路径：$filePath\n参赛总人数：$athleteNum人",
+                                                            style: const TextStyle(
+                                                                fontSize: 16,
+                                                                color: Colors
+                                                                    .black87),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                )),
+                                          ),
+                                          Card(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 12,
+                                                      horizontal: 16),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment
+                                                        .start, // 让标题左对齐
+                                                children: [
+                                                  // 标题部分
+                                                  const Padding(
+                                                    padding: EdgeInsets.only(
+                                                        bottom:
+                                                            8), // 标题和内容之间的间距
+                                                    child: Text(
+                                                      '参赛组别',
+                                                      style: TextStyle(
+                                                        fontSize: 18,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+
+                                                  // 内容部分（原来的Row和Wrap）
+                                                  Row(
+                                                    children: [
+                                                      const SizedBox(width: 8),
+                                                      Expanded(
+                                                        child: Wrap(
+                                                          spacing: 8.0, // 水平间距
+                                                          runSpacing:
+                                                              4.0, // 纵向间距
+                                                          children: divisions
+                                                              .map((division) {
+                                                            return Chip(
+                                                              label: Text(
+                                                                  division),
+                                                            );
+                                                          }).toList(),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop(true);
+                                          },
+                                          child: const Text('确定'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop(false);
+                                          },
+                                          child: const Text('取消'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                                if (isConfirmed == null || !isConfirmed) {
+                                  return;
+                                }
+                                Loading.startLoading("正在录入运动员信息，请稍候", context);
+                                print(filePath);
+                                File xlsxFile = File(filePath);
+                                await DataHelper.loadExcelFileToAthleteDatabase(
+                                    raceName, xlsxFile.readAsBytesSync());
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('运动员已录入'),
+                                  ),
+                                );
+                              }
                             : null,
                         child: const Text('确定'),
                       ),

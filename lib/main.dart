@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:paddle_score_app/pageWidgets/appEntrances/createRacePage.dart';
+
 // import 'package:paddle_score_app/pageWidgets/abondon/createRacePage.dart';
 import 'package:paddle_score_app/pageWidgets/appEntrances/homePage.dart';
 
@@ -9,6 +10,7 @@ import 'package:paddle_score_app/pageWidgets/appEntrances/homePage.dart';
 import 'package:paddle_score_app/pageWidgets/appEntrances/racesEntrancePage.dart';
 import 'package:paddle_score_app/pageWidgets/appEntrances/settingsPage.dart';
 import 'package:paddle_score_app/utils/Routes.dart';
+import 'package:paddle_score_app/utils/SettingService.dart';
 
 // import 'package:paddle_score_app/page_widgets/racesEntrance.dart';
 import 'package:path_provider/path_provider.dart';
@@ -20,6 +22,8 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:path/path.dart' as p;
 
 void main() {
+  print("object");
+  SettingService.loadSettings();
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
   runApp(
@@ -52,7 +56,7 @@ class MyApp extends StatelessWidget {
       home: MyHomePage(),
 
       // todo 路由表
-      routes:routes,
+      routes: routes,
       onGenerateRoute: (settings) {
         if (settings.name!.startsWith('/race/')) {
           final raceName = settings.name!.substring('/race/'.length);
@@ -240,9 +244,10 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-class UnknownRouteScreen extends StatelessWidget{
+
+class UnknownRouteScreen extends StatelessWidget {
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('404')),
       body: Center(child: Text('页面未找到')),

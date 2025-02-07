@@ -55,7 +55,7 @@ class _DivisionScoreTableState extends State<DivisionScoreTable> {
                   DataColumn(label: Text('编号')),
                   DataColumn(label: Text('姓名')),
                   DataColumn(label: Text('单位')),
-                  DataColumn(label: Text('成绩')),
+                  DataColumn(label: Text('成绩（按照xx:xx:xx的格式填写）')),
                 ],
                 rows: data.asMap().entries.map((entry) {
                   final index = entry.key;
