@@ -8,7 +8,6 @@ import 'GlobalFunction.dart';
 
 // 在分析表的时候，Athlete将分为三级，allAthletes指所有运动员，divisionAthletes指某一组的运动员，groupAthletes指某一场比赛的运动员
 class ExcelAnalyzer {
-  /// 传入报名表的Excel文件，初始化数据库，这是所有操作的第一步
   static Future<void> longDistance(String dbName, List<int> fileBinary) async {
     String tableName = "长距离比赛";
     Database db = await DatabaseManager.getDatabase(dbName);
@@ -55,17 +54,17 @@ class ExcelAnalyzer {
         // processedGroup的key为id，value为组别，将组别录入数据库1
         print("$division的processedGroup为$processedGroup");
         var tables = await DatabaseManager.getTableNames(db);
-        // 更新所有已确定人员名单的比赛的group
+        // 更新所有初赛的group
         var tablesName = [
           '${division}_初赛_趴板',
-          '${division}_决赛_趴板',
           '${division}_初赛_竞速',
-          '${division}_决赛_竞速'
         ];
         for (var tableName in tablesName) {
           if (!tables.contains(tableName)) {
             continue;
+            // 跳过非青少年的组别
           }
+          print("更新$tableName");
           processedGroup.forEach((key, value) {
             db.update(tableName, {"_group": value},
                 where: "id = ?", whereArgs: [key]);
@@ -78,9 +77,9 @@ class ExcelAnalyzer {
     /*
     for (var division in divisions) {
       var athletes = await db.rawQuery('''
-        SELECT "长距离比赛".id,"长距离比赛".time 
-        FROM athletes 
-        LEFT JOIN "长距离比赛" 
+        SELECT "长距离比赛".id,"长距离比赛".time
+        FROM athletes
+        LEFT JOIN "长距离比赛"
         ON athletes.id = "长距离比赛".id
         WHERE athletes.division = '$division'
       ''');
@@ -136,6 +135,7 @@ class ExcelAnalyzer {
     // print("All done :D");
      */
   }
+
   /// 初始化数据库
   static Future<void> initAthlete(
       String dbName, List<int> xlsxFileBytes) async {
@@ -245,9 +245,9 @@ class ExcelAnalyzer {
     return result;
   }
 
-  // 由以下实体的排列组合生成表
-// 1. 组别 2. 比赛进度（预赛、决赛）3. 项目（长距离、趴板、竞速）4. 性别
-// 确定生成函数
+  /// 由以下实体的排列组合生成表
+  /// 1. 组别 2. 比赛进度（预赛、决赛）3. 项目（长距离、趴板、竞速）4. 性别
+  /// 确定生成函数
   static Future<void> _initScoreTable(Database db) async {
     // 查询athlete表中有哪些division
     var divisionsRaw = await db.rawQuery('''
@@ -261,6 +261,7 @@ class ExcelAnalyzer {
     for (var competition in competitions) {
       for (var division in divisions) {
         // 如果分组为非青少年（没有U），且比赛为趴板，则跳过
+        /// 判断哪些是青少年组
         if (!RegExp(r'U\d+').hasMatch(division) && competition == '趴板') {
           continue;
         }
@@ -308,9 +309,9 @@ class ExcelAnalyzer {
       String division,
       String schedule,
       String competition) async {
-    // 完善progress表
-    await db.insert('progress',
-        {'progress_name': '${division}_${schedule}_${competition}_imported'});
+    // // 完善progress表
+    // await db.insert('progress',
+    //     {'progress_name': '${division}_${schedule}_${competition}_imported'});
     await db.execute('''
         CREATE TABLE '${division}_${schedule}_$competition' (
           id INT PRIMARY KEY,
@@ -321,27 +322,8 @@ class ExcelAnalyzer {
       ''');
     // 生成比赛表
     // 如果是非初赛，则不插入信息
-    // 如果是决赛且运动员数量不足16人，则插入信息
-    // if (schedule == "决赛" && athletes.length <= 16) {
-    //   for (var athlete in athletes) {
-    //     await db.insert(
-    //       '${division}_${schedule}_$competition',
-    //       {
-    //         'id': athlete['id'],
-    //         'name': athlete['name'],
-    //         'time': '0',
-    //         '_group': 0,
-    //       },
-    //     );
-    //   }
-    // }
-    if (schedule == "初赛" || (schedule == "决赛" && athletes.length <= 16)) {
-      // 生成分组
-      var group = <String, int>{};
-      for (var i = 0; i < athletes.length; i++) {
-        group[athletes[i]['id'].toString()] = i ~/ 16;
-      }
-      // 插入信息
+    // 如果是决赛且运动员数量不足16人，则直接确定分组，如果是初赛则留到后边再分组
+    if (schedule == "决赛" && athletes.length <= 16) {
       for (var athlete in athletes) {
         await db.insert(
           '${division}_${schedule}_$competition',
@@ -349,11 +331,43 @@ class ExcelAnalyzer {
             'id': athlete['id'],
             'name': athlete['name'],
             'time': '0',
-            '_group': group[athlete['id'].toString()],
+            '_group': 0,
           },
         );
       }
     }
+    // 将初赛的运动员插入到初赛表中，等待分组
+    if (schedule == "初赛") {
+      for (var athlete in athletes) {
+        await db.insert(
+          '${division}_${schedule}_$competition',
+          {
+            'id': athlete['id'],
+            'name': athlete['name'],
+            'time': '0',
+          },
+        );
+      }
+    }
+    // if (schedule == "初赛" || (schedule == "决赛" && athletes.length <= 16)) {
+    //   // 生成分组
+    //   var group = <String, int>{};
+    //   for (var i = 0; i < athletes.length; i++) {
+    //     group[athletes[i]['id'].toString()] = i ~/ 16;
+    //   }
+    //   // 插入信息
+    //   for (var athlete in athletes) {
+    //     await db.insert(
+    //       '${division}_${schedule}_$competition',
+    //       {
+    //         'id': athlete['id'],
+    //         'name': athlete['name'],
+    //         'time': '0',
+    //         '_group': group[athlete['id'].toString()],
+    //       },
+    //     );
+    //   }
+    // }
     return;
   }
 

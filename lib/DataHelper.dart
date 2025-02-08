@@ -1,10 +1,12 @@
 import 'dart:ffi';
+import 'dart:io';
 
 import 'package:excel/excel.dart';
 import 'package:paddle_score_app/utils/DatabaseManager.dart';
 import 'package:paddle_score_app/utils/ExcelAnalyzer.dart';
 import 'package:paddle_score_app/utils/ExcelGenerator.dart';
 import 'package:paddle_score_app/utils/GlobalFunction.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DataHelper {
@@ -39,12 +41,22 @@ class DataHelper {
   /// [fileBinary] 文件二进制数据
   static Future<void> importLongDistanceScore(
       String dbName, List<int> fileBinary) async {
-    await ExcelAnalyzer.longDistance(dbName, fileBinary);
-    await DatabaseManager.getDatabase(dbName).then((db) async {
-      await db.update('progress', {'progress_value': 1},
-          where: 'progress_name = ?', whereArgs: ['long_distance_imported']);
-    });
-    print("All Done :D");
+    var databaseFileBinary =
+        File(await getFilePath("$dbName.db")).readAsBytesSync();
+    print("已完成数据库备份");
+    try {
+      await ExcelAnalyzer.longDistance(dbName, fileBinary);
+      await DatabaseManager.getDatabase(dbName).then((db) async {
+        await db.update('progress', {'progress_value': 1},
+            where: 'progress_name = ?', whereArgs: ['long_distance_imported']);
+      });
+      print("All Done :D");
+    } catch (e) {
+      print("出现错误: $e 数据库已恢复");
+      File(await getFilePath("$dbName.db")).writeAsBytesSync(databaseFileBinary);
+      rethrow;
+    }
+
     return;
   }
 
@@ -85,10 +97,9 @@ class DataHelper {
   /// 导出最终成绩表，给出数据库名，返回一个List<int>，即Excel文件的二进制数据
   /// [dbName] 数据库名
   /// [e] 导出类型
-  static Future<List<int>> exportFinalScore(String dbName,ExportType e) async {
+  static Future<List<int>> exportFinalScore(String dbName, ExportType e) async {
     var temp = await ExcelGenerator.exportScores(dbName, e);
     print("All Done :D");
     return temp;
   }
-
 }

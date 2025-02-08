@@ -220,7 +220,7 @@ class _HomePageContent extends State<HomePageContent> {
                               ? null
                               : () {
                                   Navigator.pushNamed(context,
-                                      '/race/${_lastEvent1.toString()}');
+                                      '/race/${_lastEvent2.toString()}');
                                 },
                           child: ListTile(
                             title: Text(_lastEvent2),
@@ -231,7 +231,7 @@ class _HomePageContent extends State<HomePageContent> {
                               ? null
                               : () {
                                   Navigator.pushNamed(context,
-                                      '/race/${_lastEvent1.toString()}');
+                                      '/race/${_lastEvent3.toString()}');
                                 },
                           child: ListTile(
                             title: Text(_lastEvent3),

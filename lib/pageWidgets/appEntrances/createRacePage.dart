@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:paddle_score_app/DataHelper.dart';
+import 'package:paddle_score_app/main.dart';
 import 'package:paddle_score_app/utils/CreateRaceExcelChecker.dart';
 import 'package:paddle_score_app/utils/DatabaseManager.dart';
 import 'package:paddle_score_app/utils/GlobalFunction.dart';
@@ -447,15 +448,29 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                 Loading.startLoading("正在录入运动员信息，请稍候", context);
                                 print(filePath);
                                 File xlsxFile = File(filePath);
-                                await DataHelper.loadExcelFileToAthleteDatabase(
-                                    raceName, xlsxFile.readAsBytesSync());
-                                Loading.stopLoading(context);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('运动员已录入'),
-                                  ),
-                                );
-                                Navigator.pushNamed(context, '/');
+                                try{
+                                  await DataHelper.loadExcelFileToAthleteDatabase(
+                                      raceName, xlsxFile.readAsBytesSync());
+                                  Loading.stopLoading(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('运动员已录入'),
+                                    ),
+                                  );
+                                  Navigator.of(context).pushAndRemoveUntil(
+                                    MaterialPageRoute(
+                                        builder: (context) => const MyHomePage()),
+                                        (Route<dynamic> route) => false, // 清除所有旧路由
+                                  );
+                                }
+                                catch(e){
+                                  Loading.stopLoading(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('录入失败，请检查报名表无误后重试'),
+                                    ),
+                                  );
+                                }
                               }
                             : null,
                         child: const Text('确定'),

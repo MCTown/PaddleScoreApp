@@ -13,54 +13,6 @@ import 'package:provider/provider.dart';
 import '../longDistanceRace/longDistancePage.dart';
 import '../shortDistanceRace/shortDistancePage.dart';
 
-// class RaceCardState extends ChangeNotifier {
-//   String raceEventName = '';
-// }
-//
-// class RaceCard extends StatefulWidget {
-//   final RaceType rt;
-//
-//   const RaceCard({super.key, required this.rt});
-//
-//   @override
-//   State<RaceCard> createState() => _RaceCard();
-// }
-//
-// class _RaceCard extends State<RaceCard> {
-//   bool isHovering = false;
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     RaceType rt = widget.rt;
-//     String title;
-//     switch (rt) {
-//       case RaceType.longRace:
-//         title = '6000米长距离赛（青少年3000米）';
-//         break;
-//       case RaceType.shortRace1:
-//         title = '200米趴板划水赛（仅限青少年）';
-//         break;
-//       case RaceType.shortRace2:
-//         title = '200米竞速赛';
-//         break;
-//       case RaceType.teamRace:
-//         title = '团体竞赛';
-//         break;
-//       case RaceType.personalScore:
-//         title = '个人积分';
-//         break;
-//     }
-//     return LayoutBuilder(
-//         builder: (BuildContext context, BoxConstraints constraints) {
-//           var raceCardState_ = context.watch<RaceCardState>();
-//           String raceName = raceCardState_.raceEventName;
-//           double cardWidth = constraints.maxWidth * 0.7;
-//           // todo
-//           return Placeholder();
-//         });
-//   }
-// }
-
 enum RaceType {
   longRace,
   shortRace1,
@@ -79,33 +31,14 @@ class RacePage extends StatefulWidget {
 }
 
 class _RacePage extends State<RacePage> {
-  /// 此函数用于更新页面状态，避免使用Future组件增加页面复杂度
-  Future<void> _updateState() async {
-    bool tempIsFistElementClickable =
-        await checkProgress(raceName, 'athlete_imported');
-    bool tempIsSecondElementClickable =
-        await checkProgress(raceName, 'long_distance_imported');
-    bool tempIsThirdElementClickable =
-        await checkProgress(raceName, 'long_distance_imported');
-    setState(() {
-      isFistElementClickable = tempIsFistElementClickable;
-      isSecondElementClickable = tempIsSecondElementClickable;
-      isThirdElementClickable = tempIsThirdElementClickable;
-    });
-  }
 
   final String raceName;
 
   _RacePage(this.raceName);
 
-  bool isFistElementClickable = true;
-  bool isSecondElementClickable = true;
-  bool isThirdElementClickable = true;
-
   @override
   void initState() {
     super.initState();
-    _updateState();
   }
 
   @override
@@ -119,23 +52,45 @@ class _RacePage extends State<RacePage> {
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            RaceNameCard(
-                title: '6000米长距离赛（青少年3000米）',
-                raceName: raceName,
-                // subtitle: "点击进入",
-                clickable: isFistElementClickable),
-            RaceNameCard(
-              title: '200米趴板划水赛（仅限青少年）',
-              raceName: raceName,
-              // subtitle: "点击进入",
-              clickable: isSecondElementClickable,
-            ),
-            RaceNameCard(
-              title: '200米竞速赛',
-              raceName: raceName,
-              // subtitle: "点击进入",
-              clickable: isThirdElementClickable,
-            ),
+            FutureBuilder(
+                future: checkProgress(raceName, 'athlete_imported'),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    return RaceNameCard(
+                        title: '6000米长距离赛（青少年3000米）',
+                        raceName: raceName,
+                        // subtitle: "点击进入",
+                        clickable: snapshot.data as bool);
+                  } else {
+                    return const CircularProgressIndicator();
+                  }
+                }),
+            FutureBuilder(
+                future: checkProgress(raceName, 'long_distance_imported'),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    return RaceNameCard(
+                        title: '200米趴板划水赛（仅限青少年）',
+                        raceName: raceName,
+                        // subtitle: "点击进入",
+                        clickable: snapshot.data as bool);
+                  } else {
+                    return const CircularProgressIndicator();
+                  }
+                }),
+            FutureBuilder(
+                future: checkProgress(raceName, 'long_distance_imported'),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    return RaceNameCard(
+                        title: '500米竞速赛',
+                        raceName: raceName,
+                        // subtitle: "点击进入",
+                        clickable: snapshot.data as bool);
+                  } else {
+                    return const CircularProgressIndicator();
+                  }
+                }),
             Card(
               elevation: 4,
               color: Theme.of(context).canvasColor,
@@ -264,7 +219,8 @@ class RaceNameCard extends StatelessWidget {
           child: ListTile(
             // tileColor: Theme.of(context).canvasColor,
             title: Text(title),
-            subtitle: clickable ? const Text("点击进入") : const Text("请在导入长距离比赛后进入"),
+            subtitle:
+                clickable ? const Text("点击进入") : const Text("请在导入长距离比赛后进入"),
             trailing: const Icon(Icons.arrow_forward_ios),
           ),
         ));
