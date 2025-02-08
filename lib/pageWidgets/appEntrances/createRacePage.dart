@@ -29,6 +29,7 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
   String filePath = '';
   List<String> divisions = [];
   int athleteNum = 0;
+  ValidExcelResult isExcelValid = ValidExcelResult();
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +89,7 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                 fileName: '参赛名单 - $raceName.xlsx',
                               );
                               if (filePath == null) {
-                                throw Exception("用户未选择文件");
+                                throw Exception("用户未保存文件");
                               } else {
                                 File file = File(filePath);
                                 ByteData byteData = await rootBundle
@@ -109,7 +110,7 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                               }
                             });
                           } catch (e) {
-                            print("用户未选择文件");
+                            print("用户未保存文件");
                             setState(() {
                               button1Pressed = false;
                             });
@@ -155,6 +156,7 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                     .then((result) async {
                                   if (result != null) {
                                     // 处理选中的文件
+                                    print(result.files.first.name);
                                     var tempDivision =
                                         await CreateRaceExcelChecker
                                             .getDivisions(
@@ -165,11 +167,16 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                             .getAthleteCount(
                                                 File(result.paths.first!)
                                                     .readAsBytesSync());
+                                    ValidExcelResult tempIsExcelValid =
+                                        CreateRaceExcelChecker.validExcel(
+                                            File(result.paths.first!)
+                                                .readAsBytesSync());
                                     setState(() {
                                       filePath = result.paths.first!;
                                       button2Pressed = true;
                                       divisions = tempDivision;
                                       athleteNum = tempAthleteNum;
+                                      isExcelValid = tempIsExcelValid;
                                     });
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
@@ -241,7 +248,7 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                                   SizedBox(width: 8),
                                                   Expanded(
                                                     child: Text(
-                                                      "请确认以下解析得出的信息是否正确，如若有误请检查你的报名表，修正后再次上传",
+                                                      "请确认以下解析得出的信息是否正确，如若有误请检查你的报名表，删除不需要分析的人员和组别，修正后再次上传",
                                                       style: TextStyle(
                                                           fontSize: 16,
                                                           color:
@@ -343,7 +350,78 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                                 ],
                                               ),
                                             ),
-                                          )
+                                          ),
+                                          Card(
+                                            child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 12,
+                                                        horizontal: 16),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment
+                                                          .start, // 让标题左对齐
+                                                  children: [
+                                                    const Padding(
+                                                      padding: EdgeInsets.only(
+                                                          bottom:
+                                                              8), // 标题和内容之间的间距
+                                                      child: Text(
+                                                        '错误检查',
+                                                        style: TextStyle(
+                                                          fontSize: 18,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Row(
+                                                      children: [
+                                                        const SizedBox(
+                                                            width: 8),
+                                                        Expanded(
+                                                            child: Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Text(
+                                                              isExcelValid
+                                                                      .numberValidated
+                                                                  ? "✅ 报名表中编号无误"
+                                                                  : "⚠ 报名表中有错误的编号，这可能是因为单元格格式错误或是有多余的空格，请检查",
+                                                              style: TextStyle(
+                                                                  fontSize: 16,
+                                                                  color: isExcelValid
+                                                                          .numberValidated
+                                                                      ? Colors
+                                                                          .black87
+                                                                      : Colors
+                                                                          .red,
+                                                                  fontWeight: isExcelValid
+                                                                          .numberValidated
+                                                                      ? FontWeight
+                                                                          .normal
+                                                                      : FontWeight
+                                                                          .bold),
+                                                            ),
+                                                            // Text(
+                                                            //   isExcelValid
+                                                            //       .numberValidated
+                                                            //       ? "报名表中有错误的编号，这可能是因为单元格为字符格式或是有多余的空格，请检查"
+                                                            //       : "✅报名表中编号无误",
+                                                            //   style: const TextStyle(
+                                                            //       fontSize: 16,
+                                                            //       color: Colors
+                                                            //           .black87),
+                                                            // ),
+                                                          ],
+                                                        )),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                )),
+                                          ),
                                         ],
                                       ),
                                       actions: <Widget>[

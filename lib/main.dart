@@ -30,7 +30,7 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => MyAppState()),
-        ChangeNotifierProvider(create: (context) => RaceCardState()),
+        // ChangeNotifierProvider(create: (context) => RaceCardState()),
       ],
       child: MyApp(),
     ),

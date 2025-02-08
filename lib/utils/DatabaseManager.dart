@@ -9,16 +9,32 @@ class DatabaseManager {
     return await openDatabase(
       path,
       onCreate: (db, version) async {
+        /// 初始化数据库基本信息
+        /// 包括：运动员信息表，长距离比赛表，进度表
         print("数据库不存在，创建数据库：$path");
         await initAthleteTable(db);
         db.execute('''
         CREATE TABLE 'progress' (
           progress_name VARCHAR(255) PRIMARY KEY,
           progress_value INT DEFAULT 0
+          description VARCHAR(255)
         );
         ''');
-        db.insert('progress', {'progress_name': 'athlete_imported', 'progress_value': 0});
-        db.insert('progress', {'progress_name': 'long_distance_imported', 'progress_value': 0});
+        db.insert('progress', {
+          'progress_name': 'athlete_imported',
+          'progress_value': 0,
+          'description': '运动员信息是否导入，新建比赛后变为1'
+        });
+        db.insert('progress', {
+          'progress_name': 'long_distance_downloaded',
+          'progress_value': 0,
+          'description': '长距离比赛成绩单是否下载，下载长距离比赛成绩后变为1'
+        });
+        db.insert('progress', {
+          'progress_name': 'long_distance_imported',
+          'progress_value': 0,
+          'description': '长距离比赛成绩是否导入，导入长距离比赛成绩后变为1'
+        });
       },
       version: 1,
     );

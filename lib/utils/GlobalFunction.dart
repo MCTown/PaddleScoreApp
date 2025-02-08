@@ -82,6 +82,7 @@ String wTypeTranslate(WType w) {
   }
 }
 
+/// 这个地方是一个线头，未来可以实现让用户自定义黑名单
 const List<String> divisionBlackList = ['仅团体', '接力赛', '龙板'];
 
 int getGroupNum(int personNum) {
@@ -162,3 +163,16 @@ int rankToScore(int rank) {
 }
 
 enum ExportType { asTeam, asDivision }
+
+Future<bool> checkProgress(String dbName, String progressName) async {
+  var db = await DatabaseManager.getDatabase(dbName);
+  var result = await db.query('progress',
+      columns: ['progress_value'],
+      where: 'progress_name = ?',
+      whereArgs: [progressName]);
+  if (result.isEmpty) {
+    throw "Unknown progress name $progressName";
+  } else {
+    return result.first['progress_value'] == 1;
+  }
+}

@@ -20,55 +20,6 @@ enum RaceType {
   teamRace,
   personalScore,
 }
-
-class RaceCardState extends ChangeNotifier {
-  String raceEventName = '';
-}
-
-class RaceCard extends StatefulWidget {
-  final RaceType rt;
-
-  const RaceCard({super.key, required this.rt});
-
-  @override
-  State<RaceCard> createState() => _RaceCard();
-}
-
-class _RaceCard extends State<RaceCard> {
-  bool isHovering = false;
-
-  @override
-  Widget build(BuildContext context) {
-    RaceType rt = widget.rt;
-    String title;
-    switch (rt) {
-      case RaceType.longRace:
-        title = '6000米长距离赛（青少年3000米）';
-        break;
-      case RaceType.shortRace1:
-        title = '200米趴板划水赛（仅限青少年）';
-        break;
-      case RaceType.shortRace2:
-        title = '200米竞速赛';
-        break;
-      case RaceType.teamRace:
-        title = '团体竞赛';
-        break;
-      case RaceType.personalScore:
-        title = '个人积分';
-        break;
-    }
-    return LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-      var raceCardState_ = context.watch<RaceCardState>();
-      String raceName = raceCardState_.raceEventName;
-      double cardWidth = constraints.maxWidth * 0.7;
-      // todo
-      return Placeholder();
-    });
-  }
-}
-
 class RacePage extends StatelessWidget {
   final String raceName;
 
@@ -76,8 +27,6 @@ class RacePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final raceCardState = context.watch<RaceCardState>();
-    raceCardState.raceEventName = raceName;
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primaryContainer,
       appBar: AppBar(
@@ -87,37 +36,20 @@ class RacePage extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            Card(
-              margin:
-                  const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.0)),
-              child: ListTile(
-                tileColor: Theme.of(context).canvasColor,
-                title: Text("6000米长距离赛（青少年3000米）"),
-                subtitle: Text("点击进入"),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  final raceBar = '$raceName/6000米长距离赛（青少年3000米）';
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => LongDistanceRacePage(
-                          raceBar: raceBar, raceEventName: raceName),
-                    ),
-                  );
-                },
-              ),
+            RaceNameCard(
+              title: '6000米长距离赛（青少年3000米）',
+              raceName: raceName,
+              subtitle: "点击进入", clickable: true,
             ),
             RaceNameCard(
               title: '200米趴板划水赛（仅限青少年）',
               raceName: raceName,
-              subtitle: "点击进入",
+              subtitle: "点击进入", clickable: true,
             ),
             RaceNameCard(
               title: '200米竞速赛',
               raceName: raceName,
-              subtitle: "点击进入",
+              subtitle: "点击进入", clickable: true,
             ),
             Card(
               margin:
@@ -166,7 +98,7 @@ class RacePage extends StatelessWidget {
                     Loading.stopLoading(context);
                     return;
                   }
-                  try{
+                  try {
                     await Future.delayed(Duration.zero, () async {
                       String? filePath = await FilePicker.platform.saveFile(
                         dialogTitle: '保存个人积分',
@@ -187,7 +119,7 @@ class RacePage extends StatelessWidget {
                         Loading.stopLoading(context);
                       }
                     });
-                  }catch(e){
+                  } catch (e) {
                     Loading.stopLoading(context);
                   }
                 },
@@ -200,16 +132,22 @@ class RacePage extends StatelessWidget {
   }
 }
 
+/// 工厂方法
+/// 用于创建一个新的比赛卡片实例
 class RaceNameCard extends StatelessWidget {
   final String title;
   final String raceName;
-  final String? subtitle; // 副标题设为可选参数
+  final String? subtitle;
+  final bool clickable;
+
   const RaceNameCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.raceName,
     required this.subtitle,
-  }) : super(key: key);
+    required this.clickable,
+    // 以传入参数给成员变量赋值
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -222,18 +160,23 @@ class RaceNameCard extends StatelessWidget {
         subtitle: subtitle != null ? Text(subtitle!) : null,
         // 根据是否传入副标题来显示
         trailing: const Icon(Icons.arrow_forward_ios),
-        onTap: () {
-          final raceBar = '$raceName/$title'; // 更清晰的参数组合方式
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => shortDistancePage(
-                raceBar: raceBar,
-                raceEventName: raceName,
-              ),
-            ),
-          );
-        },
+        onTap: !clickable
+            ? null
+            : () {
+                final raceBar = '$raceName/$title'; // 更清晰的参数组合方式
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => title == "6000米长距离赛（青少年3000米）"
+                        ? LongDistanceRacePage(
+                            raceBar: raceBar, raceEventName: raceName)
+                        : shortDistancePage(
+                            raceBar: raceBar,
+                            raceEventName: raceName,
+                          ),
+                  ),
+                );
+              },
       ),
     );
   }

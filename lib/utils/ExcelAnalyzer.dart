@@ -8,6 +8,7 @@ import 'GlobalFunction.dart';
 
 // 在分析表的时候，Athlete将分为三级，allAthletes指所有运动员，divisionAthletes指某一组的运动员，groupAthletes指某一场比赛的运动员
 class ExcelAnalyzer {
+  /// 传入报名表的Excel文件，初始化数据库，这是所有操作的第一步
   static Future<void> longDistance(String dbName, List<int> fileBinary) async {
     String tableName = "长距离比赛";
     Database db = await DatabaseManager.getDatabase(dbName);
@@ -135,7 +136,7 @@ class ExcelAnalyzer {
     // print("All done :D");
      */
   }
-
+  /// 初始化数据库
   static Future<void> initAthlete(
       String dbName, List<int> xlsxFileBytes) async {
     Database db = await DatabaseManager.getDatabase(dbName);
@@ -158,6 +159,7 @@ class ExcelAnalyzer {
         continue;
       }
       // 如果id中含有非数字则跳过
+      // todo 检查id是否合法
       if (row[1]?.value == null ||
           !RegExp(r'^\d+$').hasMatch(row[1]!.value.toString())) {
         print("id不合法，跳过");
