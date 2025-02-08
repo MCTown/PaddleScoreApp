@@ -17,7 +17,7 @@ class ExcelAnalyzer {
     // 录入数据到长距离比赛时间
     var divisions = await getDivisions(dbName);
     // 遍历所有sheet
-    // print(divisions);
+    print(divisions);
     for (var division in divisions) {
       var sheet = sheets[division];
       if (sheet == null) {

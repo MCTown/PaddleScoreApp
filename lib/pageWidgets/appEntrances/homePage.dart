@@ -10,7 +10,6 @@ import 'package:provider/provider.dart';
 import '../../main.dart';
 import '../../utils/ExcelAnalyzer.dart';
 
-
 class HomePageContent extends StatefulWidget {
   const HomePageContent({Key? key}) : super(key: key);
 
@@ -156,6 +155,8 @@ class _HomePageContent extends State<HomePageContent> {
   String _lastEvent2 = '尚未创建';
   String _lastEvent3 = '尚未创建';
 
+  String formText = '';
+
   @override
   void initState() {
     super.initState();
@@ -164,7 +165,6 @@ class _HomePageContent extends State<HomePageContent> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('首页'),
@@ -204,26 +204,35 @@ class _HomePageContent extends State<HomePageContent> {
                       initiallyExpanded: true,
                       children: [
                         InkWell(
-                          onTap: () {
-                            Navigator.pushNamed(context, '/race/${_lastEvent1.toString()}');
-                            // 处理点击事件，例如导航到新页面、更新状态等
-                          },
+                          onTap: _lastEvent1 == "尚未创建"
+                              ? null
+                              : () {
+                                  Navigator.pushNamed(context,
+                                      '/race/${_lastEvent1.toString()}');
+                                  // 处理点击事件，例如导航到新页面、更新状态等
+                                },
                           child: ListTile(
                             title: Text(_lastEvent1),
                           ),
                         ),
                         InkWell(
-                          onTap: () {
-                            Navigator.pushNamed(context, '/race/${_lastEvent1.toString()}');
-                          },
+                          onTap: _lastEvent2 == "尚未创建"
+                              ? null
+                              : () {
+                                  Navigator.pushNamed(context,
+                                      '/race/${_lastEvent1.toString()}');
+                                },
                           child: ListTile(
                             title: Text(_lastEvent2),
                           ),
                         ),
                         InkWell(
-                          onTap: () {
-                            Navigator.pushNamed(context, '/race/${_lastEvent1.toString()}');
-                          },
+                          onTap: _lastEvent3 == "尚未创建"
+                              ? null
+                              : () {
+                                  Navigator.pushNamed(context,
+                                      '/race/${_lastEvent1.toString()}');
+                                },
                           child: ListTile(
                             title: Text(_lastEvent3),
                           ),
@@ -275,15 +284,10 @@ class _HomePageContent extends State<HomePageContent> {
                                         labelText: '赛事名称', hintText: '请输入赛事名称'),
                                     onChanged: (value) {
                                       setState(() {
-                                        _raceNameController.text = value;
-                                        _raceNameController.selection =
-                                            TextSelection.fromPosition(
-                                          TextPosition(
-                                              offset: _raceNameController
-                                                  .text.length),
-                                        );
+                                        formText = value;
                                       });
                                     },
+
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return '请输入赛事名称';
@@ -296,7 +300,7 @@ class _HomePageContent extends State<HomePageContent> {
                                     alignment: Alignment.centerLeft,
                                     child: ElevatedButton(
                                       // onPressed:_pickExcelFile,
-                                      onPressed: _raceNameController.text == ''
+                                      onPressed: formText == ''
                                           ? null
                                           : () => {
                                                 // 跳转到创建赛事

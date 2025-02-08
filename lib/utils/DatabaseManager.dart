@@ -16,7 +16,7 @@ class DatabaseManager {
         db.execute('''
         CREATE TABLE 'progress' (
           progress_name VARCHAR(255) PRIMARY KEY,
-          progress_value INT DEFAULT 0
+          progress_value INT DEFAULT 0,
           description VARCHAR(255)
         );
         ''');

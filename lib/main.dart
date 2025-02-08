@@ -53,7 +53,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: MyHomePage(),
+      home: const MyHomePage(),
 
       // todo 路由表
       routes: routes,
@@ -66,8 +66,8 @@ class MyApp extends StatelessWidget {
         } else if (settings.name == '/race') {
           return MaterialPageRoute(
             builder: (context) => Scaffold(
-              appBar: AppBar(title: Text('错误')),
-              body: Center(child: Text('请指定比赛名称')),
+              appBar: AppBar(title: const Text('错误')),
+              body: const Center(child: Text('请指定比赛名称')),
             ),
           );
         }
@@ -152,16 +152,16 @@ class _MyHomePageState extends State<MyHomePage> {
     int size = appState.races.length;
     switch (selectedIndex) {
       case 0:
-        page = HomePageContent() as Widget;
+        page = const HomePageContent();
         break;
       case 1:
-        page = Placeholder() as Widget;
+        page = const Placeholder();
         break;
       case 2:
-        page = SettingsPage() as Widget;
+        page = const SettingsPage();
         break;
       default:
-        page = Placeholder() as Widget;
+        page = const Placeholder();
       // case 2:
       //   page = CreateRacePage();
       //   break;

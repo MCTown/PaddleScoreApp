@@ -449,11 +449,13 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                 File xlsxFile = File(filePath);
                                 await DataHelper.loadExcelFileToAthleteDatabase(
                                     raceName, xlsxFile.readAsBytesSync());
+                                Loading.stopLoading(context);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text('运动员已录入'),
                                   ),
                                 );
+                                Navigator.pushNamed(context, '/');
                               }
                             : null,
                         child: const Text('确定'),

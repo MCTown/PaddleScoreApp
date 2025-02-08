@@ -14,7 +14,6 @@ import 'dart:typed_data';
 
 import 'ScoreTableWidget.dart';
 
-
 class LongDistanceRacePage extends StatefulWidget {
   final String raceBar;
   final String raceEventName;
@@ -73,8 +72,8 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
     try {
       List<Map<String, dynamic>> data;
       if (division == null) {
-        data =
-        await database.query('athletes', orderBy: 'long_distance_score ASC');
+        data = await database.query('athletes',
+            orderBy: 'long_distance_score ASC');
       } else {
         data = await database.query('athletes',
             where: 'division = ?',
@@ -115,18 +114,21 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
     Widget exportButton = ElevatedButton(
         onPressed: () async {
           SType s = SType.firstRound;
-          if (_selectedDivision == '所有' || _selectedRaceType == '所有' ||
+          if (_selectedDivision == '所有' ||
+              _selectedRaceType == '所有' ||
               _selectedGender == '所有') {
             List<ArchiveFile> archiveFiles = [];
-            for (var div in divisionOptions.where((element) =>
-            element != '所有')) {
-              for (var raceType in raceTypeOptions.where((element) =>
-              element != '所有')) {
-                for (var gender in genderOptions.where((element) =>
-                element != '所有')) {
-                  CType c = raceType == '竞速赛' ?
-                  CType.sprint : (_selectedDivision!.startsWith('U') ?
-                  CType.pronePaddle : CType.sprint);
+            for (var div
+            in divisionOptions.where((element) => element != '所有')) {
+              for (var raceType
+              in raceTypeOptions.where((element) => element != '所有')) {
+                for (var gender
+                in genderOptions.where((element) => element != '所有')) {
+                  CType c = raceType == '竞速赛'
+                      ? CType.sprint
+                      : (_selectedDivision!.startsWith('U')
+                      ? CType.pronePaddle
+                      : CType.sprint);
                   int athleteCount = await getAthleteCountByDivision(
                       widget.raceEventName, div + gender);
                   if (athleteCount <= 16) {
@@ -136,13 +138,13 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                   }
                   String raceProgress = s == SType.firstRound ? '初赛' : '决赛';
                   List<int>? fileBinary = await DataHelper.generateGenericExcel(
-                      (div + gender).toString(), c, s,
-                      widget.raceEventName);
+                      (div + gender).toString(), c, s, widget.raceEventName);
                   if (fileBinary != null) {
                     //将文件二进制码添加到 archiveFiles 列表中
                     archiveFiles.add(ArchiveFile(
                         '${div + gender}_$raceProgress分组名单.xlsx',
-                        fileBinary.length, fileBinary));
+                        fileBinary.length,
+                        fileBinary));
                   }
                 }
               }
@@ -156,7 +158,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
             //将压缩包保存到手机本地
             String? filePath = await FilePicker.platform.saveFile(
                 dialogTitle: '保存短距离赛事分组汇总表',
-                fileName:  '短距离赛事分组汇总表.zip');
+                fileName: '短距离赛事分组汇总表.zip');
             if (filePath != null) {
               File file = File(filePath);
               await file.writeAsBytes(bytes as List<int>);
@@ -164,9 +166,11 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
             }
           } else {
             String divisionName = _selectedDivision! + _selectedGender!;
-            CType c = _selectedRaceType == '竞速赛' ?
-            CType.sprint : (_selectedDivision!.startsWith('U') ?
-            CType.pronePaddle : CType.sprint);
+            CType c = _selectedRaceType == '竞速赛'
+                ? CType.sprint
+                : (_selectedDivision!.startsWith('U')
+                ? CType.pronePaddle
+                : CType.sprint);
             int athleteCount = await getAthleteCountByDivision(
                 widget.raceEventName, divisionName);
             if (athleteCount <= 16) {
@@ -187,7 +191,8 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
               print('文件已保存到:$filePath');
             }
           }
-        }, child: const Text("导出分组名单"));
+        },
+        child: const Text("导出分组名单"));
     Future<void> exportAllSdDivision() async {
       List<String> divisions = [
         'U9组男子',
@@ -211,43 +216,47 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
         '卡胡纳组女子',
         '公开组女子'
       ];
-      List<String> raceType = ['竞速','趴板'];
+      List<String> raceType = ['竞速', '趴板'];
       List<ArchiveFile> archiveFiles = [];
-      for(var d in divisions){
-        for(var race in raceType){
+      for (var d in divisions) {
+        for (var race in raceType) {
           SType ss = SType.firstRound;
-          int athleteCounts = await getAthleteCountByDivision(
-              widget.raceEventName,d);
+          int athleteCounts =
+          await getAthleteCountByDivision(widget.raceEventName, d);
           if (athleteCounts <= 16) {
             ss = SType.finals;
           } else {
             ss = SType.firstRound;
           }
-          CType cc = raceType == '竞速赛' ?
-          CType.sprint : (_selectedDivision!.startsWith('U') ?
-          CType.pronePaddle : CType.sprint);
-          String raceProgress = ss==SType.firstRound?'初赛':'决赛';
-          List<int>? fileBits = await DataHelper.generateGenericExcel(d,cc,ss,widget.raceEventName);
-          if(fileBits != null){
-              archiveFiles.add(ArchiveFile('$d _$raceProgress分组名单.xlsx', fileBits.length, fileBits));
+          CType cc = raceType == '竞速赛'
+              ? CType.sprint
+              : (_selectedDivision!.startsWith('U')
+              ? CType.pronePaddle
+              : CType.sprint);
+          String raceProgress = ss == SType.firstRound ? '初赛' : '决赛';
+          List<int>? fileBits = await DataHelper.generateGenericExcel(
+              d, cc, ss, widget.raceEventName);
+          if (fileBits != null) {
+            archiveFiles.add(ArchiveFile(
+                '$d _$raceProgress分组名单.xlsx', fileBits.length, fileBits));
           }
         }
       }
       final archives = Archive();
-      for(var file in archiveFiles){
+      for (var file in archiveFiles) {
         archives.addFile(file);
       }
       final bytes = ZipEncoder().encode(archives) as Uint8List;
       String? filePath = await FilePicker.platform.saveFile(
           dialogTitle: '保存短距离赛事分组汇总表',
-          fileName: '${widget.raceEventName}短距离赛事分组汇总表.zip'
-      );
-      if(filePath != null){
+          fileName: '${widget.raceEventName}短距离赛事分组汇总表.zip');
+      if (filePath != null) {
         File file = File(filePath);
         await file.writeAsBytes(bytes as List<int>);
         print('"文件已保存到:$filePath');
       }
     }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.raceBar),
@@ -262,27 +271,28 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                 children: [
                   ElevatedButton(
                       style: ButtonStyle(
-                        backgroundColor: WidgetStateProperty.all(Colors.blue[100]),
+                        backgroundColor:
+                        WidgetStateProperty.all(Colors.blue[100]),
                         foregroundColor: WidgetStateProperty.all(Colors.black),
-                        textStyle: WidgetStateProperty.all(TextStyle(fontSize: 20)),
-                        padding:WidgetStateProperty.all<EdgeInsetsGeometry>(
-                          EdgeInsets.symmetric(horizontal: 20,vertical:15)
-                        ),
-                        shape:WidgetStateProperty.all<OutlinedBorder>(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          )
-                        ),
-                        elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
-                          if (states.contains(WidgetState.hovered)) {
-                            return 16.0;
-                          }
-                          return 8.0;
-                        }),
+                        textStyle:
+                        WidgetStateProperty.all(TextStyle(fontSize: 20)),
+                        padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 15)),
+                        shape: WidgetStateProperty.all<OutlinedBorder>(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            )),
+                        elevation: WidgetStateProperty.resolveWith<double>(
+                                (Set<WidgetState> states) {
+                              if (states.contains(WidgetState.hovered)) {
+                                return 16.0;
+                              }
+                              return 8.0;
+                            }),
                       ),
                       onPressed: () async {
                         print(widget.raceEventName);
-                        String text ="正在导出长距离赛事登记表,\n请耐心等待...";
+                        String text = "正在导出长距离赛事登记表,\n请耐心等待...";
                         Loading.startLoading(text, context);
                         List<int>? excelFileBytes =
                         await DataHelper.generateLongDistanceScoreExcel(
@@ -309,36 +319,47 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                         '导出长距离成绩登记表',
                         style: TextStyle(fontSize: 20),
                       )),
-                  SizedBox(width: 20,),
+                  SizedBox(
+                    width: 20,
+                  ),
                   const SizedBox(
-                    width:50,
+                    width: 50,
                     child: Row(
                       children: [
-                        Icon(Icons.chevron_right,color: Colors.black,),
-                        Icon(Icons.chevron_right,color: Colors.black,),
+                        Icon(
+                          Icons.chevron_right,
+                          color: Colors.black,
+                        ),
+                        Icon(
+                          Icons.chevron_right,
+                          color: Colors.black,
+                        ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 20,),
+                  const SizedBox(
+                    width: 20,
+                  ),
                   ElevatedButton(
                     style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(Colors.blue[100]),
+                      backgroundColor:
+                      WidgetStateProperty.all(Colors.blue[100]),
                       foregroundColor: WidgetStateProperty.all(Colors.black),
-                      textStyle: WidgetStateProperty.all(TextStyle(fontSize: 20)),
-                      padding:WidgetStateProperty.all<EdgeInsetsGeometry>(
-                          EdgeInsets.symmetric(horizontal: 20,vertical:15)
-                      ),
-                      shape:WidgetStateProperty.all<OutlinedBorder>(
+                      textStyle:
+                      WidgetStateProperty.all(TextStyle(fontSize: 20)),
+                      padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 15)),
+                      shape: WidgetStateProperty.all<OutlinedBorder>(
                           RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
-                          )
-                      ),
-                      elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
-                        if (states.contains(WidgetState.hovered)) {
-                          return 16.0;
-                        }
-                        return 8.0;
-                      }),
+                          )),
+                      elevation: WidgetStateProperty.resolveWith<double>(
+                              (Set<WidgetState> states) {
+                            if (states.contains(WidgetState.hovered)) {
+                              return 16.0;
+                            }
+                            return 8.0;
+                          }),
                     ),
                     onPressed: () async {
                       final result = await FilePicker.platform.pickFiles(
@@ -358,9 +379,43 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                         File(result.paths.first!).readAsBytesSync();
                         String text = "正在导入长距离赛事成绩,\n请耐心等待...";
                         Loading.startLoading(text, context);
-                        await DataHelper.importLongDistanceScore(
-                            widget.raceEventName, fileBinary);
-                        Loading.stopLoading(context);
+                        // 此处需要备份数据库，如果导入失败则恢复数据库
+                        var databaseFileBinary = File(
+                            '${(await getApplicationDocumentsDirectory())
+                                .path}/PaddleScoreData/${widget
+                                .raceEventName}.db')
+                            .readAsBytesSync();
+                        try {
+                          await DataHelper.importLongDistanceScore(
+                              widget.raceEventName, fileBinary);
+                          Loading.stopLoading(context);
+                        } catch (e) {
+                          print('导入数据失败:$e 数据库已恢复');
+                          // 数据库已恢复
+                          File('${(await getApplicationDocumentsDirectory())
+                              .path}/PaddleScoreData/${widget
+                              .raceEventName}.db')
+                              .writeAsBytesSync(databaseFileBinary);
+                          // 弹出错误提示，导入失败
+                          Loading.stopLoading(context);
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              final String errorText = e.toString();
+                              return AlertDialog(
+                                title: const Text("导入失败"),
+                                content: Text(
+                                    "Excel文件导入失败，请检查以下内容:\n1.成绩是否都已填写，即使运动员缺赛，也需要填写DNF或DNS\n2.成绩是否填写正确，成绩格式应该为XX:XX:XX，例如01:32:98，不要包含其他字符\n3.编号是否为数字\n4.代表队非必填，不会影响最终结果\n错误详情: $errorText"),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text("确定"),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        }
                       }
                     },
                     child: _selectedFile != null
@@ -371,44 +426,55 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                       style: TextStyle(fontSize: 20),
                     ),
                   ),
-                  const SizedBox(width: 20,),
                   const SizedBox(
-                    width:50,
+                    width: 20,
+                  ),
+                  const SizedBox(
+                    width: 50,
                     child: Row(
                       children: [
-                        Icon(Icons.chevron_right,color: Colors.black,),
-                        Icon(Icons.chevron_right,color: Colors.black,),
+                        Icon(
+                          Icons.chevron_right,
+                          color: Colors.black,
+                        ),
+                        Icon(
+                          Icons.chevron_right,
+                          color: Colors.black,
+                        ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 20,),
+                  const SizedBox(
+                    width: 20,
+                  ),
                   ElevatedButton(
                     style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(Colors.blue[100]),
+                      backgroundColor:
+                      WidgetStateProperty.all(Colors.blue[100]),
                       foregroundColor: WidgetStateProperty.all(Colors.black),
-                      textStyle: WidgetStateProperty.all(TextStyle(fontSize: 20)),
-                      padding:WidgetStateProperty.all<EdgeInsetsGeometry>(
-                          EdgeInsets.symmetric(horizontal: 20,vertical:15)
-                      ),
-                      shape:WidgetStateProperty.all<OutlinedBorder>(
+                      textStyle:
+                      WidgetStateProperty.all(TextStyle(fontSize: 20)),
+                      padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 15)),
+                      shape: WidgetStateProperty.all<OutlinedBorder>(
                           RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
-                          )
-                      ),
-                      elevation: WidgetStateProperty.resolveWith<double>((Set<WidgetState> states) {
-                        if (states.contains(WidgetState.hovered)) {
-                          return 16.0;
-                        }
-                        return 8.0;
-                      }),
+                          )),
+                      elevation: WidgetStateProperty.resolveWith<double>(
+                              (Set<WidgetState> states) {
+                            if (states.contains(WidgetState.hovered)) {
+                              return 16.0;
+                            }
+                            return 8.0;
+                          }),
                     ),
                     onPressed: () async {
                       String text = '正在导出短距离赛事(竞速,趴板)分组名单,\n请耐心等待...';
-                      Loading.startLoading(text,context);
+                      Loading.startLoading(text, context);
                       await exportAllSdDivision();
                       Loading.stopLoading(context);
                     },
-                    child:  const Text(
+                    child: const Text(
                       '导出短距离赛事分组名单',
                       style: TextStyle(fontSize: 20),
                     ),
@@ -420,50 +486,55 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                 padding: const EdgeInsets.symmetric(horizontal: 50),
                 child: Card(
                     color: Colors.white,
-                    child:Theme(
-                      data:ThemeData(
-                        dividerColor: Colors.transparent,
-                      ),
-                      child: ExpansionTile(
-                        title: const Text("高级选项", style: TextStyle(
-                            fontSize: 20)),
-                        trailing: Icon(_isAdvanceShow?Icons.keyboard_arrow_up:Icons.keyboard_arrow_down),
-                        onExpansionChanged:(bool expanded){
-                          setState(() {
-                            _isAdvanceShow = expanded;
-                          });
-                        },
-                        children: [
-                          if(_isAdvanceShow)
-                            const SizedBox(height: 30,),
+                    child: Theme(
+                        data: ThemeData(
+                          dividerColor: Colors.transparent,
+                        ),
+                        child: ExpansionTile(
+                          title: const Text("高级选项",
+                              style: TextStyle(fontSize: 20)),
+                          trailing: Icon(_isAdvanceShow
+                              ? Icons.keyboard_arrow_up
+                              : Icons.keyboard_arrow_down),
+                          onExpansionChanged: (bool expanded) {
+                            setState(() {
+                              _isAdvanceShow = expanded;
+                            });
+                          },
+                          children: [
+                            if (_isAdvanceShow)
+                              const SizedBox(
+                                height: 30,
+                              ),
                             Row(
-                              mainAxisAlignment: MainAxisAlignment
-                                  .spaceAround,
-                              children: [
-                                raceTypeDropdown,
-                                divisionTypeDropdown,
-                                genderTypeDropdown,
-                                exportButton,
-                              ]),
-                          const SizedBox(height: 20,),
-                        ],
-                      )
-                    )
-                    // Padding(
-                    //     padding: const EdgeInsets.all(16.0),
-                    //     child: Column(
-                    //       children: [
-                    //         const Align(
-                    //           alignment: Alignment.centerLeft,
-                    //           child: Text(
-                    //               "导出短距离初赛分组名单", style: TextStyle(
-                    //               fontSize: 20, fontWeight: FontWeight.bold)),
-                    //         ),
-                    //
-                    //       ],
-                    //     )
-              // )
-              ),
+                                mainAxisAlignment:
+                                MainAxisAlignment.spaceAround,
+                                children: [
+                                  raceTypeDropdown,
+                                  divisionTypeDropdown,
+                                  genderTypeDropdown,
+                                  exportButton,
+                                ]),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                          ],
+                        ))
+                  // Padding(
+                  //     padding: const EdgeInsets.all(16.0),
+                  //     child: Column(
+                  //       children: [
+                  //         const Align(
+                  //           alignment: Alignment.centerLeft,
+                  //           child: Text(
+                  //               "导出短距离初赛分组名单", style: TextStyle(
+                  //               fontSize: 20, fontWeight: FontWeight.bold)),
+                  //         ),
+                  //
+                  //       ],
+                  //     )
+                  // )
+                ),
               ),
               const SizedBox(height: 20),
               Padding(
@@ -477,8 +548,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                       child: ExpansionTile(
                         title: const Text(
                           '查看参赛运动员名单',
-                          style: TextStyle(
-                              fontSize: 20),
+                          style: TextStyle(fontSize: 20),
                         ),
                         trailing: Icon(_isTableVisible
                             ? Icons.keyboard_arrow_up
@@ -560,8 +630,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                         // 使用 GestureDetector 来触发展开和折叠
                         title: const Text(
                           '查看长距离成绩排名',
-                          style: TextStyle(
-                              fontSize: 20),
+                          style: TextStyle(fontSize: 20),
                         ),
                         trailing: Icon(_isCheckAllScore
                             ? Icons.keyboard_arrow_up
