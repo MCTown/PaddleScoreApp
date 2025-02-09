@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -8,20 +7,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'RaceStageCardWidget.dart';
 import 'RaceStateWidget.dart';
-import 'RaceTimelineWidget.dart';
 
-class shortDistancePage extends StatefulWidget {
+class ShortDistancePage extends StatefulWidget {
   final String raceBar;
   final String raceEventName;
 
-  const shortDistancePage(
+  const ShortDistancePage(
       {super.key, required this.raceBar, required this.raceEventName});
 
   @override
-  State<shortDistancePage> createState() => _SprintRacePageState();
+  State<ShortDistancePage> createState() => _SprintRacePageState();
 }
 
-class _SprintRacePageState extends State<shortDistancePage> {
+class _SprintRacePageState extends State<ShortDistancePage> {
+  /// 搜索框使用的组别列表
   List<String> divisions = [
     'U9组男子',
     'U9组女子',
@@ -47,21 +46,21 @@ class _SprintRacePageState extends State<shortDistancePage> {
   String _selectedDivision = 'U9组男子';
   String _searchText = '';
   final _typeAheadController = TextEditingController();
-  late int totalAccount;
-  late int raceAccount;
   List<RaceState> _raceStates = [];
-  bool _isLoading = true;
+
+  // bool _isLoading = true;
 
   @override
   void initState() {
-    super.initState();
-    _loadRaceStates();
-    totalAccount = 0;
-    raceAccount = 0;
+    // super.initState();
+
+    // _loadRaceStates();
     if (widget.raceBar.contains('趴板')) {
       divisions =
           divisions.where((division) => division.startsWith('U')).toList();
     }
+
+    /// 生成搜索框
     void performSearch(String searchText) {
       final matchedDivision = divisions.firstWhere(
         (division) => division.contains(searchText),
@@ -130,6 +129,8 @@ class _SprintRacePageState extends State<shortDistancePage> {
         // ),
       ],
     );
+
+    /// init end
   }
 
   Future<void> _loadRaceStates() async {
@@ -160,11 +161,11 @@ class _SprintRacePageState extends State<shortDistancePage> {
 
   void _onRaceStageStatusChanged(int index, RaceStatus newStatus) {
     setState(() {
-      _raceStates[index] = _raceStates[index].copyWith(status: newStatus);
+      // _raceStates[index] = _raceStates[index].copyWith(status: newStatus);
     });
     // setState(() {
     // });
-    _saveRaceStates();
+    // _saveRaceStates();
   }
 
   Map<String, bool> _hoveringStates = {};
@@ -245,30 +246,31 @@ class _SprintRacePageState extends State<shortDistancePage> {
     );
   }
 
+  /// 用于获取比赛的场数
   Future<List<RaceState>> getRaceProcess(String division) async {
     int athleteCount = await getAthleteCountByDivision(
         widget.raceEventName, _selectedDivision);
-    totalAccount = athleteCount;
+    // totalAccount = athleteCount;
     if (athleteCount <= 16) {
-      raceAccount = 1;
+      // raceAccount = 1;
       return [
         RaceState(name: "决赛", status: RaceStatus.notStarted),
       ];
     } else if (athleteCount > 16 && athleteCount <= 64) {
-      raceAccount = 2;
+      // raceAccount = 2;
       return [
         RaceState(name: '初赛', status: RaceStatus.notStarted),
         RaceState(name: '决赛', status: RaceStatus.notStarted),
       ];
     } else if (athleteCount > 64 && athleteCount <= 128) {
-      raceAccount = 3;
+      // raceAccount = 3;
       return [
         RaceState(name: '初赛', status: RaceStatus.notStarted),
         RaceState(name: '1/2\n决赛', status: RaceStatus.notStarted),
         RaceState(name: '决赛', status: RaceStatus.notStarted),
       ];
     } else {
-      raceAccount = 4;
+      // raceAccount = 4;
       return [
         RaceState(name: "初赛", status: RaceStatus.notStarted),
         RaceState(name: "1/4\n决赛", status: RaceStatus.notStarted),
@@ -278,6 +280,7 @@ class _SprintRacePageState extends State<shortDistancePage> {
     }
   }
 
+  /// 构建组件
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -297,15 +300,19 @@ class _SprintRacePageState extends State<shortDistancePage> {
                       child: SizedBox(
                           // width: 200,
                           child: Container(
-                        decoration:
-                            BoxDecoration(color: Colors.white, boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.5),
-                            spreadRadius: 2,
-                            blurRadius: 5,
-                            offset: const Offset(3, 3),
-                          )
-                        ]),
+                        decoration: const BoxDecoration(
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey,
+                                spreadRadius: 2,
+                                blurRadius: 5,
+                                offset: Offset(3, 3),
+                              )
+                            ]),
+
+                        /// 可能会出问题的判断
+                            /// 问题出在这里 todo
                         child: widget.raceBar.contains('趴板') // todo fixme 不能写死
                             ? ListView(children: [
                                 createNavi('U9组男子'),
@@ -348,6 +355,8 @@ class _SprintRacePageState extends State<shortDistancePage> {
               ),
               Expanded(
                 flex: 5,
+                // child: _buildContent(_selectedDivision),
+                /// 开始构建内容
                 child: _buildContent(_selectedDivision),
               ),
             ],
@@ -365,12 +374,9 @@ class _SprintRacePageState extends State<shortDistancePage> {
     );
   }
 
+  /// 根据division构建内容
   Widget _buildContent(String division) {
-    /// 获取当前组别的运动员总数
-    /// - [division] 组别名称
-    /// 输出：
-    /// {total: xx,raceCount: x}
-    final raceProcess = getRaceProcess(division);
+    // final raceProcess = getRaceProcess(division);
     return Column(children: [
       const SizedBox(
         height: 80,
@@ -402,17 +408,17 @@ class _SprintRacePageState extends State<shortDistancePage> {
                   return const Text('共--人，--轮比赛');
                 }
               }),
-              children: [
+              children: const [
                 Stack(
                   children: [
                     // 进度条居中显示
-                    Center(
-                      child: RaceTimeline(
-                          raceStates: _getRaceStates(),
-                          onStatusChanged: _onRaceStageStatusChanged),
-                    ),
+                    // Center(
+                    //   child: RaceTimeline(
+                    //       raceStates: _getRaceStates(),
+                    //       onStatusChanged: _onRaceStageStatusChanged),
+                    // ),
                     // 图例位于右下角，并且距离边框留有一定的间距
-                    const Positioned(
+                    Positioned(
                       bottom: 10.0, // 设置距离底部的间距
                       right: 50.0, // 设置距离右边的间距
                       child: Column(
@@ -433,43 +439,54 @@ class _SprintRacePageState extends State<shortDistancePage> {
         )),
       ),
       // if (!_isLoading) todo 不知道这个是干啥的
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 50),
-          child: IgnorePointer(
-            ignoring: _raceStates.isEmpty,
-            child: SizedBox(
-              height: _raceStates.length * 100,
-              child: ListView.builder(
-                itemCount: _raceStates.length,
-                itemBuilder: (context, index) {
-                  /// 动态生成比赛阶段卡片 todo
-                  return RaceStageCard(
-                      stageName: _raceStates[index].name,
-                      raceName: widget.raceBar.contains('趴板') ? '趴板' : '竞速',
-                      division: _selectedDivision,
-                      dbName: widget.raceEventName,
-                      index: index,
-                      onStatusChanged: _onRaceStageStatusChanged);
-                },
-              ),
-            ),
-          ),
-        ),
-      FutureBuilder(
-        future: raceProcess,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            _raceStates = snapshot.data!;
-            _isLoading = false;
-            // setState(() {});
-            return const SizedBox.shrink();
-          } else if (snapshot.hasError) {
-            return Text('Error:${snapshot.error}');
-          } else {
-            return const CircularProgressIndicator();
-          }
-        },
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 50),
+        // 2025.2.9 更换为FutureBuilder
+        child: FutureBuilder(
+            future: getRaceProcess(_selectedDivision),
+            builder: (BuildContext context,
+                AsyncSnapshot<List<RaceState>> snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                return IgnorePointer(
+                  ignoring: snapshot.data!.isEmpty,
+                  child: SizedBox(
+                    height: snapshot.data!.length * 100,
+                    child: ListView.builder(
+                      itemCount: snapshot.data!.length,
+                      itemBuilder: (context, index) {
+                        /// 动态生成比赛阶段卡片 todo 并不是这里导致重复渲染
+                        return RaceStageCard(
+                            stageName: snapshot.data![index].name,
+                            raceName:
+                                widget.raceBar.contains('趴板') ? '趴板' : '竞速',
+                            division: _selectedDivision,
+                            dbName: widget.raceEventName,
+                            index: index,
+                            onStatusChanged: _onRaceStageStatusChanged);
+                      },
+                    ),
+                  ),
+                );
+              } else {
+                return const CircularProgressIndicator();
+              }
+            }),
       ),
     ]);
   }
 }
+
+// FutureBuilder( // todo 这个futureBuilder貌似没起任何作用
+//   future: raceProcess,
+//   builder: (context, snapshot) {
+//     if (snapshot.hasData) {
+//       _raceStates = snapshot.data!;
+//       _isLoading = false;
+//       // setState(() {});
+//       return const SizedBox.shrink();
+//     } else if (snapshot.hasError) {
+//       return Text('Error:${snapshot.error}');
+//     } else {
+//       return const CircularProgressIndicator();
+//     }
+//   },
