@@ -34,17 +34,17 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  path: any
-  path_provider: any
-  sqflite: any
-  sqflite_common_ffi: any
-  file_picker: any
-  excel:  any
+  path: ^1.9.0
+  path_provider: ^2.1.5
+  sqflite: ^2.4.1
+  sqflite_common_ffi: ^2.3.4+4
+  file_picker: ^8.3.2
+  excel:  ^4.0.6
   syncfusion_flutter_datagrid: ^21.2.4
   typed_data: ^1.3.0
   flutter_typeahead: ^4.0.0
   font_awesome_flutter: ^10.4.0
-  glassmorphism: any
+  glassmorphism: ^3.0.0
   shared_preferences: ^2.0.15
 #  sticky_headers_table: ^0.0.9
 dev_dependencies:

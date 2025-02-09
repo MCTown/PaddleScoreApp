@@ -10,14 +10,16 @@ import '../universalWidgets/Loading.dart';
 import '../universalWidgets/OkDialog.dart';
 import 'RaceStateWidget.dart';
 
+/// 工厂模式卡片组件
+/// 用于提供导入不同比赛阶段成绩的入口
 class RaceStageCard extends StatefulWidget{
-  final String StageName;
+  final String stageName;
   final String raceName;
   final String division;
   final String dbName;
   final int index;
   final Function(int,RaceStatus) onStatusChanged;
-  RaceStageCard({super.key,required this.StageName,required this.raceName,required this.division,required this.dbName,required this.index,required this.onStatusChanged});
+  const RaceStageCard({super.key,required this.stageName,required this.raceName,required this.division,required this.dbName,required this.index,required this.onStatusChanged});
 
   @override
   State<RaceStageCard> createState() => _RaceStageCardState();
@@ -28,8 +30,7 @@ class _RaceStageCardState extends State<RaceStageCard> {
   Widget build(BuildContext context) {
     CType raceType = widget.raceName=='趴板'? CType.pronePaddle:CType.sprint;
     SType stageType;
-    print(widget.division);
-    switch(widget.StageName){
+    switch(widget.stageName){
       case '初赛':
         stageType = SType.firstRound;
         break;
@@ -48,8 +49,9 @@ class _RaceStageCardState extends State<RaceStageCard> {
       default:
         throw Exception('未知的比赛阶段');
     }
+    print("开始渲染页面：${widget.division} ${widget.raceName} ${widget.stageName}");
     bool isCompleted = false;
-    return Container(
+    return SizedBox(
       height: 100,
       child: Card(
           child:Padding(
@@ -58,18 +60,19 @@ class _RaceStageCardState extends State<RaceStageCard> {
                 // mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   const Icon(Icons.emoji_events,color: Colors.brown,),
-                  SizedBox(width: 10,),
+                  const SizedBox(width: 10,),
                   Text(
-                    widget.StageName,
+                    widget.stageName,
                     style: const TextStyle(fontSize: 18),
                   ),
                   Row(
                     children: [
-                      SizedBox(width: 130,),
+                      const SizedBox(width: 130,),
+                      /// 导出分组名单
                       ElevatedButton(
-                        onPressed: ()async{
-                          print('导出分组名单');
-                          String text = "正在生成${widget.division}${widget.StageName}分组名单,请耐心等待...";
+                        onPressed: () async{
+                          print('导出待填成绩名单');
+                          String text = "正在生成${widget.division}${widget.stageName}分组名单,请耐心等待...";
                           Loading.startLoading(text,context);
                           List<int>? excelFileBytes = await DataHelper.generateGenericExcel(widget.division, raceType, stageType, widget.dbName);
                           Loading.stopLoading(context);
@@ -78,8 +81,8 @@ class _RaceStageCardState extends State<RaceStageCard> {
                           }
                           Future.delayed(Duration.zero,()async{
                             String? filePath = await FilePicker.platform.saveFile(
-                              dialogTitle:'导出${widget.division} _${widget.raceName} _${widget.StageName}分组名单(登记表)',
-                              fileName:'${widget.division} _${widget.raceName} _${widget.StageName}成绩登记表.xlsx',
+                              dialogTitle:'导出${widget.division} _${widget.raceName} _${widget.stageName}分组名单(登记表)',
+                              fileName:'${widget.division} _${widget.raceName} _${widget.stageName}成绩登记表.xlsx',
                             );
                             if(filePath == null){
                               throw Exception("用户未选择文件");
@@ -95,20 +98,20 @@ class _RaceStageCardState extends State<RaceStageCard> {
                         },
                         style: ButtonStyle(
                           backgroundColor: WidgetStateProperty.all<Color>(Colors.white),
-                          padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                            EdgeInsets.symmetric(horizontal: 32.0,vertical: 16.0)
+                          padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
+                            const EdgeInsets.symmetric(horizontal: 32.0,vertical: 16.0)
                           ),
-                          shape: MaterialStateProperty.all<OutlinedBorder>(
+                          shape: WidgetStateProperty.all<OutlinedBorder>(
                             RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0))
                           ),
-                          shadowColor: MaterialStateProperty.all<Color>(Colors.black),
-                          elevation: MaterialStateProperty.resolveWith<double>((Set<MaterialState> states) {
-                            if (states.contains(MaterialState.hovered)) {
+                          shadowColor: WidgetStateProperty.all<Color>(Colors.black),
+                          elevation: WidgetStateProperty.resolveWith<double>((Set<MaterialState> states) {
+                            if (states.contains(WidgetState.hovered)) {
                               return 16.0;
                             }
                             return 4.0;
                           }),
-                          overlayColor: MaterialStateProperty.all<Color>(Colors.white),
+                          overlayColor: WidgetStateProperty.all<Color>(Colors.white),
                         ),
                         child:const Row(
                           mainAxisSize: MainAxisSize.min,
@@ -120,6 +123,7 @@ class _RaceStageCardState extends State<RaceStageCard> {
                         ),
                       ),
                       const SizedBox(width: 130,),
+                      /// 导入成绩
                       ElevatedButton(
                         onPressed: ()async{
                           final result = await FilePicker.platform.pickFiles(
@@ -133,10 +137,10 @@ class _RaceStageCardState extends State<RaceStageCard> {
                           }
                           isCompleted = true;
                           List<int> fileBytes = File(result.paths.first!).readAsBytesSync();
-                          Loading.startLoading("正在导入${widget.StageName}${widget.StageName}成绩,请耐心等待...", context);
+                          Loading.startLoading("正在导入${widget.stageName}${widget.stageName}成绩,请耐心等待...", context);
                           DataHelper.importGenericCompetitionScore(widget.division, fileBytes, raceType, stageType, widget.dbName);
                           Loading.stopLoading(context);
-                          print("导入${widget.StageName}成绩");
+                          print("导入${widget.stageName}成绩");
                           widget.onStatusChanged(widget.index,RaceStatus.completed);
                           setState(() {
                             isCompleted = true;
@@ -157,13 +161,13 @@ class _RaceStageCardState extends State<RaceStageCard> {
                             }
                             return 3.0;
                           }),
-                          overlayColor: MaterialStateProperty.all<Color>(Colors.white),
+                          overlayColor: WidgetStateProperty.all<Color>(Colors.white),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            isCompleted ? Text("已导入${widget.StageName.replaceAll('\n', '')}成绩",style: const TextStyle(fontSize: 16))
-                             : Text("导入${widget.StageName.replaceAll('\n', '')}成绩",style: const TextStyle(fontSize: 16)),
+                            isCompleted ? Text("已导入${widget.stageName.replaceAll('\n', '')}成绩",style: const TextStyle(fontSize: 16))
+                             : Text("导入${widget.stageName.replaceAll('\n', '')}成绩",style: const TextStyle(fontSize: 16)),
                             const SizedBox(width: 10.0,),
                             const Icon(Icons.file_upload,color: Colors.black,),
                           ],

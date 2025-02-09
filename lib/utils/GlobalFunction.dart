@@ -44,6 +44,10 @@ String cTypeTranslate(CType c) {
 
 enum SType { firstRound, roundOf16, quarterfinals, semifinals, finals }
 
+/// 获取当前组别的运动员总数
+/// - [division] 组别名称
+/// 输出：
+/// {total: xx,raceCount: x}
 Future<int> getAthleteCountByDivision(
     String raceEventName, String divisionName) async {
   Database db = await DatabaseManager.getDatabase(raceEventName);
@@ -52,6 +56,20 @@ Future<int> getAthleteCountByDivision(
     [divisionName],
   );
   return Sqflite.firstIntValue(result) ?? 0;
+}
+
+/// 通过运动员数量获取比赛数
+/// - [athleteCount] 运动员数量
+int getRaceCountByAthleteCount(int athleteCount) {
+  if (athleteCount <= 16) {
+    return 1;
+  } else if (athleteCount > 16 && athleteCount <= 64) {
+    return 2;
+  } else if (athleteCount > 64 && athleteCount <= 128) {
+    return 3;
+  } else {
+    return 4;
+  }
 }
 
 String sTypeTranslate(SType s) {
