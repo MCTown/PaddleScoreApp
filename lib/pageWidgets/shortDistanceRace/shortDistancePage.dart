@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:paddle_score_app/utils/GlobalFunction.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'RaceStageCardWidget.dart';
@@ -20,6 +21,21 @@ class ShortDistancePage extends StatefulWidget {
 }
 
 class _SprintRacePageState extends State<ShortDistancePage> {
+  /// 用于获取左侧的组别列表
+  /// 参数为是否为青少年组独占的比赛
+  /// 返回值为组别名组成的列表
+  Future<List<String>> _getListDivisions(bool hasTeens) async {
+    var divisions = await getDivisions(widget.raceEventName);
+    if (hasTeens) {
+      divisions =
+          divisions.where((element) => element.startsWith('U')).toList();
+    } else {
+      divisions =
+          divisions.where((element) => !element.startsWith('U')).toList();
+    }
+    return divisions;
+  }
+
   /// 搜索框使用的组别列表
   List<String> divisions = [
     'U9组男子',
@@ -42,17 +58,17 @@ class _SprintRacePageState extends State<ShortDistancePage> {
     '公开组男子',
     '公开组女子',
   ];
-  late Widget searchBar;
-  String _selectedDivision = 'U9组男子';
-  String _searchText = '';
+
+  // late Widget searchBar;
+
+  // String _selectedDivision = 'U9组男子';
   final _typeAheadController = TextEditingController();
-  List<RaceState> _raceStates = [];
 
   // bool _isLoading = true;
 
   @override
   void initState() {
-    // super.initState();
+    super.initState();
 
     // _loadRaceStates();
     if (widget.raceBar.contains('趴板')) {
@@ -60,103 +76,7 @@ class _SprintRacePageState extends State<ShortDistancePage> {
           divisions.where((division) => division.startsWith('U')).toList();
     }
 
-    /// 生成搜索框
-    void performSearch(String searchText) {
-      final matchedDivision = divisions.firstWhere(
-        (division) => division.contains(searchText),
-        orElse: () => '',
-      );
-      setState(() {
-        _selectedDivision = matchedDivision;
-        _searchText = searchText;
-      });
-    }
-
-    searchBar = Row(
-      children: [
-        Expanded(
-          child: TypeAheadField(
-            textFieldConfiguration: TextFieldConfiguration(
-                decoration: InputDecoration(
-                  hintText: '搜索组别',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  prefixIcon: const Icon(Icons.search),
-                  // suffixIcon: IconButton(
-                  //   icon:const Icon(Icons.search),
-                  //   onPressed: (){
-                  //     performSearch(_typeAheadController.text);
-                  //   },
-                  // ),
-                ),
-                controller: _typeAheadController,
-                onSubmitted: (text) {
-                  performSearch(text);
-                }),
-            suggestionsCallback: (pattern) {
-              return divisions
-                  .where((division) => division.contains(pattern))
-                  .toList();
-            },
-            itemBuilder: (context, suggestion) {
-              return ListTile(
-                  title: Text(suggestion),
-                  onTap: () {
-                    _typeAheadController.text = suggestion;
-                    performSearch(suggestion);
-                  });
-            },
-            onSuggestionSelected: (suggestion) {
-              setState(() {
-                _selectedDivision = suggestion;
-                _searchText = suggestion;
-                _typeAheadController.text = suggestion;
-              });
-            },
-          ),
-        ),
-        // SizedBox(
-        //   height: 40,
-        //   child:ElevatedButton(
-        //       onPressed: (){
-        //         performSearch(_typeAheadController.text);
-        //       },
-        //       child: const Text('搜索'),
-        //   ),
-        // ),
-      ],
-    );
-
     /// init end
-  }
-
-  Future<void> _loadRaceStates() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raceStatesJson = prefs.getStringList('$_selectedDivision-raceStates');
-    if (raceStatesJson != null) {
-      setState(() {
-        _raceStates = raceStatesJson
-            .map((json) => RaceState.fromJson(jsonDecode(json)))
-            .toList();
-      });
-    } else {
-      _raceStates = await getRaceProcess(_selectedDivision);
-      _saveRaceStates();
-    }
-  }
-
-  Future<List<RaceState>> _getRaceStates() async {
-    return _raceStates;
-  }
-
-  Future<void> _saveRaceStates() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raceSatesJson =
-        _raceStates.map((raceState) => jsonEncode(raceState.toJson())).toList();
-    await prefs.setStringList('$_selectedDivision-raceSates', raceSatesJson);
   }
 
   void _onRaceStageStatusChanged(int index, RaceStatus newStatus) {
@@ -170,86 +90,10 @@ class _SprintRacePageState extends State<ShortDistancePage> {
 
   Map<String, bool> _hoveringStates = {};
 
-  Widget createNavi(String text) {
-    _hoveringStates[text] = _hoveringStates[text] ?? false;
-    final isSearchResult = _searchText.isNotEmpty && text.contains(_searchText);
-    final isHover = _hoveringStates[text]!;
-    final isSelected = _selectedDivision == text;
-    return MouseRegion(
-      onExit: (event) {
-        setState(() {
-          _hoveringStates[text] = false;
-        });
-      },
-      child: InkWell(
-        onTap: () {
-          setState(() {
-            _selectedDivision = text;
-            _searchText = '';
-          });
-        },
-        onHover: (isHovering) {
-          if (!isSelected) {
-            setState(() {
-              _hoveringStates[text] = isHovering;
-            });
-          }
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 10),
-          curve: Curves.easeInOut,
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(color: Colors.grey[300]!),
-            ),
-            boxShadow: isHover || isSelected || isSearchResult == text
-                ? [
-                    const BoxShadow(color: Colors.black),
-                  ]
-                : [],
-            color: isSelected || isSearchResult
-                ? Colors.black
-                : isHover
-                    ? Colors.purple[50] // 悬浮时设置为紫色
-                    : null, // 其他情况为默认颜色
-          ),
-          child: ListTile(
-            title: Text(
-              text,
-              style: TextStyle(
-                color: isSelected || isSearchResult
-                    ? Colors.white
-                    : isHover
-                        ? Colors.black // 悬浮时设置为黑色
-                        : Colors.black,
-              ),
-            ),
-            iconColor: isSelected || isSearchResult
-                ? Colors.white // 选中或搜索结果时设置为白色
-                : isHover
-                    ? Colors.black // 悬浮时设置为黑色
-                    : Colors.black,
-            // leading: const Icon(Icons.sports_motorsports),
-            leading: const Icon(Icons.label_outline),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            tileColor: isSelected || isSearchResult
-                ? Colors.black
-                : isHover
-                    ? Colors.purple[50] // 悬浮时设置为紫色
-                    : null,
-            selected: _selectedDivision == text,
-            selectedTileColor: Colors.black,
-          ),
-        ),
-      ),
-    );
-  }
-
   /// 用于获取比赛的场数
   Future<List<RaceState>> getRaceProcess(String division) async {
-    int athleteCount = await getAthleteCountByDivision(
-        widget.raceEventName, _selectedDivision);
+    int athleteCount =
+        await getAthleteCountByDivision(widget.raceEventName, division);
     // totalAccount = athleteCount;
     if (athleteCount <= 16) {
       // raceAccount = 1;
@@ -283,96 +127,105 @@ class _SprintRacePageState extends State<ShortDistancePage> {
   /// 构建组件
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-      appBar: AppBar(
-        title: Text(widget.raceBar),
-      ),
-      body: Stack(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                flex: 1,
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                          // width: 200,
-                          child: Container(
-                        decoration: const BoxDecoration(
-                            color: Colors.white,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey,
-                                spreadRadius: 2,
-                                blurRadius: 5,
-                                offset: Offset(3, 3),
-                              )
-                            ]),
+    /// 搜索框执行搜索操作
+    void performSearch(String searchText, BuildContext context) {
+      final matchedDivision = divisions.firstWhere(
+        (division) => division.contains(searchText),
+        orElse: () => '',
+      );
+      Provider.of<RightStateNotifier>(context, listen: false)
+          .setDivision(matchedDivision);
+    }
 
-                        /// 可能会出问题的判断
-                            /// 问题出在这里 todo
-                        child: widget.raceBar.contains('趴板') // todo fixme 不能写死
-                            ? ListView(children: [
-                                createNavi('U9组男子'),
-                                createNavi('U9组女子'),
-                                createNavi('U12组男子'),
-                                createNavi('U12组女子'),
-                                createNavi('U15组男子'),
-                                createNavi('U15组女子'),
-                                createNavi('U18组男子'),
-                                createNavi('U18组女子'),
-                              ])
-                            : ListView(
-                                children: [
-                                  createNavi('U9组男子'),
-                                  createNavi('U9组女子'),
-                                  createNavi('U12组男子'),
-                                  createNavi('U12组女子'),
-                                  createNavi('U15组男子'),
-                                  createNavi('U15组女子'),
-                                  createNavi('U18组男子'),
-                                  createNavi('U18组女子'),
-                                  createNavi('充气板组男子'),
-                                  createNavi('充气板组女子'),
-                                  createNavi('大师组男子'),
-                                  createNavi('大师组女子'),
-                                  createNavi('高校甲组男子'),
-                                  createNavi('高校甲组女子'),
-                                  createNavi('高校乙组男子'),
-                                  createNavi('高校乙组女子'),
-                                  createNavi('卡胡纳组男子'),
-                                  createNavi('卡胡纳组女子'),
-                                  createNavi('公开组男子'),
-                                  createNavi('公开组女子'),
-                                ],
-                              ),
-                      )),
-                    ),
-                  ],
-                ),
+    return ChangeNotifierProvider<RightStateNotifier>(
+        create: (_) => RightStateNotifier(),
+        child: Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+          appBar: AppBar(
+            title: Text(widget.raceBar),
+          ),
+          body: Stack(
+            children: [
+              Row(
+                children: [
+                  /// 左侧内容
+                  leftWidget(),
+
+                  /// 右侧内容
+                  Consumer<RightStateNotifier>(
+                    builder: (context, notifier, child) {
+                      return Expanded(
+                        flex: 5,
+                        // child: _buildContent(_selectedDivision),
+                        /// 开始构建内容
+                        child: _buildContent(notifier._selectedDivision),
+                      );
+                    },
+                  ),
+                ],
               ),
-              Expanded(
-                flex: 5,
-                // child: _buildContent(_selectedDivision),
-                /// 开始构建内容
-                child: _buildContent(_selectedDivision),
+
+              /// 搜索框
+              Builder(
+                builder: (context) {
+                  /// 此处为context的副本，是必须的，后边搜索框组件build后context会丢失Provider属性
+                  BuildContext tempContext = context;
+                  return Positioned(
+                      top: 16,
+                      right: 16,
+                      child: SizedBox(
+                        width: 200,
+                        height: 40,
+                        child: Row(
+                          children: [
+                            /// 搜索框
+                            Expanded(
+                              child: TypeAheadField(
+                                textFieldConfiguration: TextFieldConfiguration(
+                                    decoration: InputDecoration(
+                                      hintText: '搜索组别',
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(3),
+                                      ),
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      prefixIcon: const Icon(Icons.search),
+                                    ),
+                                    controller: _typeAheadController,
+                                    onSubmitted: (text) {
+                                      performSearch(text, tempContext);
+                                    }),
+                                suggestionsCallback: (pattern) {
+                                  return divisions
+                                      .where((division) =>
+                                          division.contains(pattern))
+                                      .toList();
+                                },
+                                itemBuilder: (context, suggestion) {
+                                  return ListTile(
+                                      title: Text(suggestion),
+                                      onTap: () {
+                                        _typeAheadController.text = suggestion;
+                                        performSearch(suggestion, tempContext);
+                                      });
+                                },
+                                onSuggestionSelected: (suggestion) {
+                                  _typeAheadController.text = suggestion;
+                                  performSearch(suggestion, tempContext);
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ));
+                },
               ),
             ],
           ),
-          Positioned(
-              top: 16,
-              right: 16,
-              child: SizedBox(
-                width: 200,
-                height: 40,
-                child: searchBar,
-              ))
-        ],
-      ),
-    );
+        ));
   }
+
+  /// build end
 
   /// 根据division构建内容
   Widget _buildContent(String division) {
@@ -392,13 +245,13 @@ class _SprintRacePageState extends State<ShortDistancePage> {
                 color: Colors.purple[200],
               ),
               title: Text(
-                "$_selectedDivision赛事进度",
+                "$division赛事进度",
                 style: const TextStyle(fontSize: 18),
               ),
               subtitle: FutureBuilder(future: () async {
                 /// 获取当前组别的运动员总数和比赛轮数
                 final athleteCount = await getAthleteCountByDivision(
-                    widget.raceEventName, _selectedDivision);
+                    widget.raceEventName, division);
                 final raceCount = getRaceCountByAthleteCount(athleteCount);
                 return [athleteCount, raceCount]; // 返回一个列表，包含两个值
               }(), builder: (context, snapshot) {
@@ -443,7 +296,7 @@ class _SprintRacePageState extends State<ShortDistancePage> {
         padding: const EdgeInsets.symmetric(horizontal: 50),
         // 2025.2.9 更换为FutureBuilder
         child: FutureBuilder(
-            future: getRaceProcess(_selectedDivision),
+            future: getRaceProcess(division),
             builder: (BuildContext context,
                 AsyncSnapshot<List<RaceState>> snapshot) {
               if (snapshot.connectionState == ConnectionState.done) {
@@ -459,7 +312,7 @@ class _SprintRacePageState extends State<ShortDistancePage> {
                             stageName: snapshot.data![index].name,
                             raceName:
                                 widget.raceBar.contains('趴板') ? '趴板' : '竞速',
-                            division: _selectedDivision,
+                            division: division,
                             dbName: widget.raceEventName,
                             index: index,
                             onStatusChanged: _onRaceStageStatusChanged);
@@ -474,8 +327,84 @@ class _SprintRacePageState extends State<ShortDistancePage> {
       ),
     ]);
   }
+
+  /// 左侧的组件，此组件一旦渲染就不必再次渲染
+  Widget leftWidget() {
+    return Expanded(
+      flex: 1,
+      child: Column(
+        children: [
+          Expanded(
+            child: SizedBox(
+                // width: 200,
+                child: Material(
+                    child: widget.raceBar.contains('趴板')
+
+                        /// 草率的判断
+                        ? FutureBuilder(
+                            future: _getListDivisions(true),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.done) {
+                                return ListView.builder(
+                                  itemCount: snapshot.data!.length,
+                                  itemBuilder: (context, index) {
+                                    return ListTile(
+                                      title: Text(snapshot.data![index]),
+                                      hoverColor: Colors.grey[200],
+                                      onTap: () {
+                                        print('点击了 ${snapshot.data![index]}');
+                                        Provider.of<RightStateNotifier>(context,
+                                                listen: false)
+                                            .setDivision(snapshot.data![index]);
+                                      },
+                                    );
+                                  },
+                                );
+                              } else {
+                                return const CircularProgressIndicator();
+                              }
+                            })
+                        : FutureBuilder(
+                            future: _getListDivisions(false),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.done) {
+                                return ListView.builder(
+                                  itemCount: snapshot.data!.length,
+                                  itemBuilder: (context, index) {
+                                    return ListTile(
+                                      hoverColor: Colors.grey[200],
+                                      title: Text(snapshot.data![index]),
+                                      onTap: () {
+                                        print('点击了 ${snapshot.data![index]}');
+                                        Provider.of<RightStateNotifier>(context,
+                                                listen: false)
+                                            .setDivision(snapshot.data![index]);
+                                      },
+                                    );
+                                  },
+                                );
+                              } else {
+                                return const CircularProgressIndicator();
+                              }
+                            }))),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
+/// 用于右侧的状态管理
+class RightStateNotifier extends ChangeNotifier {
+  String _selectedDivision = 'U9组男子';
+
+  void setDivision(String division) {
+    _selectedDivision = division;
+    notifyListeners();
+  }
+}
 // FutureBuilder( // todo 这个futureBuilder貌似没起任何作用
 //   future: raceProcess,
 //   builder: (context, snapshot) {
