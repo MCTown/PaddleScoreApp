@@ -116,7 +116,7 @@ class _RaceStageCardState extends State<RaceStageCard> {
                         child:const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text("导出分组名单",style: TextStyle(fontSize: 16),),
+                            Text("导出待填成绩名单",style: TextStyle(fontSize: 16),),
                             SizedBox(width: 10.0,),
                             Icon(Icons.file_download,color: Colors.black),
                           ],

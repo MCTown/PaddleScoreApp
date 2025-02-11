@@ -182,6 +182,7 @@ int rankToScore(int rank) {
 
 enum ExportType { asTeam, asDivision }
 
+/// 查询Progress
 Future<bool> checkProgress(String dbName, String progressName) async {
   var db = await DatabaseManager.getDatabase(dbName);
   var result = await db.query('progress',
@@ -193,4 +194,21 @@ Future<bool> checkProgress(String dbName, String progressName) async {
   } else {
     return result.first['progress_value'] == 1;
   }
+}
+
+/// 更改Progress
+Future<void> setProgress(
+    String dbName, String progressName, bool isCompleted) async {
+  DatabaseManager.getDatabase(dbName).then((db) {
+    db.update('progress', {'progress_value': isCompleted ? 1 : 0},
+        where: 'progress_name = ?', whereArgs: [progressName]);
+  });
+}
+
+/// 新增Progress
+Future<void> insertProgress(String dbName, String progressName) async {
+  DatabaseManager.getDatabase(dbName).then((db) {
+    db.insert('progress', {'progress_name': progressName, 'progress_value': 0},
+        conflictAlgorithm: ConflictAlgorithm.replace);
+  });
 }
