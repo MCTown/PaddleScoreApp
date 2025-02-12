@@ -177,16 +177,16 @@ class _MyHomePageState extends State<MyHomePage> {
             children: [
               SafeArea(
                 child: Container(
-                  color: Color(0xFFFAFAFA),
+                  color: const Color(0xFFFAFAFA),
                   child: Column(
                     children: [
                       // 菜单按钮
                       Padding(
                         padding: isRailExtended
                             ? const EdgeInsets.only(top: 8, left: 0)
-                            : EdgeInsets.all(8.0),
+                            : const EdgeInsets.all(8.0),
                         child: IconButton(
-                          icon: Icon(Icons.menu),
+                          icon: const Icon(Icons.menu),
                           onPressed: () {
                             setState(() {
                               isRailExtended = !isRailExtended;
@@ -249,8 +249,8 @@ class UnknownRouteScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('404')),
-      body: Center(child: Text('页面未找到')),
+      appBar: AppBar(title: const Text('404')),
+      body: const Center(child: Text('页面未找到')),
     );
   }
 }

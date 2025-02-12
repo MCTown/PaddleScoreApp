@@ -10,6 +10,8 @@ import 'package:paddle_score_app/pageWidgets/universalWidgets/Loading.dart';
 import 'package:paddle_score_app/utils/GlobalFunction.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
+import '../../main.dart';
+import '../appEntrances/racesEntrancePage.dart';
 import 'exportOptionWidget.dart';
 import 'dart:typed_data';
 
@@ -159,12 +161,18 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                               File file = File(filePath);
                                               await file.writeAsBytes(
                                                   excelFileBytes!);
+                                              await setProgress(
+                                                  widget.raceEventName,
+                                                  "long_distance_downloaded",
+                                                  true);
+                                              Loading.stopLoading(context);
+                                              setState(() {});
                                               print("文件已保存到:$filePath");
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(SnackBar(
+                                                      content: Text(
+                                                          "文件已保存到:$filePath，请用Excel等工具填写完毕后上传")));
                                             });
-                                            await setProgress(
-                                                widget.raceEventName,
-                                                "long_distance_downloaded",
-                                                true);
                                           } catch (e) {
                                             Loading.stopLoading(context);
                                             ErrorHandler.showErrorDialog(
@@ -245,6 +253,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                           "isImported"]! // 如果导入完成或者尚未下载，按钮不可用
                                   ? null
                                   : () async {
+                                      /// 上传文件逻辑
                                       FilePickerResult? result =
                                           await FilePicker.platform.pickFiles(
                                         type: FileType.custom,
@@ -266,6 +275,27 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                                   widget.raceEventName,
                                                   fileBinary);
                                           Loading.stopLoading(context);
+
+                                          /// 导入成功
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(const SnackBar(
+                                                  content: Text("导入成功")));
+
+                                          /// 返回首页并刷新
+                                          Navigator.pushAndRemoveUntil(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    const MyHomePage()),
+                                            (route) => false,
+                                          );
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      RacePage(
+                                                          raceName: widget
+                                                              .raceEventName)));
                                         } catch (e) {
                                           Loading.stopLoading(context);
                                           ErrorHandler.showErrorDialog(
@@ -274,6 +304,10 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                               e.toString());
                                         }
                                       } else {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(const SnackBar(
+                                                content:
+                                                    Text("请选择填写完毕的长距离成绩表")));
                                         // User canceled the picker
                                       }
                                     },

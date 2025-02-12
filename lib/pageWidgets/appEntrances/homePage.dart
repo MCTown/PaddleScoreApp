@@ -11,7 +11,7 @@ import '../../main.dart';
 import '../../utils/ExcelAnalyzer.dart';
 
 class HomePageContent extends StatefulWidget {
-  const HomePageContent({Key? key}) : super(key: key);
+  const HomePageContent({super.key});
 
   @override
   State<HomePageContent> createState() => _HomePageContent();
@@ -47,120 +47,117 @@ class _HomePageContent extends State<HomePageContent> {
     }
   }
 
-  Future<void> _submitForm() async {
-    MyAppState appState3 = Provider.of<MyAppState>(context, listen: false);
-    if (_formKey.currentState!.validate()) {
-      String raceName = _raceNameController.text;
-      //处理Excel文件
-      if (_selectedFile != null && raceName.isNotEmpty) {
-        if (appState3.races.contains(raceName)) {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text('赛事创建失败'),
-                content: const Text('赛事名称已存在,请输入不同的赛事名称'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('确认'),
-                  ),
-                ],
-              );
-            },
-          );
-          return;
-        } else {
-          showDialog(
-            context: context,
-            barrierDismissible: false, //点击对话框外部不关闭对话框
-            builder: (BuildContext context) {
-              return const AlertDialog(
-                content: Row(
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(width: 16),
-                    Text('正在处理运动员数据,请耐心等待...'),
-                  ],
-                ),
-              );
-            },
-          );
-          await DataHelper.loadExcelFileToAthleteDatabase(raceName, bytes);
-          Navigator.of(context).pop();
-        }
-        appState3.addRace(_raceNameController.text);
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('赛事创建成功'),
-              content: Text('赛事名称：$raceName'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    //跳转到赛事页面
-                    Navigator.of(context).pop();
-                    appState3.setSelectRace(raceName);
-                    Navigator.pushNamed(context, '/race/$raceName');
-                  },
-                  child: const Text('跳转到赛事页面'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('确认并返回'),
-                ),
-              ],
-            );
-          },
-        );
-      } else {
-        showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text('赛事创建失败'),
-                content: raceName.isEmpty
-                    ? const Text('赛事名称不能为空')
-                    : _selectedFile == null
-                        ? const Text('请上传赛事人员名单')
-                        : const Text('未知错误'),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('确认'),
-                  ),
-                ],
-              );
-            });
-      }
-    }
-  }
-
-  void _clearFrom() {
-    _formKey.currentState!.reset();
-    _raceNameController.clear();
-    setState(() {
-      _selectedFile = null;
-    });
-  }
-
-  String _lastEvent1 = '尚未创建';
-  String _lastEvent2 = '尚未创建';
-  String _lastEvent3 = '尚未创建';
+  //
+  // Future<void> _submitForm() async {
+  //   MyAppState appState3 = Provider.of<MyAppState>(context, listen: false);
+  //   if (_formKey.currentState!.validate()) {
+  //     String raceName = _raceNameController.text;
+  //     //处理Excel文件
+  //     if (_selectedFile != null && raceName.isNotEmpty) {
+  //       if (appState3.races.contains(raceName)) {
+  //         showDialog(
+  //           context: context,
+  //           builder: (BuildContext context) {
+  //             return AlertDialog(
+  //               title: const Text('赛事创建失败'),
+  //               content: const Text('赛事名称已存在,请输入不同的赛事名称'),
+  //               actions: [
+  //                 TextButton(
+  //                   onPressed: () {
+  //                     Navigator.of(context).pop();
+  //                   },
+  //                   child: const Text('确认'),
+  //                 ),
+  //               ],
+  //             );
+  //           },
+  //         );
+  //         return;
+  //       } else {
+  //         showDialog(
+  //           context: context,
+  //           barrierDismissible: false, //点击对话框外部不关闭对话框
+  //           builder: (BuildContext context) {
+  //             return const AlertDialog(
+  //               content: Row(
+  //                 children: [
+  //                   CircularProgressIndicator(),
+  //                   SizedBox(width: 16),
+  //                   Text('正在处理运动员数据,请耐心等待...'),
+  //                 ],
+  //               ),
+  //             );
+  //           },
+  //         );
+  //         await DataHelper.loadExcelFileToAthleteDatabase(raceName, bytes);
+  //         Navigator.of(context).pop();
+  //       }
+  //       appState3.addRace(_raceNameController.text);
+  //       showDialog(
+  //         context: context,
+  //         builder: (BuildContext context) {
+  //           return AlertDialog(
+  //             title: const Text('赛事创建成功'),
+  //             content: Text('赛事名称：$raceName'),
+  //             actions: [
+  //               TextButton(
+  //                 onPressed: () {
+  //                   //跳转到赛事页面
+  //                   Navigator.of(context).pop();
+  //                   appState3.setSelectRace(raceName);
+  //                   Navigator.pushNamed(context, '/race/$raceName');
+  //                 },
+  //                 child: const Text('跳转到赛事页面'),
+  //               ),
+  //               TextButton(
+  //                 onPressed: () {
+  //                   Navigator.of(context).pop();
+  //                 },
+  //                 child: const Text('确认并返回'),
+  //               ),
+  //             ],
+  //           );
+  //         },
+  //       );
+  //     } else {
+  //       showDialog(
+  //           context: context,
+  //           builder: (BuildContext context) {
+  //             return AlertDialog(
+  //               title: const Text('赛事创建失败'),
+  //               content: raceName.isEmpty
+  //                   ? const Text('赛事名称不能为空')
+  //                   : _selectedFile == null
+  //                       ? const Text('请上传赛事人员名单')
+  //                       : const Text('未知错误'),
+  //               actions: [
+  //                 TextButton(
+  //                   onPressed: () {
+  //                     Navigator.of(context).pop();
+  //                   },
+  //                   child: const Text('确认'),
+  //                 ),
+  //               ],
+  //             );
+  //           });
+  //     }
+  //   }
+  // }
+  //
+  // void _clearFrom() {
+  //   _formKey.currentState!.reset();
+  //   _raceNameController.clear();
+  //   setState(() {
+  //     _selectedFile = null;
+  //   });
+  // }
 
   String formText = '';
 
   @override
   void initState() {
     super.initState();
-    _loadEventsName();
+    // _loadEventsName();
   }
 
   @override
@@ -203,40 +200,57 @@ class _HomePageContent extends State<HomePageContent> {
                       },
                       initiallyExpanded: true,
                       children: [
-                        InkWell(
-                          onTap: _lastEvent1 == "尚未创建"
-                              ? null
-                              : () {
-                                  Navigator.pushNamed(context,
-                                      '/race/${_lastEvent1.toString()}');
-                                  // 处理点击事件，例如导航到新页面、更新状态等
-                                },
-                          child: ListTile(
-                            title: Text(_lastEvent1),
-                          ),
-                        ),
-                        InkWell(
-                          onTap: _lastEvent2 == "尚未创建"
-                              ? null
-                              : () {
-                                  Navigator.pushNamed(context,
-                                      '/race/${_lastEvent2.toString()}');
-                                },
-                          child: ListTile(
-                            title: Text(_lastEvent2),
-                          ),
-                        ),
-                        InkWell(
-                          onTap: _lastEvent3 == "尚未创建"
-                              ? null
-                              : () {
-                                  Navigator.pushNamed(context,
-                                      '/race/${_lastEvent3.toString()}');
-                                },
-                          child: ListTile(
-                            title: Text(_lastEvent3),
-                          ),
-                        ),
+                        FutureBuilder(
+                            future: _findLastModifyEvent(0),
+                            builder: (context, snapshot) {
+                              String lastEvent = snapshot.data.toString();
+                              return InkWell(
+                                onTap: lastEvent == "尚未创建"
+                                    ? null
+                                    : () {
+                                        Navigator.pushNamed(context,
+                                            '/race/${snapshot.data.toString()}');
+                                        // 处理点击事件，例如导航到新页面、更新状态等
+                                      },
+                                child: ListTile(
+                                  title: Text(lastEvent),
+                                ),
+                              );
+                            }),
+                        FutureBuilder(
+                            future: _findLastModifyEvent(1),
+                            builder: (context, snapshot) {
+                              String lastEvent = snapshot.data.toString();
+                              return InkWell(
+                                onTap: lastEvent == "尚未创建"
+                                    ? null
+                                    : () {
+                                        Navigator.pushNamed(context,
+                                            '/race/${snapshot.data.toString()}');
+                                        // 处理点击事件，例如导航到新页面、更新状态等
+                                      },
+                                child: ListTile(
+                                  title: Text(lastEvent),
+                                ),
+                              );
+                            }),
+                        FutureBuilder(
+                            future: _findLastModifyEvent(2),
+                            builder: (context, snapshot) {
+                              String lastEvent = snapshot.data.toString();
+                              return InkWell(
+                                onTap: lastEvent == "尚未创建"
+                                    ? null
+                                    : () {
+                                        Navigator.pushNamed(context,
+                                            '/race/${snapshot.data.toString()}');
+                                        // 处理点击事件，例如导航到新页面、更新状态等
+                                      },
+                                child: ListTile(
+                                  title: Text(lastEvent),
+                                ),
+                              );
+                            }),
                       ],
                     ),
                   ),
@@ -270,7 +284,7 @@ class _HomePageContent extends State<HomePageContent> {
                         },
                         initiallyExpanded: true,
                         children: [
-                          Container(
+                          SizedBox(
                             width: 650,
                             child: Form(
                               key: _formKey,
@@ -287,7 +301,6 @@ class _HomePageContent extends State<HomePageContent> {
                                         formText = value;
                                       });
                                     },
-
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return '请输入赛事名称';
@@ -357,7 +370,7 @@ class _HomePageContent extends State<HomePageContent> {
     );
   }
 
-  Future<void> _loadEventsName() async {
+  Future<String> _findLastModifyEvent(int count) async {
     final directory = Directory(await getFilePath(null));
     final files = directory
         .listSync()
@@ -365,20 +378,20 @@ class _HomePageContent extends State<HomePageContent> {
         .where((file) => file.path.endsWith('.db'))
         .toList();
     // 根据修改时间排序（最新的在前面）
-    print("123$files");
     files.sort((a, b) => b.lastModifiedSync().compareTo(a.lastModifiedSync()));
 
     // 获取前三个文件名，如果文件数量少于 3 个，则返回所有文件名
     final top3Files = files.take(3).toList();
     List<String> fileNames =
         top3Files.map((file) => file.path.split('/').last).toList();
-    setState(() {
-      _lastEvent1 = fileNames[0].substring(0, fileNames[0].length - 3);
-      ;
-      _lastEvent2 = fileNames[1].substring(0, fileNames[1].length - 3);
-      ;
-      _lastEvent3 = fileNames[2].substring(0, fileNames[2].length - 3);
-      ;
-    });
+    String fileName;
+    try {
+      fileName = fileNames[count].substring(0, fileNames[count].length - 3);
+    } catch (e) {
+      print("请求的index不存在，返回尚未创建");
+      fileName = '尚未创建';
+    }
+
+    return fileName;
   }
 }

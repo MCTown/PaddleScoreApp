@@ -1,18 +1,12 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:paddle_score_app/DataHelper.dart';
 import 'package:paddle_score_app/main.dart';
 import 'package:paddle_score_app/utils/CreateRaceExcelChecker.dart';
-import 'package:paddle_score_app/utils/DatabaseManager.dart';
-import 'package:paddle_score_app/utils/GlobalFunction.dart';
 import 'package:paddle_score_app/utils/SettingService.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:sqflite_common/sqlite_api.dart';
 
 import '../universalWidgets/Loading.dart';
 
@@ -43,14 +37,6 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('创建赛事：$raceName'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              print(1); // 点击加号时输出1
-            },
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -61,7 +47,7 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
             // 第一个卡片：下载报名表
             Card(
               elevation: 4,
-              margin: EdgeInsets.symmetric(vertical: 8),
+              margin: const EdgeInsets.symmetric(vertical: 8),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -204,7 +190,7 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
             // 第三个卡片：确定
             Card(
               elevation: 4,
-              margin: EdgeInsets.symmetric(vertical: 8),
+              margin: const EdgeInsets.symmetric(vertical: 8),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
@@ -448,22 +434,31 @@ class _CreateRaceDetailPage extends State<CreateRacePage> {
                                 Loading.startLoading("正在录入运动员信息，请稍候", context);
                                 print(filePath);
                                 File xlsxFile = File(filePath);
-                                try{
-                                  await DataHelper.loadExcelFileToAthleteDatabase(
-                                      raceName, xlsxFile.readAsBytesSync());
+                                try {
+                                  await DataHelper
+                                      .loadExcelFileToAthleteDatabase(
+                                          raceName, xlsxFile.readAsBytesSync());
                                   Loading.stopLoading(context);
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text('运动员已录入'),
                                     ),
                                   );
-                                  Navigator.of(context).pushAndRemoveUntil(
+
+                                  /// 返回首页并刷新
+                                  Navigator.pushAndRemoveUntil(
+                                    context,
                                     MaterialPageRoute(
-                                        builder: (context) => const MyHomePage()),
-                                        (Route<dynamic> route) => false, // 清除所有旧路由
+                                        builder: (context) =>
+                                        const MyHomePage()),
+                                        (route) => false,
                                   );
-                                }
-                                catch(e){
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('新比赛已创建'),
+                                    ),
+                                  );
+                                } catch (e) {
                                   Loading.stopLoading(context);
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
