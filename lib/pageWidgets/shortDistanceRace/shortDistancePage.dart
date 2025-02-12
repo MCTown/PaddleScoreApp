@@ -29,7 +29,7 @@ class _SprintRacePageState extends State<ShortDistancePage> {
           divisions.where((element) => element.startsWith('U')).toList();
     } else {
       divisions =
-          divisions.where((element) => !element.startsWith('U')).toList();
+          divisions.toList();
     }
     return divisions;
   }
