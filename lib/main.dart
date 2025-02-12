@@ -50,6 +50,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'PaddleScore demo',
       theme: ThemeData(
+        fontFamily: 'HarmonyFont',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
@@ -119,6 +120,12 @@ class MyAppState extends ChangeNotifier {
   Future<void> loadRaceNames() async {
     final directory = await getApplicationDocumentsDirectory();
     final filesPath = p.join(directory.path, 'PaddleScoreData');
+// 如果文件夹不存在，则创建
+    final dir = Directory(filesPath);
+    if (!dir.existsSync()) {
+      dir.createSync();
+    }
+
     final entities = Directory(filesPath).listSync();
     races = entities
         .where((entity) => entity is File && p.extension(entity.path) == '.db')

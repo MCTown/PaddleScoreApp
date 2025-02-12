@@ -303,14 +303,14 @@ class _SprintRacePageState extends State<ShortDistancePage> {
                   prevImported: await checkProgress(widget.raceEventName,
                       "${division}_${raceNames[i - 1]}_${raceType}_imported"),
                   currDownloaded: await checkProgress(widget.raceEventName,
-                      "${division}_${raceNames[i - 1]}_${raceType}_downloaded"),
+                      "${division}_${raceNames[i]}_${raceType}_downloaded"),
                   currImported: await checkProgress(widget.raceEventName,
-                      "${division}_${raceNames[i - 1]}_${raceType}_imported"));
+                      "${division}_${raceNames[i]}_${raceType}_imported"));
             }
-
             /// List的格式
             raceData.add({'name': raceNames[i], 'states': dataState});
           }
+          print(raceData.toString());
           return raceData;
         }(), builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {

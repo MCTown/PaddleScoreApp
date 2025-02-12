@@ -127,6 +127,7 @@ class _RaceStageCardState extends State<RaceStageCard> {
                                         File file = File(filePath);
                                         await file.writeAsBytes(excelFileBytes);
                                         // print("文件已保存到: $filePath");
+                                        print("将${widget.division}_${widget.stageName}_${widget.raceName}_downloaded设置为T");
                                         await setProgress(
                                             widget.dbName,
                                             "${widget.division}_${widget.stageName}_${widget.raceName}_downloaded",
@@ -299,4 +300,8 @@ class DataState {
       {required this.prevImported,
       required this.currImported,
       required this.currDownloaded});
+  @override
+  String toString() {
+    return "prevImported: $prevImported, currImported: $currImported, currDownloaded: $currDownloaded";
+  }
 }
