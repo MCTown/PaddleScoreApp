@@ -1,10 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:paddle_score_app/utils/GlobalFunction.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'RaceStageCardWidget.dart';
 import 'RaceStateWidget.dart';
@@ -72,6 +70,7 @@ class _SprintRacePageState extends State<ShortDistancePage> {
 
     // _loadRaceStates();
     if (widget.raceBar.contains('趴板')) {
+      /// todo 草率至极的判断 通过raceBar判断是否为趴板比赛
       divisions =
           divisions.where((division) => division.startsWith('U')).toList();
     }
@@ -88,39 +87,25 @@ class _SprintRacePageState extends State<ShortDistancePage> {
     // _saveRaceStates();
   }
 
-  Map<String, bool> _hoveringStates = {};
-
   /// 用于获取比赛的场数
-  Future<List<RaceState>> getRaceProcess(String division) async {
+  /// 比赛场数无关具体是哪一种比赛
+  Future<List<String>> getRaceProcess(String division) async {
     int athleteCount =
         await getAthleteCountByDivision(widget.raceEventName, division);
     // totalAccount = athleteCount;
     if (athleteCount <= 16) {
       // raceAccount = 1;
-      return [
-        RaceState(name: "决赛", status: RaceStatus.notStarted),
-      ];
+
+      return ["决赛"];
     } else if (athleteCount > 16 && athleteCount <= 64) {
       // raceAccount = 2;
-      return [
-        RaceState(name: '初赛', status: RaceStatus.notStarted),
-        RaceState(name: '决赛', status: RaceStatus.notStarted),
-      ];
+      return ["初赛", "决赛"];
     } else if (athleteCount > 64 && athleteCount <= 128) {
       // raceAccount = 3;
-      return [
-        RaceState(name: '初赛', status: RaceStatus.notStarted),
-        RaceState(name: '1/2\n决赛', status: RaceStatus.notStarted),
-        RaceState(name: '决赛', status: RaceStatus.notStarted),
-      ];
+      return ["初赛", "1/2\n决赛", "决赛"];
     } else {
       // raceAccount = 4;
-      return [
-        RaceState(name: "初赛", status: RaceStatus.notStarted),
-        RaceState(name: "1/4\n决赛", status: RaceStatus.notStarted),
-        RaceState(name: "1/2\n决赛", status: RaceStatus.notStarted),
-        RaceState(name: "决赛", status: RaceStatus.notStarted)
-      ];
+      return ["初赛", "1/4\n决赛", "1/2\n决赛", "决赛"];
     }
   }
 
@@ -261,31 +246,33 @@ class _SprintRacePageState extends State<ShortDistancePage> {
                   return const Text('共--人，--轮比赛');
                 }
               }),
-              children: const [
-                Stack(
-                  children: [
-                    // 进度条居中显示
-                    // Center(
-                    //   child: RaceTimeline(
-                    //       raceStates: _getRaceStates(),
-                    //       onStatusChanged: _onRaceStageStatusChanged),
-                    // ),
-                    // 图例位于右下角，并且距离边框留有一定的间距
-                    Positioned(
-                      bottom: 10.0, // 设置距离底部的间距
-                      right: 50.0, // 设置距离右边的间距
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        // 让文本右对齐
-                        children: [
-                          Text("🔵 赛事进行中"),
-                          Text("🟢 赛事已完成"),
-                          Text("⚪ 赛事未开始"),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+              children:
+              const [
+                Text("Under Construction"),
+                // Stack(
+                //   children: [
+                //     // 进度条居中显示
+                //     // Center(
+                //     //   child: RaceTimeline(
+                //     //       raceStates: _getRaceStates(),
+                //     //       onStatusChanged: _onRaceStageStatusChanged),
+                //     // ),
+                //     // 图例位于右下角，并且距离边框留有一定的间距
+                //     Positioned(
+                //       bottom: 10.0, // 设置距离底部的间距
+                //       right: 50.0, // 设置距离右边的间距
+                //       child: Column(
+                //         crossAxisAlignment: CrossAxisAlignment.end,
+                //         // 让文本右对齐
+                //         children: [
+                //           Text("🔵 赛事进行中"),
+                //           Text("🟢 赛事已完成"),
+                //           Text("⚪ 赛事未开始"),
+                //         ],
+                //       ),
+                //     ),
+                //   ],
+                // ),
               ],
             ),
           ],
@@ -295,35 +282,62 @@ class _SprintRacePageState extends State<ShortDistancePage> {
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 50),
         // 2025.2.9 更换为FutureBuilder
-        child: FutureBuilder(
-            future: getRaceProcess(division),
-            builder: (BuildContext context,
-                AsyncSnapshot<List<RaceState>> snapshot) {
-              if (snapshot.connectionState == ConnectionState.done) {
-                return IgnorePointer(
-                  ignoring: snapshot.data!.isEmpty,
-                  child: SizedBox(
-                    height: snapshot.data!.length * 100,
-                    child: ListView.builder(
-                      itemCount: snapshot.data!.length,
-                      itemBuilder: (context, index) {
-                        /// 动态生成比赛阶段卡片 todo 并不是这里导致重复渲染
-                        return RaceStageCard(
-                            stageName: snapshot.data![index].name,
-                            raceName:
-                                widget.raceBar.contains('趴板') ? '趴板' : '竞速',
-                            division: division,
-                            dbName: widget.raceEventName,
-                            index: index,
-                            onStatusChanged: _onRaceStageStatusChanged);
-                      },
-                    ),
-                  ),
-                );
-              } else {
-                return const CircularProgressIndicator();
-              }
-            }),
+        child: FutureBuilder(future: () async {
+          var raceType = widget.raceBar.contains('趴板') ? '趴板' : '竞速';
+          var raceNames = await getRaceProcess(division);
+
+          /// 返回一个List,为每一个比赛阶段的名称
+          List raceData = [];
+          for (var i = 0; i < raceNames.length; i++) {
+            DataState dataState;
+            // 两种情况,一种为初赛,一种为决赛
+            if (i == 0) {
+              dataState = DataState(
+                  prevImported: true,
+                  currDownloaded: await checkProgress(widget.raceEventName,
+                      "${division}_${raceNames[0]}_${raceType}_downloaded"),
+                  currImported: await checkProgress(widget.raceEventName,
+                      "${division}_${raceNames[0]}_${raceType}_imported"));
+            } else {
+              dataState = DataState(
+                  prevImported: await checkProgress(widget.raceEventName,
+                      "${division}_${raceNames[i - 1]}_${raceType}_imported"),
+                  currDownloaded: await checkProgress(widget.raceEventName,
+                      "${division}_${raceNames[i - 1]}_${raceType}_downloaded"),
+                  currImported: await checkProgress(widget.raceEventName,
+                      "${division}_${raceNames[i - 1]}_${raceType}_imported"));
+            }
+
+            /// List的格式
+            raceData.add({'name': raceNames[i], 'states': dataState});
+          }
+          return raceData;
+        }(), builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            return SizedBox(
+              height: snapshot.data!.length * 100,
+              child: ListView.builder(
+                itemCount: snapshot.data!.length,
+                itemBuilder: (context, index) {
+                  /// 动态生成比赛阶段卡片
+                  /// 需要信息:
+                  return RaceStageCard(
+                    stageName: snapshot.data![index]["name"],
+                    raceName: widget.raceBar.contains('趴板') ? '趴板' : '竞速',
+                    division: division,
+                    dbName: widget.raceEventName,
+                    index: index,
+                    onStatusChanged: _onRaceStageStatusChanged,
+                    dataState: snapshot.data![index]["states"],
+                    /// 一组信息
+                  );
+                },
+              ),
+            );
+          } else {
+            return const CircularProgressIndicator();
+          }
+        }),
       ),
     ]);
   }

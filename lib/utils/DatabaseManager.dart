@@ -13,7 +13,7 @@ class DatabaseManager {
         /// 包括：运动员信息表，长距离比赛表，进度表
         print("数据库不存在，创建数据库：$path");
         await initAthleteTable(db);
-        db.execute('''
+        await db.execute('''
         CREATE TABLE 'progress' (
           progress_name VARCHAR(255) PRIMARY KEY,
           progress_value INT DEFAULT 0,

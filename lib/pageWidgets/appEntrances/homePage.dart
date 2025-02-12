@@ -19,33 +19,32 @@ class HomePageContent extends StatefulWidget {
 
 class _HomePageContent extends State<HomePageContent> {
   final _formKey = GlobalKey<FormState>();
-  final _raceNameController = TextEditingController();
-  FilePickerResult? _selectedFile;
+  final TextEditingController _raceNameController = TextEditingController();
   List<int> bytes = [];
   bool _isEventVisible = true;
   bool _isCreateVisible = true;
 
   get padding => null;
 
-  Future<void> _pickExcelFile() async {
-    try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['xlsx'],
-        withData: true,
-        allowMultiple: false,
-      );
-      if (result != null) {
-        setState(() {
-          _selectedFile = result;
-          bytes = File(result.paths.first!).readAsBytesSync();
-          // print(_selectedFile);
-        });
-      }
-    } catch (e) {
-      print('Error: $e');
-    }
-  }
+  // Future<void> _pickExcelFile() async {
+  //   try {
+  //     FilePickerResult? result = await FilePicker.platform.pickFiles(
+  //       type: FileType.custom,
+  //       allowedExtensions: ['xlsx'],
+  //       withData: true,
+  //       allowMultiple: false,
+  //     );
+  //     if (result != null) {
+  //       setState(() {
+  //         _selectedFile = result;
+  //         bytes = File(result.paths.first!).readAsBytesSync();
+  //         // print(_selectedFile);
+  //       });
+  //     }
+  //   } catch (e) {
+  //     print('Error: $e');
+  //   }
+  // }
 
   //
   // Future<void> _submitForm() async {
@@ -152,7 +151,7 @@ class _HomePageContent extends State<HomePageContent> {
   //   });
   // }
 
-  String formText = '';
+  // String formText = '';
 
   @override
   void initState() {
@@ -292,14 +291,13 @@ class _HomePageContent extends State<HomePageContent> {
                                 mainAxisSize: MainAxisSize.min,
                                 // crossAxisAlignment: CrossAxisAlignmen,
                                 children: [
+                                  /// BUG：输入框输入内容会导致整个页面重载，需要用局部刷新的方法解决
                                   TextFormField(
                                     controller: _raceNameController,
                                     decoration: const InputDecoration(
                                         labelText: '赛事名称', hintText: '请输入赛事名称'),
                                     onChanged: (value) {
-                                      setState(() {
-                                        formText = value;
-                                      });
+                                      setState(() {});
                                     },
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
@@ -313,7 +311,7 @@ class _HomePageContent extends State<HomePageContent> {
                                     alignment: Alignment.centerLeft,
                                     child: ElevatedButton(
                                       // onPressed:_pickExcelFile,
-                                      onPressed: formText == ''
+                                      onPressed: _raceNameController.text.isEmpty
                                           ? null
                                           : () => {
                                                 // 跳转到创建赛事
@@ -327,7 +325,7 @@ class _HomePageContent extends State<HomePageContent> {
                                       style: ButtonStyle(
                                         backgroundColor:
                                             WidgetStateProperty.all<Color>(
-                                                Color(0xFFBBDEFB)),
+                                                const Color(0xFFBBDEFB)),
                                         // padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
                                         //     EdgeInsets.symmetric(horizontal: 32.0,vertical: 16.0)
                                         // ),

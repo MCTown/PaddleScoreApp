@@ -74,7 +74,6 @@ class ExcelAnalyzer {
     }
     print("Import finished, sort starting...");
     // 按分组计算并排序长距离成绩单
-    /*
     for (var division in divisions) {
       var athletes = await db.rawQuery('''
         SELECT "长距离比赛".id,"长距离比赛".time
@@ -108,8 +107,9 @@ class ExcelAnalyzer {
               where: "id = ?", whereArgs: [sortedAthletes[i]['id']]);
         }
       }
-      return;
+      // return;
     }
+    /*
 
     // 计算并排序长距离成绩单
     // var athletes = await db.query("长距离比赛", columns: ['id', 'time']);
@@ -312,6 +312,7 @@ class ExcelAnalyzer {
     // // 完善progress表
     // await db.insert('progress',
     //     {'progress_name': '${division}_${schedule}_${competition}_imported'});
+    /// 创建比赛表
     await db.execute('''
         CREATE TABLE '${division}_${schedule}_$competition' (
           id INT PRIMARY KEY,
@@ -320,6 +321,18 @@ class ExcelAnalyzer {
           _group INT
         );
       ''');
+
+    /// 创建progress
+    await db.insert('progress', {
+      'progress_name': '${division}_${schedule}_${competition}_imported',
+      'progress_value': 0,
+      'description': '运动员信息是否导入，导入后变为1'
+    });
+    await db.insert('progress', {
+      'progress_name': '${division}_${schedule}_${competition}_downloaded',
+      'progress_value': 0,
+      'description': '运动员信息是否下载，下载后变为1'
+    });
     // 生成比赛表
     // 如果是非初赛，则不插入信息
     // 如果是决赛且运动员数量不足16人，则直接确定分组，如果是初赛则留到后边再分组
@@ -331,7 +344,7 @@ class ExcelAnalyzer {
             'id': athlete['id'],
             'name': athlete['name'],
             'time': '0',
-            '_group': 0,
+            '_group': 1,
           },
         );
       }
@@ -533,4 +546,6 @@ class ExcelAnalyzer {
     }
     return;
   }
+
+  /// 检测当前组别录入的运动员
 }

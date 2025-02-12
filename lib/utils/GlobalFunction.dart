@@ -206,9 +206,16 @@ Future<void> setProgress(
 }
 
 /// 新增Progress
-Future<void> insertProgress(String dbName, String progressName) async {
+Future<void> insertProgress(
+    String dbName, String progressName, String description) async {
   DatabaseManager.getDatabase(dbName).then((db) {
-    db.insert('progress', {'progress_name': progressName, 'progress_value': 0},
+    db.insert(
+        'progress',
+        {
+          'progress_name': progressName,
+          'progress_value': 0,
+          'description': description
+        },
         conflictAlgorithm: ConflictAlgorithm.replace);
   });
 }
