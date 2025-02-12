@@ -108,7 +108,7 @@ class TestPage extends StatelessWidget {
               }),
           const Divider(),
           TestUnit(
-              text: '下载1/2决赛空成绩表',
+              text: '下载二分之一决赛空成绩表',
               icon: Icons.sim_card_download_outlined,
               callBack: () async {
                 String dbName = "athlete";
@@ -120,7 +120,7 @@ class TestPage extends StatelessWidget {
                 print('文件已保存到: $path');
               }),
           TestUnit(
-              text: '导入已完成的1/2决赛成绩表',
+              text: '导入已完成的二分之一决赛成绩表',
               icon: Icons.import_contacts,
               callBack: () async {
                 String dbName = "athlete";

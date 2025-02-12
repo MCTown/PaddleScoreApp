@@ -46,13 +46,13 @@ class _RaceStageCardState extends State<RaceStageCard> {
       case '初赛':
         stageType = SType.firstRound;
         break;
-      case '1/8\n决赛':
+      case '八分之一决赛':
         stageType = SType.roundOf16;
         break;
-      case '1/4\n决赛':
+      case '四分之一决赛':
         stageType = SType.quarterfinals;
         break;
-      case '1/2\n决赛':
+      case '二分之一决赛':
         stageType = SType.semifinals;
         break;
       case '决赛':

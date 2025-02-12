@@ -102,10 +102,10 @@ class _SprintRacePageState extends State<ShortDistancePage> {
       return ["初赛", "决赛"];
     } else if (athleteCount > 64 && athleteCount <= 128) {
       // raceAccount = 3;
-      return ["初赛", "1/2\n决赛", "决赛"];
+      return ["初赛", "二分之一决赛", "决赛"];
     } else {
       // raceAccount = 4;
-      return ["初赛", "1/4\n决赛", "1/2\n决赛", "决赛"];
+      return ["初赛", "四分之一决赛", "二分之一决赛", "决赛"];
     }
   }
 
@@ -285,30 +285,41 @@ class _SprintRacePageState extends State<ShortDistancePage> {
         child: FutureBuilder(future: () async {
           var raceType = widget.raceBar.contains('趴板') ? '趴板' : '竞速';
           var raceNames = await getRaceProcess(division);
+          print(raceNames);
 
           /// 返回一个List,为每一个比赛阶段的名称
           List raceData = [];
           for (var i = 0; i < raceNames.length; i++) {
-            DataState dataState;
-            // 两种情况,一种为初赛,一种为决赛
-            if (i == 0) {
-              dataState = DataState(
-                  prevImported: true,
-                  currDownloaded: await checkProgress(widget.raceEventName,
-                      "${division}_${raceNames[0]}_${raceType}_downloaded"),
-                  currImported: await checkProgress(widget.raceEventName,
-                      "${division}_${raceNames[0]}_${raceType}_imported"));
-            } else {
-              dataState = DataState(
-                  prevImported: await checkProgress(widget.raceEventName,
-                      "${division}_${raceNames[i - 1]}_${raceType}_imported"),
-                  currDownloaded: await checkProgress(widget.raceEventName,
-                      "${division}_${raceNames[i]}_${raceType}_downloaded"),
-                  currImported: await checkProgress(widget.raceEventName,
-                      "${division}_${raceNames[i]}_${raceType}_imported"));
+            try
+            {
+              DataState dataState;
+              // 两种情况,一种为初赛,一种为决赛
+              print("i = $i");
+              print("raceNames[i] = ${raceNames[i]}");
+              if (i == 0) {
+                dataState = DataState(
+                    prevImported: true,
+                    currDownloaded: await checkProgress(widget.raceEventName,
+                        "${division}_${raceNames[0]}_${raceType}_downloaded"),
+                    currImported: await checkProgress(widget.raceEventName,
+                        "${division}_${raceNames[0]}_${raceType}_imported"));
+              } else {
+                dataState = DataState(
+                    prevImported: await checkProgress(widget.raceEventName,
+                        "${division}_${raceNames[i - 1]}_${raceType}_imported"),
+                    currDownloaded: await checkProgress(widget.raceEventName,
+                        "${division}_${raceNames[i]}_${raceType}_downloaded"),
+                    currImported: await checkProgress(widget.raceEventName,
+                        "${division}_${raceNames[i]}_${raceType}_imported"));
+              }
+
+              /// List的格式
+              raceData.add({'name': raceNames[i], 'states': dataState});
+              print(raceData);
             }
-            /// List的格式
-            raceData.add({'name': raceNames[i], 'states': dataState});
+            catch(e){
+              print(e.toString());
+          }
           }
           print(raceData.toString());
           return raceData;
