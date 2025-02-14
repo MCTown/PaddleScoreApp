@@ -125,7 +125,7 @@ class MyAppState extends ChangeNotifier {
 
   Future<void> loadRaceNames() async {
     final directory = await getApplicationDocumentsDirectory();
-    final filesPath = '${directory.path}/PaddleScoreData';
+    final filesPath = p.join(directory.path, "PaddleScoreData");
 // 如果文件夹不存在，则创建
     final dir = Directory(filesPath);
     if (!dir.existsSync()) {
@@ -137,6 +137,7 @@ class MyAppState extends ChangeNotifier {
         .where((entity) => entity is File && p.extension(entity.path) == '.db')
         .map((entity) => p.basenameWithoutExtension(entity.path))
         .toList();
+    print(races);
     notifyListeners();
   }
 }
@@ -148,7 +149,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     final appState = context.read<MyAppState>();
-    appState.loadRaceNames(); // 在初始化时加载数据
+    // appState.loadRaceNames(); // 在初始化时加载数据
   }
 
   void navigateToPage(int index) {
