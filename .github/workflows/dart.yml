@@ -49,13 +49,18 @@ jobs:
         with:
           flutter-version: '3.x'  # 根据需要指定 Flutter 版本
 
+      - name: Install dependencies for Linux build
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
+
       - name: Enable Linux Desktop Support
         run: flutter config --enable-linux-desktop
 
       - name: Add Linux Platform Support
         run: flutter create --platforms=linux .
 
-      - name: Install dependencies
+      - name: Install Flutter dependencies
         run: flutter pub get
 
       - name: Build Linux Release
