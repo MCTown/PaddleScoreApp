@@ -71,7 +71,7 @@ jobs:
   #       with:
   #         name: linux-release
   #         path: build/linux/x64/release/bundle/
-          
+
   build-android:
     runs-on: ubuntu-latest
 
@@ -84,35 +84,34 @@ jobs:
         with:
           flutter-version: '3.x'  # 根据需要指定 Flutter 版本
 
-      - name: Install Flutter dependencies
+      # 为避免旧 Android 工程问题，创建一个全新的 Flutter Android 项目
+      - name: Install Flutter dependencies (original project)
         run: flutter pub get
 
-      - name: Ensure Android Platform Exists
-        run: flutter create --platforms=android .
-      
-      - name: Grant Gradle Permissions
-        run: chmod +x android/gradlew
-        working-directory: android
+      - name: Create new Flutter Android project
+        run: flutter create -t app new_android_project
 
-      - name: Update Gradle Wrapper
-        run: ./gradlew wrapper --gradle-version 8.2 --distribution-type all
-        working-directory: android
-
-      - name: Update Android Build Tools
-        run: sed -i 's/com.android.tools.build:gradle:[0-9.]*/com.android.tools.build:gradle:8.1.0/g' android/build.gradle
-
-      - name: Update Gradle Properties
+      - name: Migrate code to new project
         run: |
-          echo "android.useAndroidX=true" >> android/gradle.properties
-          echo "android.enableJetifier=true" >> android/gradle.properties
+          # 移除新项目自动生成的 lib 目录
+          rm -rf new_android_project/lib
+          # 将现有项目中的 lib 目录迁移过去
+          cp -R lib new_android_project/
+          # 用现有项目的 pubspec.yaml 替换新项目中的文件
+          cp pubspec.yaml new_android_project/
+          # 如果存在 assets 目录，也一起迁移
+          if [ -d assets ]; then cp -R assets new_android_project/; fi
 
-      - name: Build Android APK
+      - name: Install new project dependencies
+        working-directory: new_android_project
+        run: flutter pub get
+
+      - name: Build Android APK (new project)
+        working-directory: new_android_project
         run: flutter build apk --release
 
       - name: Upload Android APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
-
-
+          path: new_android_project/build/app/outputs/flutter-apk/app-release.apk
