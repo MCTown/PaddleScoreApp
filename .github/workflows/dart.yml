@@ -1,4 +1,4 @@
-name: Flutter Windows and Linux Release
+name: Flutter Windows Release
 
 on:
   push:
@@ -7,18 +7,8 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-latest, ubuntu-latest]
-        include:
-          - os: windows-latest
-            platform: windows
-            path: build/windows/x64/runner/Release/
-          - os: ubuntu-latest
-            platform: linux
-            path: build/linux/x64/release/
+  build-windows:
+    runs-on: windows-latest
 
     steps:
       - name: Checkout repository
@@ -29,31 +19,50 @@ jobs:
         with:
           flutter-version: '3.x'  # 根据需要指定 Flutter 版本
 
-      - name: Enable Desktop Support
-        run: flutter config --enable-windows-desktop --enable-linux-desktop
+      - name: Enable Windows Desktop Support
+        run: flutter config --enable-windows-desktop
 
-      - name: Add Platform Support
-        run: flutter create --platforms=windows,linux .
+      - name: Add Windows Platform Support
+        run: flutter create --platforms=windows .
 
       - name: Install dependencies
         run: flutter pub get
 
-      # Install dependencies required for building Linux
-      - name: Install build dependencies for Linux
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake ninja-build g++ pkg-config libgtk-3-dev
+      - name: Build Windows Release
+        run: flutter build windows --release
 
-      - name: Build Release
-        run: |
-          if [ "${{ matrix.platform }}" == "windows" ]; then
-            flutter build windows --release
-          elif [ "${{ matrix.platform }}" == "linux" ]; then
-            flutter build linux --release
-          fi
-
-      - name: Upload Release Artifact
+      - name: Upload Windows Release Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.platform }}-release
-          path: ${{ matrix.path }}
+          name: windows-release
+          path: build/windows/x64/runner/Release/
+
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'  # 根据需要指定 Flutter 版本
+
+      - name: Enable Linux Desktop Support
+        run: flutter config --enable-linux-desktop
+
+      - name: Add Linux Platform Support
+        run: flutter create --platforms=linux .
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Linux Release
+        run: flutter build linux --release
+
+      - name: Upload Linux Release Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-release
+          path: build/linux/x64/release/bundle/
