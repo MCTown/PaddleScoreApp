@@ -1,31 +1,32 @@
-name: Build Release
+name: Flutter Windows Release
 
 on:
   push:
-    branches:
-      - main  # 或你希望触发构建的分支
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: windows-latest
-    
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.x'  # 根据需要设置 Flutter 版本
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'  # 根据需要指定 Flutter 版本
 
-    - name: Install dependencies
-      run: flutter pub get
+      - name: Install dependencies
+        run: flutter pub get
 
-    - name: Build Release for Windows
-      run: flutter build windows --release
+      - name: Build Windows Release
+        run: flutter build windows --release
 
-    - name: Upload Release Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: release-windows
-        path: build/windows/runner/Release/*
+      - name: Upload Release Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: windows-release
+          path: build/windows/runner/Release/
