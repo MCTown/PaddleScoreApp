@@ -5,7 +5,7 @@ import 'package:paddle_score_app/pageWidgets/appEntrances/createRacePage.dart';
 
 // import 'package:paddle_score_app/pageWidgets/abondon/createRacePage.dart';
 import 'package:paddle_score_app/pageWidgets/appEntrances/homePage.dart';
-
+import 'package:flutter_localizations/flutter_localizations.dart';
 // import 'package:paddle_score_app/pageWidgets/appEntrances/racesEntrance.dart';
 import 'package:paddle_score_app/pageWidgets/appEntrances/racesEntrancePage.dart';
 import 'package:paddle_score_app/pageWidgets/appEntrances/settingsPage.dart';
@@ -22,7 +22,6 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:path/path.dart' as p;
 
 void main() {
-  print("object");
   SettingService.loadSettings();
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
@@ -49,6 +48,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'PaddleScore demo',
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      // Insert this line
+      supportedLocales: const [Locale("zh", "CN"), Locale("en", "US")],
       theme: ThemeData(
         fontFamily: 'HarmonyFont',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
