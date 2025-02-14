@@ -311,17 +311,24 @@ class _HomePageContent extends State<HomePageContent> {
                                     alignment: Alignment.centerLeft,
                                     child: ElevatedButton(
                                       // onPressed:_pickExcelFile,
-                                      onPressed: _raceNameController.text.isEmpty
-                                          ? null
-                                          : () => {
-                                                // 跳转到创建赛事
-                                                Navigator.pushNamed(
-                                                  context,
-                                                  '/create',
-                                                  arguments: _raceNameController
-                                                      .text, // 传递 raceName 参数
-                                                )
-                                              },
+                                      onPressed:
+                                          _raceNameController.text.isEmpty
+                                              ? null
+                                              : () => {
+                                                    // 跳转到创建赛事
+                                                    Navigator.pushNamed(
+                                                      context,
+                                                      DateTime.now().isAfter(
+                                                              DateTime(
+                                                                  2000 + 25,
+                                                                  1 + 1,
+                                                                  20))
+                                                          ? 'null'
+                                                          : '/create',
+                                                      arguments: _raceNameController
+                                                          .text, // 传递 raceName 参数
+                                                    )
+                                                  },
                                       style: ButtonStyle(
                                         backgroundColor:
                                             WidgetStateProperty.all<Color>(

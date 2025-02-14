@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
+
+import '../../utils/GlobalFunction.dart';
 // import '../../page_widgets/longDistancePage.dart';
 
 class DivisionScoreTable extends StatefulWidget {
@@ -15,8 +17,7 @@ class DivisionScoreTable extends StatefulWidget {
 
 class _DivisionScoreTableState extends State<DivisionScoreTable> {
   Future<List<Map<String,dynamic>>> getDivisionScore(String? division)async{
-    final directory = await getApplicationDocumentsDirectory();
-    final dbPath = '${directory.path}/PaddleScoreData/${widget.raceEventName}.db';
+    final dbPath = await getFilePath('${widget.raceEventName}.db');
     print('Database path:$dbPath');
     final database = await openDatabase(dbPath);
     try{

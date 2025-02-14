@@ -125,7 +125,7 @@ class MyAppState extends ChangeNotifier {
 
   Future<void> loadRaceNames() async {
     final directory = await getApplicationDocumentsDirectory();
-    final filesPath = p.join(directory.path, 'PaddleScoreData');
+    final filesPath = '${directory.path}/PaddleScoreData';
 // 如果文件夹不存在，则创建
     final dir = Directory(filesPath);
     if (!dir.existsSync()) {

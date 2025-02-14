@@ -2,12 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:paddle_score_app/utils/GlobalFunction.dart';
 import 'package:path_provider/path_provider.dart';
 
 class SettingService {
   static Future<File> getSettingFile() async {
-    final directory = await getApplicationDocumentsDirectory();
-    return File('${directory.path}/PaddleScoreData/config.json');
+    final directory = await getFilePath("config.json");
+    return File(directory);
   }
 
   static Future<void> loadSettings() async {
