@@ -82,30 +82,47 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.x'  # 根据需要指定 Flutter 版本
+          flutter-version: '3.x'
 
-      # 为避免旧 Android 工程问题，创建一个全新的 Flutter Android 项目
+      # 处理原有项目依赖，确保 flutter pub get 正常执行
       - name: Install Flutter dependencies (original project)
         run: flutter pub get
 
+      # 创建一个全新的 Flutter Android 项目
       - name: Create new Flutter Android project
         run: flutter create -t app new_android_project
 
+      # 将现有代码和资源迁移到新项目中
       - name: Migrate code to new project
         run: |
           # 移除新项目自动生成的 lib 目录
           rm -rf new_android_project/lib
-          # 将现有项目中的 lib 目录迁移过去
+          # 将原项目中的 lib 目录复制过去
           cp -R lib new_android_project/
-          # 用现有项目的 pubspec.yaml 替换新项目中的文件
+          # 替换新项目的 pubspec.yaml（确保依赖与配置一致）
           cp pubspec.yaml new_android_project/
-          # 如果存在 assets 目录，也一起迁移
+          # 如果存在 assets 目录，也一并迁移
           if [ -d assets ]; then cp -R assets new_android_project/; fi
 
+      # 修补依赖库 flutter_keyboard_visibility（版本 5.4.1）缺失 namespace 的问题
+      - name: Patch flutter_keyboard_visibility gradle file
+        run: |
+          # 查找 flutter_keyboard_visibility 包目录（匹配版本号可能不固定）
+          FLUTTER_KV_PATH=$(find $HOME/.pub-cache/hosted/pub.dev -maxdepth 1 -type d -name "flutter_keyboard_visibility-*")
+          echo "Found flutter_keyboard_visibility at: $FLUTTER_KV_PATH"
+          if [ -d "$FLUTTER_KV_PATH/android" ]; then
+            # 在 apply plugin 行后插入 namespace 配置
+            sed -i '/apply plugin: .com.android.library./a\\nandroid {\n    namespace "com.example.flutterkeyboardvisibility"\n}' "$FLUTTER_KV_PATH/android/build.gradle"
+          else
+            echo "flutter_keyboard_visibility android build.gradle not found"
+          fi
+
+      # 在新项目中重新安装依赖
       - name: Install new project dependencies
         working-directory: new_android_project
         run: flutter pub get
 
+      # 构建新项目的 Android APK
       - name: Build Android APK (new project)
         working-directory: new_android_project
         run: flutter build apk --release
