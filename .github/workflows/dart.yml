@@ -87,6 +87,13 @@ jobs:
       - name: Install Flutter dependencies
         run: flutter pub get
 
+      - name: Ensure Android Platform Exists
+        run: flutter create --platforms=android .
+      
+      - name: Grant Gradle Permissions
+        run: chmod +x android/gradlew
+        working-directory: android
+
       - name: Update Gradle Wrapper
         run: ./gradlew wrapper --gradle-version 8.2 --distribution-type all
         working-directory: android
@@ -107,4 +114,5 @@ jobs:
         with:
           name: android-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+
 
