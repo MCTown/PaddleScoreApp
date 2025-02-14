@@ -19,8 +19,18 @@ jobs:
         with:
           flutter-version: '3.x'  # 根据需要指定 Flutter 版本
 
+      - name: Enable Windows Desktop Support
+        run: flutter config --enable-windows-desktop
+
+      - name: Add Windows Platform Support
+        run: flutter create --platforms=windows .
+
       - name: Install dependencies
         run: flutter pub get
+
+      # 如果项目中有测试用例，可以启用这一步
+      - name: Run tests
+        run: flutter test
 
       - name: Build Windows Release
         run: flutter build windows --release
