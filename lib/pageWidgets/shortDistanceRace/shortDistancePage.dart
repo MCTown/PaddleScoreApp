@@ -165,40 +165,35 @@ class _SprintRacePageState extends State<ShortDistancePage> {
                           children: [
                             /// 搜索框
                             Expanded(
-                              child: TypeAheadField(
-                                textFieldConfiguration: TextFieldConfiguration(
-                                    decoration: InputDecoration(
-                                      hintText: '搜索组别',
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(3),
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.white,
-                                      prefixIcon: const Icon(Icons.search),
-                                    ),
-                                    controller: _typeAheadController,
+                              child: TypeAheadField<String>(
+                                suggestionsCallback: (pattern) {
+                                  return divisions.where((division) => division.contains(pattern)).toList();
+                                },
+                                builder: (context, controller, focusNode) {
+                                  return TextField(
+                                    controller: controller,
+                                    focusNode: focusNode,
                                     onSubmitted: (text) {
                                       performSearch(text, tempContext);
-                                    }),
-                                suggestionsCallback: (pattern) {
-                                  return divisions
-                                      .where((division) =>
-                                          division.contains(pattern))
-                                      .toList();
+                                    },
+                                    decoration: InputDecoration(
+                                      hintText: '搜索组别',
+                                    ),
+                                  );
                                 },
-                                itemBuilder: (context, suggestion) {
-                                  return ListTile(
-                                      title: Text(suggestion),
-                                      onTap: () {
-                                        _typeAheadController.text = suggestion;
-                                        performSearch(suggestion, tempContext);
-                                      });
-                                },
-                                onSuggestionSelected: (suggestion) {
+                                itemBuilder: (context, suggestion) => ListTile(
+                                  title: Text(suggestion),
+                                  onTap: () {
+                                    _typeAheadController.text = suggestion;
+                                    performSearch(suggestion, tempContext);
+                                  },
+                                ),
+                                onSelected: (suggestion) {
                                   _typeAheadController.text = suggestion;
                                   performSearch(suggestion, tempContext);
                                 },
-                              ),
+                              )
+
                             ),
                           ],
                         ),
