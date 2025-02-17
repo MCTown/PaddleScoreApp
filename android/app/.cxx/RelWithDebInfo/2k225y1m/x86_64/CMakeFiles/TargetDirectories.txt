@@ -1,0 +1,2 @@
+/run/media/apricityx/Data1/Desktop/Workspace/paddle_score_app/android/app/.cxx/RelWithDebInfo/2k225y1m/x86_64/CMakeFiles/edit_cache.dir
+/run/media/apricityx/Data1/Desktop/Workspace/paddle_score_app/android/app/.cxx/RelWithDebInfo/2k225y1m/x86_64/CMakeFiles/rebuild_cache.dir

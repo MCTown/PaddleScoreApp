@@ -1,0 +1,1 @@
+/run/media/apricityx/Data1/Desktop/Workspace/paddle_score_app/build/app/intermediates/cxx/RelWithDebInfo/2k225y1m/obj/armeabi-v7a
