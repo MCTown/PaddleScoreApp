@@ -42,7 +42,7 @@ class ExcelGenerator {
       List<String> headers = [
         '编号',
         '姓名',
-        '成绩（按照xx:xx:xx的格式填写）',
+        '成绩（按照xxxxxx的格式填写,代表xx:xx:xx）',
         '长距离比赛排名',
         '静水出发位置',
         '动水出发位置',
@@ -117,8 +117,8 @@ class ExcelGenerator {
     // 生成Excel，生成n个sheet，每一个sheet代表一个组别
     // 生成表头
     var excel = Excel.createExcel();
-    List<String> headers = ['编号', '姓名', '代表队', '成绩（按照xx:xx:xx的格式填写）', '备注'];
-    List<String> overviewHeaders = ['编号', '姓名', '代表队', '成绩(按照xx:xx:xx的格式填写)', '组别', '备注'];
+    List<String> headers = ['编号', '姓名', '代表队', '成绩（按照xxxxxx的格式填写,代表xx:xx:xx）', '备注'];
+    List<String> overviewHeaders = ['编号', '姓名', '代表队', '成绩(按照xxxxxx的格式填写,代表xx:xx:xx)', '组别', '备注'];
     // 将sheet1重命名为总表
     excel.rename("Sheet1", "总表");
     var overviewSheet = excel["总表"];
@@ -145,7 +145,7 @@ class ExcelGenerator {
 
     overviewSheet.merge(
         CellIndex.indexByString('A2'), CellIndex.indexByString('F3'),
-        customValue: TextCellValue('请勿修改此表，数据将由各组别表自动生成'));
+        customValue: TextCellValue('请勿修改此表，请填写其他sheet内的数据'));
     cell = overviewSheet.cell(CellIndex.indexByString('A2'));
     cell.cellStyle = CellStyle(
       fontSize: 14,
@@ -294,14 +294,15 @@ class ExcelGenerator {
       SELECT id,name,division,long_distance_score,prone_paddle_score,sprint_score FROM athletes WHERE team = '$sheetName'
     ''');
       }
+
       print(athletes);
       for (int i = 0; i < athletes.length; i++) {
         var athlete = athletes[i];
-        var longDistanceScore = athlete['long_distance_score'];
-        var pronePaddleScore = athlete['prone_paddle_score'];
-        var sprintScore = athlete['sprint_score'];
-        var totalScore =
-            longDistanceScore ?? 0 + pronePaddleScore ?? 0 + sprintScore ?? 0;
+        int longDistanceScore = athlete['long_distance_score'];
+        int pronePaddleScore = athlete['prone_paddle_score'];
+        int sprintScore = athlete['sprint_score'];
+        int totalScore =
+            longDistanceScore + pronePaddleScore + sprintScore;
         sheet
             .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: i + 2))
             .value = TextCellValue('${athlete['id']}');
@@ -357,7 +358,7 @@ class ExcelGenerator {
     if (random.nextInt(500) == 0) {
       return 'DSQ';
     }
-    return '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}:${second.toString().padLeft(2, '0')}';
+    return '${hour.toString().padLeft(2, '0')}${minute.toString().padLeft(2, '0')}${second.toString().padLeft(2, '0')}';
   }
 
   static int _getStaticPosition(int index) {

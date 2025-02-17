@@ -76,7 +76,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                 SizedBox(width: 16),
                                 Expanded(
                                   child: Text(
-                                    "此页面用于处理赛事第一项，具体步骤如下：\n1. 下载待填长距离赛成绩表\n2. 在长距离赛完成后，人工录入数据到长距离成绩Excel表中。在此页面上传长距离成绩表，软件将根据成绩自动划出各组分配情况与分配的站位\n3. 导出剩下所有比赛的待填成绩表后续使用",
+                                    "此页面用于处理赛事第一项，具体步骤如下：\n1. 下载待填长距离赛成绩表\n2. 在长距离赛完成后，人工录入数据到长距离成绩Excel表中。在此页面上传长距离成绩表，软件将根据成绩自动划出各组分配情况与分配的站位\n3. 转到各个比赛组别页面填写各组成绩",
                                     style: TextStyle(
                                         fontSize: 16, color: Colors.black87),
                                   ),
@@ -300,7 +300,7 @@ class _LongDistanceRacePageState extends State<LongDistanceRacePage> {
                                           Loading.stopLoading(context);
                                           ErrorHandler.showErrorDialog(
                                               context,
-                                              "Excel文件导入失败，请检查以下内容:\n1.成绩是否都已填写，即使运动员缺赛，也需要填写DNF或DNS\n2.成绩是否填写正确，成绩格式应该为XX:XX:XX，例如01:32:98，不要包含其他字符\n3.编号是否为数字\n4.代表队非必填，不会影响最终结果",
+                                              "Excel文件导入失败，请检查以下内容:\n1.成绩是否都已填写，即使运动员缺赛，也需要填写DNF或DNS\n2.成绩是否填写正确，成绩格式应该为XXXXXX，例如013298，不要包含其他字符\n3.编号是否为数字\n4.代表队非必填，不会影响最终结果",
                                               e.toString());
                                         }
                                       } else {

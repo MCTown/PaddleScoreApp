@@ -26,7 +26,7 @@ class ExcelAnalyzer {
         // 要实现的是从表格里读取所有运动员的长距离数据，并进行分组
         // 分别录入到长距离成绩表，与所有初赛成绩表中
         // 读取成绩并打印 读取格式为{编号:时间}
-        Map<String, String> scores = {};
+        Map<String, int> scores = {};
         var maxRows = sheet.maxRows;
         for (int i = 2; i < maxRows; i++) {
           var id = sheet
@@ -44,7 +44,7 @@ class ExcelAnalyzer {
         }
         // 将id按时间排序
         scores = Map.fromEntries(scores.entries.toList()
-          ..sort((a, b) => int.parse(a.value).compareTo(int.parse(b.value))));
+          ..sort((a, b) => a.value.compareTo(b.value)));
         // 将排序后的运动员按名次录入到长距离计分表中
         for (int i = 0; i < scores.length; i++) {
           db.update('athletes', {"long_distance_score": rankToScore(i + 1)},
@@ -82,13 +82,14 @@ class ExcelAnalyzer {
         ON athletes.id = "长距离比赛".id
         WHERE athletes.division = '$division'
       ''');
+      // 实际应为Map<String, String>
       List<Map<String, dynamic>> sortedAthletes = [];
       // 将所有athletes的time转换为s
       athletes.map((athlete) {
         // print("athlete: $athlete ${athlete['time']}");
         sortedAthletes.add({
           "id": athlete['id'],
-          "time": _timeConvert(athlete['time'].toString())
+          "time": _timeConvert(athlete['time'].toString()).toString()
         });
       }).toList();
       // 按照time排序
@@ -188,27 +189,36 @@ class ExcelAnalyzer {
     await _initScoreTable(db);
   }
 
-  static String _timeConvert(String time) {
+  /// 将时间转换为最小单位
+  static int _timeConvert(String time) {
     // 将时间转换为秒
     if (time == "DNS" || time == 'DNF' || time == 'DSQ') {
       // 如果未参赛则返回99999999
       // -todo 检查该值是否合适
-      return "99999999";
+      return 99999999;
     }
-    List<String> timeList = time.split(":");
-    if (timeList.length == 2) {
-      return (timeList[0] * 60 + timeList[1]).toString();
+    // 如果time不为6位则抛出错误
+    if (time.length != 6) {
+      throw Exception("时间格式不正确");
+    }
+    List<String> timeList = [
+      time[0] + time[1],
+      time[2] + time[3],
+      time[4] + time[5]
+    ];
+    // print("时间为:$timeList");
+    if (timeList.length <= 2 || timeList.length >= 4) {
+      throw Exception("时间格式不正确");
     } else if (timeList.length == 3) {
       return (int.parse(timeList[0]) * 3600 +
-              int.parse(timeList[1]) * 60 +
-              int.parse(timeList[2]))
-          .toString();
+          int.parse(timeList[1]) * 60 +
+          int.parse(timeList[2]));
     } else {
       throw Exception("时间格式不正确");
     }
   }
 
-  static Map<dynamic, dynamic> _getGroup(Map<String, String> sortedScores) {
+  static Map<String, int> _getGroup(Map<String, int> sortedScores) {
     // 传入按时间递增排序的成绩表，越小越好
     // print("对$sortedScores进行分组");
     // 蛇形分组
@@ -219,7 +229,7 @@ class ExcelAnalyzer {
     print("$personNum应该分为$groupNum组");
     // 每组的人数
     // print("每组$groupSize人");
-    var result = {};
+    Map<String, int> result = {};
     // print(sortedScores.keys.toList());
     for (int i = 1; i <= groupNum; i++) {
       int a = i * 2 - 1;
@@ -442,14 +452,14 @@ class ExcelAnalyzer {
     var a = await db.query("'$tableName'", columns: ['id']);
     int athletesNum = a.length;
     // 遍历所有sheet
-    Map<String, String> promotionScore = {};
+    Map<String, int> promotionScore = {};
     for (var sheetKey in sheets.keys) {
       var sheet = sheets[sheetKey];
       if (sheet == null) {
         throw Exception("表格中没有$sheetKey");
       }
       var maxRows = sheet.maxRows;
-      Map<String, String> scores = {};
+      Map<String, int> scores = {};
       for (int i = 2; i < maxRows; i++) {
         var id = sheet
             .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: i))
@@ -474,7 +484,7 @@ class ExcelAnalyzer {
       // 若为决赛则直接录入
       if (s == SType.finals) {
         scores = Map.fromEntries(scores.entries.toList()
-          ..sort((a, b) => int.parse(a.value).compareTo(int.parse(b.value))));
+          ..sort((a, b) => a.value.compareTo(b.value)));
         var sortedAthletes = scores.keys.toList();
         for (int i = 0; i < sortedAthletes.length; i++) {
           // 录入比赛分数
@@ -494,7 +504,7 @@ class ExcelAnalyzer {
         print("处理初赛");
         // 若为初赛则晋级
         scores = Map.fromEntries(scores.entries.toList()
-          ..sort((a, b) => int.parse(a.value).compareTo(int.parse(b.value))));
+          ..sort((a, b) => a.value.compareTo(b.value)));
         var sortedAthletes = scores.keys.toList();
         int promotionNum = _getPromotionAthleteNum(athletesNum);
         print(
@@ -505,7 +515,7 @@ class ExcelAnalyzer {
         // 处理晋级的运动员
         for (int i = 0; i < promotionNum / getGroupNum(athletesNum); i++) {
           // 将该运动员添加到promotionScore中
-          promotionScore[sortedAthletes[i]] = i.toString();
+          promotionScore[sortedAthletes[i]] = i;
         }
         // 处理未晋级运动员
         for (int i = (promotionNum / getGroupNum(athletesNum)).ceil();

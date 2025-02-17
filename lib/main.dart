@@ -56,6 +56,14 @@ class MyApp extends StatelessWidget {
       // Insert this line
       supportedLocales: const [Locale("zh", "CN"), Locale("en", "US")],
       theme: ThemeData(
+        pageTransitionsTheme: PageTransitionsTheme(
+          builders: {
+            TargetPlatform.linux: OpenUpwardsPageTransitionsBuilder(),
+            TargetPlatform.windows: OpenUpwardsPageTransitionsBuilder(),
+            TargetPlatform.android: OpenUpwardsPageTransitionsBuilder(),
+            TargetPlatform.iOS: OpenUpwardsPageTransitionsBuilder(),
+          },
+        ),
         fontFamily: 'HarmonyFont',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
